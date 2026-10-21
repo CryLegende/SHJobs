@@ -1,0 +1,577 @@
+items:
+  hopper:
+    ==: org.bukkit.inventory.ItemStack
+    v: 3578
+    type: HOPPER
+  ancre_tp:
+    ==: org.bukkit.inventory.ItemStack
+    v: 3578
+    type: RESPAWN_ANCHOR
+    meta:
+      ==: ItemMeta
+      meta-type: UNSPECIFIC
+      display-name: '{"extra":[{"bold":false,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"dark_purple","text":"Ancre
+        de Téléportation"}],"text":""}'
+      lore:
+      - '{"extra":[{"bold":false,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"gray","text":"Placez
+        cette ancre et liez-la"}],"text":""}'
+      - '{"extra":[{"bold":false,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"gray","text":"à
+        une autre pour créer un"}],"text":""}'
+      - '{"extra":[{"bold":false,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"gray","text":"point
+        de "},{"italic":false,"color":"dark_purple","text":"téléportation"},{"italic":false,"color":"gray","text":"."}],"text":""}'
+      - '{"text":""}'
+      - '{"extra":[{"bold":false,"italic":true,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"gray","text":"((
+        "},{"italic":false,"color":"dark_purple","text":"Accroupissez-vous sur l''ancre"}],"text":""}'
+      - '{"extra":[{"bold":false,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"dark_purple","text":"pour
+        vous "},{"italic":false,"color":"dark_purple","text":"téléporter ! "},{"italic":true,"color":"gray","text":"))"}],"text":""}'
+      enchants:
+        UNBREAKING: 1
+      ItemFlags:
+      - HIDE_ENCHANTS
+  ardoise:
+    ==: org.bukkit.inventory.ItemStack
+    v: 3578
+    type: REINFORCED_DEEPSLATE
+  druse_amethyste:
+    ==: org.bukkit.inventory.ItemStack
+    v: 3578
+    type: BUDDING_AMETHYST
+    meta:
+      ==: ItemMeta
+      meta-type: UNSPECIFIC
+      lore:
+      - '{"extra":[{"bold":false,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"dark_gray","text":"-400
+        Niv. d''île"}],"text":""}'
+  redstone_3:
+    ==: org.bukkit.inventory.ItemStack
+    v: 3578
+    type: REDSTONE
+    amount: 3
+  forge_sentry:
+    ==: org.bukkit.inventory.ItemStack
+    v: 3578
+    type: SENTRY_ARMOR_TRIM_SMITHING_TEMPLATE
+  forge_vex:
+    ==: org.bukkit.inventory.ItemStack
+    v: 3578
+    type: VEX_ARMOR_TRIM_SMITHING_TEMPLATE
+  forge_silence:
+    ==: org.bukkit.inventory.ItemStack
+    v: 3578
+    type: SILENCE_ARMOR_TRIM_SMITHING_TEMPLATE
+  deco_cactus:
+    ==: org.bukkit.inventory.ItemStack
+    v: 3578
+    type: LANTERN
+    meta:
+      ==: ItemMeta
+      meta-type: UNSPECIFIC
+      display-name: '{"italic":false,"color":"dark_green","text":"Cactus"}'
+      lore:
+      - '{"italic":false,"color":"dark_purple","text":"Item décoratif"}'
+      ItemFlags:
+      - HIDE_ATTRIBUTES
+      - HIDE_UNBREAKABLE
+      PublicBukkitValues: |-
+        {
+            "furniturelib:model": "Cactus"
+        }
+  deco_ordi:
+    ==: org.bukkit.inventory.ItemStack
+    v: 3578
+    type: LANTERN
+    meta:
+      ==: ItemMeta
+      meta-type: UNSPECIFIC
+      display-name: '{"italic":false,"color":"yellow","text":"Ordinateur"}'
+      lore:
+      - '{"italic":false,"color":"dark_purple","text":"Item décoratif"}'
+      ItemFlags:
+      - HIDE_ATTRIBUTES
+      - HIDE_UNBREAKABLE
+      PublicBukkitValues: |-
+        {
+            "furniturelib:model": "Ordinateur"
+        }
+  deco_etagere1:
+    ==: org.bukkit.inventory.ItemStack
+    v: 3578
+    type: LANTERN
+    meta:
+      ==: ItemMeta
+      meta-type: UNSPECIFIC
+      display-name: '{"italic":false,"color":"yellow","text":"Étagère 1"}'
+      lore:
+      - '{"italic":false,"color":"dark_purple","text":"Item décoratif"}'
+      ItemFlags:
+      - HIDE_ATTRIBUTES
+      - HIDE_UNBREAKABLE
+      PublicBukkitValues: |-
+        {
+            "furniturelib:model": "Etagere1"
+        }
+  deco_etagere2:
+    ==: org.bukkit.inventory.ItemStack
+    v: 3578
+    type: LANTERN
+    meta:
+      ==: ItemMeta
+      meta-type: UNSPECIFIC
+      display-name: '{"italic":false,"color":"yellow","text":"Étagère 2"}'
+      lore:
+      - '{"italic":false,"color":"dark_purple","text":"Item décoratif"}'
+      ItemFlags:
+      - HIDE_ATTRIBUTES
+      - HIDE_UNBREAKABLE
+      PublicBukkitValues: |-
+        {
+            "furniturelib:model": "Etagere2"
+        }
+  deco_bonhomme_neige:
+    ==: org.bukkit.inventory.ItemStack
+    v: 3578
+    type: LANTERN
+    meta:
+      ==: ItemMeta
+      meta-type: UNSPECIFIC
+      display-name: '{"italic":false,"color":"dark_green","text":"Mini Bonhomme de
+        neige"}'
+      lore:
+      - '{"italic":false,"color":"dark_purple","text":"Item décoratif"}'
+      ItemFlags:
+      - HIDE_ATTRIBUTES
+      - HIDE_UNBREAKABLE
+      PublicBukkitValues: |-
+        {
+            "furniturelib:model": "MiniBonhommeDeNeige"
+        }
+  deco_lampe_noir:
+    ==: org.bukkit.inventory.ItemStack
+    v: 3578
+    type: LANTERN
+    meta:
+      ==: ItemMeta
+      meta-type: UNSPECIFIC
+      display-name: '{"italic":false,"color":"yellow","text":"Lampe de chevet (noir)"}'
+      lore:
+      - '{"italic":false,"color":"dark_purple","text":"Item décoratif"}'
+      ItemFlags:
+      - HIDE_ATTRIBUTES
+      - HIDE_UNBREAKABLE
+      PublicBukkitValues: |-
+        {
+            "furniturelib:model": "cDeskLampBlack"
+        }
+  deco_lampe_marron:
+    ==: org.bukkit.inventory.ItemStack
+    v: 3578
+    type: LANTERN
+    meta:
+      ==: ItemMeta
+      meta-type: UNSPECIFIC
+      display-name: '{"italic":false,"color":"yellow","text":"Lampe de chevet (marron)"}'
+      lore:
+      - '{"italic":false,"color":"dark_purple","text":"Item décoratif"}'
+      ItemFlags:
+      - HIDE_ATTRIBUTES
+      - HIDE_UNBREAKABLE
+      PublicBukkitValues: |-
+        {
+            "furniturelib:model": "cDeskLampBrown"
+        }
+  deco_lampe_bleu:
+    ==: org.bukkit.inventory.ItemStack
+    v: 3578
+    type: LANTERN
+    meta:
+      ==: ItemMeta
+      meta-type: UNSPECIFIC
+      display-name: '{"italic":false,"color":"yellow","text":"Lampe de chevet (bleu)"}'
+      lore:
+      - '{"italic":false,"color":"dark_purple","text":"Item décoratif"}'
+      ItemFlags:
+      - HIDE_ATTRIBUTES
+      - HIDE_UNBREAKABLE
+      PublicBukkitValues: |-
+        {
+            "furniturelib:model": "cDeskLampBlue"
+        }
+  deco_lampe_verte:
+    ==: org.bukkit.inventory.ItemStack
+    v: 3578
+    type: LANTERN
+    meta:
+      ==: ItemMeta
+      meta-type: UNSPECIFIC
+      display-name: '{"italic":false,"color":"yellow","text":"Lampe de chevet (verte)"}'
+      lore:
+      - '{"italic":false,"color":"dark_purple","text":"Item décoratif"}'
+      ItemFlags:
+      - HIDE_ATTRIBUTES
+      - HIDE_UNBREAKABLE
+      PublicBukkitValues: |-
+        {
+            "furniturelib:model": "cDeskLampGreen"
+        }
+  cle_ordinaire:
+    ==: org.bukkit.inventory.ItemStack
+    v: 3578
+    type: TRIPWIRE_HOOK
+    meta:
+      ==: ItemMeta
+      meta-type: UNSPECIFIC
+      display-name: '{"extra":[{"bold":false,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"yellow","text":"Clé
+        Ordinaire"}],"text":""}'
+      lore:
+      - '{"extra":[{"bold":false,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"gray","text":"Ces
+        clés sont obtenables"}],"text":""}'
+      - '{"extra":[{"bold":false,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"gray","text":"en
+        votant pour Skyhand !"}],"text":""}'
+      - '{"extra":[{"bold":false,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"gray","text":""}],"text":""}'
+      - '{"extra":[{"bold":true,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"dark_gray","text":"»
+        "},{"bold":false,"italic":false,"color":"yellow","clickEvent":{"action":"open_url","value":"https://skyhand.fr/vote"},"text":"https://skyhand.fr/vote"},{"bold":false,"italic":false,"color":"yellow","text":""}],"text":""}'
+      - '{"extra":[{"bold":false,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"gray","text":""}],"text":""}'
+      - '{"extra":[{"bold":false,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"gray","text":"Clic
+        droit sur la box "},{"italic":false,"color":"yellow","text":"Ordinaire"}],"text":""}'
+      enchants:
+        LUCK: 1
+      ItemFlags:
+      - HIDE_ENCHANTS
+      PublicBukkitValues: |-
+        {
+            "shcrates:shcrates_keyid": "14660341-49c1-4ad0-a53f-c2e943292d4a"
+        }
+  cle_rare:
+    ==: org.bukkit.inventory.ItemStack
+    v: 3578
+    type: TRIPWIRE_HOOK
+    meta:
+      ==: ItemMeta
+      meta-type: UNSPECIFIC
+      display-name: '{"extra":[{"bold":false,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"aqua","text":"Clé
+        rare"}],"text":""}'
+      lore:
+      - '{"extra":[{"bold":false,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"gray","text":"Ces
+        clés sont obtenables"}],"text":""}'
+      - '{"extra":[{"bold":false,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"gray","text":"sur
+        la boutique de Skyhand !"}],"text":""}'
+      - '{"extra":[{"bold":false,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"gray","text":""}],"text":""}'
+      - '{"extra":[{"bold":true,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"dark_gray","text":"»
+        "},{"bold":false,"italic":false,"color":"aqua","clickEvent":{"action":"open_url","value":"http://store.skyhand.fr"},"text":"store.skyhand.fr"},{"bold":false,"italic":false,"color":"aqua","text":""}],"text":""}'
+      - '{"extra":[{"bold":false,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"gray","text":""}],"text":""}'
+      - '{"extra":[{"bold":false,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"gray","text":"Clic
+        droit sur la box "},{"italic":false,"color":"aqua","text":"Rare"}],"text":""}'
+      enchants:
+        LUCK: 1
+      ItemFlags:
+      - HIDE_ENCHANTS
+      PublicBukkitValues: |-
+        {
+            "shcrates:shcrates_keyid": "629af173-205f-4f3e-9c60-4f8dba4d9314"
+        }
+  cle_legendaire:
+    ==: org.bukkit.inventory.ItemStack
+    v: 3578
+    type: TRIPWIRE_HOOK
+    meta:
+      ==: ItemMeta
+      meta-type: UNSPECIFIC
+      display-name: '{"extra":[{"bold":false,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"gold","text":"Clé
+        Legendaire"}],"text":""}'
+      lore:
+      - '{"extra":[{"bold":false,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"gray","text":"Ces
+        clés sont obtenables"}],"text":""}'
+      - '{"extra":[{"bold":false,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"gray","text":"sur
+        la boutique de Skyhand !"}],"text":""}'
+      - '{"extra":[{"bold":false,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"gray","text":""}],"text":""}'
+      - '{"extra":[{"bold":true,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"dark_gray","text":"»
+        "},{"bold":false,"italic":false,"color":"gold","clickEvent":{"action":"open_url","value":"http://store.skyhand.fr"},"text":"store.skyhand.fr"},{"bold":false,"italic":false,"color":"gold","text":""}],"text":""}'
+      - '{"extra":[{"bold":false,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"gray","text":""}],"text":""}'
+      - '{"extra":[{"bold":false,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"gray","text":"Clic
+        droit sur la box "},{"italic":false,"color":"gold","text":"Legendaire"}],"text":""}'
+      enchants:
+        LUCK: 1
+      ItemFlags:
+      - HIDE_ENCHANTS
+      PublicBukkitValues: |-
+        {
+            "shcrates:shcrates_keyid": "94b5a2a1-2d2b-4b73-938d-8f3dfc93baeb"
+        }
+  coffre_collecteur_petit:
+    ==: org.bukkit.inventory.ItemStack
+    v: 3578
+    type: BARREL
+    meta:
+      ==: ItemMeta
+      meta-type: TILE_ENTITY
+      display-name: '{"extra":[{"bold":false,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"aqua","text":"Coffre
+        collecteur "},{"italic":false,"color":"white","text":"("},{"italic":false,"color":"aqua","text":"petit"},{"italic":false,"color":"white","text":")"}],"text":""}'
+      lore:
+      - '{"extra":[{"bold":false,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"gray","text":"Ce
+        coffre contient au"}],"text":""}'
+      - '{"extra":[{"bold":false,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"gray","text":"total
+        "},{"italic":false,"color":"aqua","text":"9 "},{"italic":false,"color":"gray","text":"slots"}],"text":""}'
+      - '{"extra":[{"bold":false,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"gray","text":""}],"text":""}'
+      - '{"extra":[{"bold":false,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"gray","text":"Il
+        collecte les items au sol"}],"text":""}'
+      - '{"extra":[{"bold":false,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"gray","text":"dans
+        le chunk ou il se trouve"}],"text":""}'
+      internal: H4sIAAAAAAAA/+NiYOBg4HVMKUvMS05Ncc5ILS5hEEjOz8lJTS5JLS3SLUgtySxhAABfQ5KfJgAAAA==
+      blockMaterial: BARREL
+  coffre_ameliore_moyen:
+    ==: org.bukkit.inventory.ItemStack
+    v: 3578
+    type: CHEST
+    meta:
+      ==: ItemMeta
+      meta-type: TILE_ENTITY
+      display-name: '{"extra":[{"bold":false,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"gold","text":"Coffre
+        amélioré "},{"italic":false,"color":"white","text":"("},{"italic":false,"color":"gold","text":"Moyen"},{"italic":false,"color":"white","text":")"}],"text":""}'
+      lore:
+      - '{"extra":[{"bold":false,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"gray","text":"Ce
+        coffre contient au"}],"text":""}'
+      - '{"extra":[{"bold":false,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"gray","text":"total
+        "},{"italic":false,"color":"gold","text":"1125 "},{"italic":false,"color":"gray","text":"slots"}],"text":""}'
+      - '{"extra":[{"bold":false,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"gray","text":"(25
+        pages)"}],"text":""}'
+      internal: H4sIAAAAAAAA/+NiYOBg4HVMKUvMS05Ncc5ILS5hYM3Nr0zNYwAALTEw5RsAAAA=
+      blockMaterial: CHEST
+  spawner_mystere_commun:
+    ==: org.bukkit.inventory.ItemStack
+    v: 3578
+    type: ENDER_CHEST
+    meta:
+      ==: ItemMeta
+      meta-type: TILE_ENTITY
+      display-name: '{"extra":[{"bold":false,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"gold","text":"Spawner
+        Mystère "},{"italic":false,"color":"gray","text":"("},{"italic":false,"color":"yellow","text":"Commun"},{"italic":false,"color":"gray","text":")"}],"text":""}'
+      lore:
+      - '{"extra":[{"bold":false,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"dark_gray","text":"•
+        "},{"italic":false,"color":"gray","text":"Obtenez un type de"}],"text":""}'
+      - '{"extra":[{"bold":false,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"gray","text":"spawner
+        aléatoire parmis"}],"text":""}'
+      - '{"extra":[{"bold":false,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"gray","text":"la
+        liste ci dessous:"}],"text":""}'
+      - '{"text":""}'
+      - '{"extra":[{"bold":false,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"white","text":"•
+        "},{"italic":false,"color":"yellow","text":"Cochon"}],"text":""}'
+      - '{"extra":[{"bold":false,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"white","text":"•
+        "},{"italic":false,"color":"yellow","text":"Poulet"}],"text":""}'
+      - '{"extra":[{"bold":false,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"white","text":"•
+        "},{"italic":false,"color":"yellow","text":"Lapin"}],"text":""}'
+      - '{"extra":[{"bold":false,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"white","text":"•
+        "},{"italic":false,"color":"yellow","text":"Mouton"}],"text":""}'
+      - '{"extra":[{"bold":false,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"white","text":"•
+        "},{"italic":false,"color":"light_purple","text":"Vache"}],"text":""}'
+      - '{"extra":[{"bold":false,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"white","text":"•
+        "},{"italic":false,"color":"dark_purple","text":"Zombie"}],"text":""}'
+      - '{"text":""}'
+      - '{"extra":[{"bold":false,"italic":true,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"dark_gray","text":"((
+        "},{"italic":true,"color":"white","text":"Clic droit "},{"italic":true,"color":"gray","text":"pour
+        l''utiliser "},{"italic":true,"color":"dark_gray","text":"))"}],"text":""}'
+      enchants:
+        LUCK: 1
+      ItemFlags:
+      - HIDE_ENCHANTS
+      internal: H4sIAAAAAAAA/+NiYOBgYC/LL03OSC1i4M+tLC5JLaosLkgsz0stMmQAAMeV/O4fAAAA
+      blockMaterial: ENDER_CHEST
+  enchant_ordinaire:
+    ==: org.bukkit.inventory.ItemStack
+    v: 3578
+    type: BOOK
+    meta:
+      ==: ItemMeta
+      meta-type: UNSPECIFIC
+      display-name: '{"extra":[{"bold":false,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"gray","text":"Enchantement
+        "},{"bold":true,"italic":false,"color":"yellow","text":"Ordinaire "},{"bold":false,"italic":false,"color":"gray","text":"(Clic
+        Droit)"}],"text":""}'
+      lore:
+      - '{"text":""}'
+      - '{"extra":[{"bold":true,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"dark_gray","text":"«
+        "},{"bold":false,"italic":false,"color":"gray","text":"Examinez cet item afin
+        de recevoir un"}],"text":""}'
+      - '{"extra":[{"bold":false,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"gray","text":"livre
+        d''enchantement "},{"italic":false,"color":"yellow","text":"Ordinaire"},{"italic":false,"color":"gray","text":".
+        "},{"bold":true,"italic":false,"color":"dark_gray","text":"»"}],"text":""}'
+      - '{"text":""}'
+      - '{"extra":[{"bold":false,"italic":true,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"dark_gray","text":"((
+        "},{"italic":true,"color":"yellow","text":"Cliquez pour découvrir l''enchantement
+        "},{"italic":true,"color":"dark_gray","text":"))"}],"text":""}'
+      custom-model-data: 0
+      ItemFlags:
+      - HIDE_ENCHANTS
+      - HIDE_ATTRIBUTES
+      - HIDE_UNBREAKABLE
+      - HIDE_DESTROYS
+      - HIDE_PLACED_ON
+      - HIDE_ADDITIONAL_TOOLTIP
+      - HIDE_ARMOR_TRIM
+      PublicBukkitValues: |-
+        {
+            "advancedenchantments:rcbook_new": "ORDINAIRE"
+        }
+  enchant_legendaire:
+    ==: org.bukkit.inventory.ItemStack
+    v: 3578
+    type: BOOK
+    meta:
+      ==: ItemMeta
+      meta-type: UNSPECIFIC
+      display-name: '{"extra":[{"bold":false,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"gray","text":"Enchantement
+        "},{"bold":true,"italic":false,"color":"dark_purple","text":"Légendaire "},{"bold":false,"italic":false,"color":"gray","text":"(Clic
+        Droit)"}],"text":""}'
+      lore:
+      - '{"text":""}'
+      - '{"extra":[{"bold":true,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"dark_gray","text":"«
+        "},{"bold":false,"italic":false,"color":"gray","text":"Examinez cet item afin
+        de recevoir un"}],"text":""}'
+      - '{"extra":[{"bold":false,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"gray","text":"livre
+        d''enchantement "},{"italic":false,"color":"dark_purple","text":"Légendaire"},{"italic":false,"color":"gray","text":".
+        "},{"bold":true,"italic":false,"color":"dark_gray","text":"»"}],"text":""}'
+      - '{"text":""}'
+      - '{"extra":[{"bold":false,"italic":true,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"dark_gray","text":"((
+        "},{"italic":true,"color":"dark_purple","text":"Cliquez pour découvrir l''enchantement
+        "},{"italic":true,"color":"dark_gray","text":"))"}],"text":""}'
+      custom-model-data: 0
+      ItemFlags:
+      - HIDE_ENCHANTS
+      - HIDE_ATTRIBUTES
+      - HIDE_UNBREAKABLE
+      - HIDE_DESTROYS
+      - HIDE_PLACED_ON
+      - HIDE_ADDITIONAL_TOOLTIP
+      - HIDE_ARMOR_TRIM
+      PublicBukkitValues: |-
+        {
+            "advancedenchantments:rcbook_new": "LEGENDAIRE"
+        }
+  dragon_egg:
+    ==: org.bukkit.inventory.ItemStack
+    v: 3578
+    type: DRAGON_EGG
+  deco_epouventail:
+    ==: org.bukkit.inventory.ItemStack
+    v: 3578
+    type: LANTERN
+    meta:
+      ==: ItemMeta
+      meta-type: UNSPECIFIC
+      display-name: '{"italic":false,"color":"yellow","text":"Épouventail"}'
+      lore:
+      - '{"italic":false,"color":"dark_purple","text":"Item décoratif"}'
+      ItemFlags:
+      - HIDE_ATTRIBUTES
+      - HIDE_UNBREAKABLE
+      PublicBukkitValues: |-
+        {
+            "furniturelib:model": "Epouventail"
+        }
+  forge_ward:
+    ==: org.bukkit.inventory.ItemStack
+    v: 3578
+    type: WARD_ARMOR_TRIM_SMITHING_TEMPLATE
+  forge_host:
+    ==: org.bukkit.inventory.ItemStack
+    v: 3578
+    type: HOST_ARMOR_TRIM_SMITHING_TEMPLATE
+  forge_shaper:
+    ==: org.bukkit.inventory.ItemStack
+    v: 3578
+    type: SHAPER_ARMOR_TRIM_SMITHING_TEMPLATE
+  forge_raiser:
+    ==: org.bukkit.inventory.ItemStack
+    v: 3578
+    type: RAISER_ARMOR_TRIM_SMITHING_TEMPLATE
+  forge_wayfinder:
+    ==: org.bukkit.inventory.ItemStack
+    v: 3578
+    type: WAYFINDER_ARMOR_TRIM_SMITHING_TEMPLATE
+  forge_dune:
+    ==: org.bukkit.inventory.ItemStack
+    v: 3578
+    type: DUNE_ARMOR_TRIM_SMITHING_TEMPLATE
+  forge_coast:
+    ==: org.bukkit.inventory.ItemStack
+    v: 3578
+    type: COAST_ARMOR_TRIM_SMITHING_TEMPLATE
+  forge_wild:
+    ==: org.bukkit.inventory.ItemStack
+    v: 3578
+    type: WILD_ARMOR_TRIM_SMITHING_TEMPLATE
+  forge_eye:
+    ==: org.bukkit.inventory.ItemStack
+    v: 3578
+    type: EYE_ARMOR_TRIM_SMITHING_TEMPLATE
+  forge_rib:
+    ==: org.bukkit.inventory.ItemStack
+    v: 3578
+    type: RIB_ARMOR_TRIM_SMITHING_TEMPLATE
+  forge_snout:
+    ==: org.bukkit.inventory.ItemStack
+    v: 3578
+    type: SNOUT_ARMOR_TRIM_SMITHING_TEMPLATE
+  enchant_rare:
+    ==: org.bukkit.inventory.ItemStack
+    v: 3578
+    type: BOOK
+    meta:
+      ==: ItemMeta
+      meta-type: UNSPECIFIC
+      display-name: '{"extra":[{"bold":false,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"gray","text":"Enchantement
+        "},{"bold":true,"italic":false,"color":"gold","text":"Rare "},{"bold":false,"italic":false,"color":"gray","text":"(Clic
+        Droit)"}],"text":""}'
+      lore:
+      - '{"text":""}'
+      - '{"extra":[{"bold":true,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"dark_gray","text":"«
+        "},{"bold":false,"italic":false,"color":"gray","text":"Examinez cet item afin
+        de recevoir un"}],"text":""}'
+      - '{"extra":[{"bold":false,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"gray","text":"livre
+        d''enchantement "},{"italic":false,"color":"gold","text":"Rare"},{"italic":false,"color":"gray","text":".
+        "},{"bold":true,"italic":false,"color":"dark_gray","text":"»"}],"text":""}'
+      - '{"text":""}'
+      - '{"extra":[{"bold":false,"italic":true,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"dark_gray","text":"((
+        "},{"italic":true,"color":"gold","text":"Cliquez pour découvrir l''enchantement
+        "},{"italic":true,"color":"dark_gray","text":"))"}],"text":""}'
+      custom-model-data: 0
+      ItemFlags:
+      - HIDE_ENCHANTS
+      - HIDE_ATTRIBUTES
+      - HIDE_UNBREAKABLE
+      - HIDE_DESTROYS
+      - HIDE_PLACED_ON
+      - HIDE_ADDITIONAL_TOOLTIP
+      - HIDE_ARMOR_TRIM
+      PublicBukkitValues: |-
+        {
+            "advancedenchantments:rcbook_new": "RARE"
+        }
+  froglight_pearlescent:
+    ==: org.bukkit.inventory.ItemStack
+    v: 3578
+    type: PEARLESCENT_FROGLIGHT
+    meta:
+      ==: ItemMeta
+      meta-type: UNSPECIFIC
+      lore:
+      - '{"extra":[{"bold":false,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"dark_gray","text":"0.05
+        Niv. d''île"}],"text":""}'
+  froglight_verdant:
+    ==: org.bukkit.inventory.ItemStack
+    v: 3578
+    type: VERDANT_FROGLIGHT
+    meta:
+      ==: ItemMeta
+      meta-type: UNSPECIFIC
+      lore:
+      - '{"extra":[{"bold":false,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"dark_gray","text":"0.05
+        Niv. d''île"}],"text":""}'
+  froglight_ochre:
+    ==: org.bukkit.inventory.ItemStack
+    v: 3578
+    type: OCHRE_FROGLIGHT
+    meta:
+      ==: ItemMeta
+      meta-type: UNSPECIFIC
+      lore:
+      - '{"extra":[{"bold":false,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"dark_gray","text":"0.05
+        Niv. d''île"}],"text":""}'

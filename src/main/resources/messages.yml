@@ -1,0 +1,134 @@
+# SHJobs - Fichier des Messages (messages.yml)
+
+plugin_prefix: ""
+
+# --- Messages Communs ---
+common:
+  player_only: "&7&l« &c&lSH &8&l» &7Cette commande ne peut être exécutée que par un joueur."
+  no_permission: "&7&l« &c&lSH &8&l» &7Vous n'avez pas la permission d'utiliser cette commande."
+  unknown_command_arg: "&7&l« &c&lSH &8&l» &7Argument de commande inconnu. Usage: &c%command%"
+  player_not_found_or_data_error: "&7&l« &c&lSH &8&l» &7Joueur '&c%player%&7' non trouvé ou erreur de données."
+  invalid_job_type: "&7&l« &c&lSH &8&l» &7Type de métier invalide: &c%type%"
+  invalid_amount: "&7&l« &c&lSH &8&l» &7Montant invalide: &c%amount%"
+  invalid_level_format: "&7&l« &c&lSH &8&l» &7Niveau invalide: &c%level%&7. Doit être un nombre."
+  invalid_slot: "&7&l« &c&lSH &8&l» &7Slot invalide: &c%slot%&7. Doit être entre 1 et 3 pour les jobs."
+  invalid_slot_shop: "&7&l« &c&lSH &8&l» &7Slot invalide: &c%slot%&7. Doit être entre 1 et 6 pour la boutique."
+  invalid_job_template_id: "&7&l« &c&lSH &8&l» &7ID de modèle de job invalide: &c%id%"
+  invalid_shop_item_id: "&7&l« &c&lSH &8&l» &7ID d'article de boutique invalide: &c%id%"
+
+# --- Messages d'Administration ---
+admin:
+  reloaded: "&7&l« &a&lSH &8&l» &7Configuration de SHJobs rechargée &aavec succès&7."
+  daily_reset_forced: "&7&l« &a&lSH &8&l» &7Reset journalier des jobs et de la boutique &aforcé&7."
+  help:
+    header: "&e--- Aide Admin SHJobs (/sja %label%) ---"
+    reload: "&e/shjobsadmin reload &7- Recharge la configuration."
+    exp: "&e/shjobsadmin exp <give|remove|set> <joueur> <métier> <montant> &7- Gère l'XP de métier."
+    level: "&e/shjobsadmin level set <joueur> <métier> <niveau> &7- Définit le niveau de métier."
+    points: "&e/shjobsadmin points <give|remove|set> <joueur> <montant> &7- Gère les points de métier."
+    playerinfo: "&e/shjobsadmin playerinfo <joueur> &7- Affiche les infos d'un joueur."
+    job_change: "&e/shjobsadmin job change <slot 1-3> [template_id] &7- Change un job journalier."
+    shopitem_change: "&e/shjobsadmin shopitem change <slot 1-6> [item_id] &7- Change un item de boutique."
+    customitem: "&e/shjobsadmin customitem save <ID> &7- Ajout un item custom dans la boutique."
+    resetdaily: "&e/shjobsadmin resetdaily &7- Force un reset des jobs et de la boutique."
+    footer: "&e--------------------------------------"
+  exp:
+    usage: "&7&l« &c&lSH &8&l» &7Usage: &c/shjobsadmin exp <give|remove|set> <joueur> <métier> <montant>"
+    give:
+      success: "&7&l« &a&lSH &8&l» &7Vous avez donné &a%amount% XP&7 de &a%job_type%&7 à &a%player%&7."
+    remove:
+      success: "&7&l« &a&lSH &8&l» &7Vous avez retiré &a%amount% XP&7 de &a%job_type%&7 à &a%player%&7."
+    set:
+      success: "&7&l« &a&lSH &8&l» &7L'XP de &a%job_type%&7 de &a%player%&7 a été définie à &a%amount%&7."
+  level:
+    usage: "&7&l« &c&lSH &8&l» &7Usage: &c/shjobsadmin level set <joueur> <métier> <niveau>"
+    set:
+      success: "&7&l« &a&lSH &8&l» &7Le niveau de &a%job_type%&7 de &a%player%&7 a été défini à &a%level%&7."
+      too_high: "&7&l« &6&lSH &8&l» &7Le niveau &6%level%&7 est supérieur au maximum (&6%max_level%&7). Défini au maximum."
+  points:
+    usage: "&7&l« &c&lSH &8&l» &7Usage: &c/shjobsadmin points <give|remove|set> <joueur> <montant>"
+    give:
+      success: "&7&l« &a&lSH &8&l» &7Vous avez donné &a%amount% points de métier&7 à &a%player%&7."
+    remove:
+      success: "&7&l« &a&lSH &8&l» &7Vous avez retiré &a%amount% points de métier&7 à &a%player%&7."
+      not_enough: "&7&l« &c&lSH &8&l» &c%player%&7 n'a pas assez de points de métier."
+    set:
+      success: "&7&l« &a&lSH &8&l» &7Les points de métier de &a%player%&7 ont été définis à &a%amount%&7."
+  playerinfo:
+    usage: "&7&l« &c&lSH &8&l» &7Usage: &c/shjobsadmin playerinfo <joueur>"
+    header: "&7&l« &6&lSH &8&l» &fInformation métiers &8| &e%player%"
+    points: "&7JobsCoins: &e%points%"
+    job_entry: "&e%job_type%&7: Niv. &e%level% &7| XP Totale: &e%exp% &7| Prog.: (&e%exp_progress%&7)"
+    footer: "&e------------------------------------------"
+  job_change:
+    usage: "&7&l« &c&lSH &8&l» &7Usage: &c/shjobsadmin job change <slot 1-3> [template_id]"
+    success: "&7&l« &a&lSH &8&l» &7Job journalier du slot &a%slot%&7 changé en '&a%template_id%&7'."
+    failure: "&7&l« &c&lSH &8&l» &7Échec du changement du job journalier pour le slot &c%slot%&7."
+  shopitem_change:
+    usage: "&7&l« &c&lSH &8&l» &7Usage: &c/shjobsadmin shopitem change <slot 1-6> [item_id]"
+    success: "&7&l« &a&lSH &8&l» &7Item de boutique du slot &a%slot%&7 changé en '&a%item_id%&7'."
+    failure: "&7&l« &c&lSH &8&l» &7Échec du changement de l'item de boutique pour le slot &c%slot%&7."
+  customitem:
+    usage: "&7&l« &c&lSH &8&l» &7Usage: &c/shjobsadmin customitem save <ID>"
+    save_success: "&7&l« &a&lSH &8&l» &7L'item a été sauvegardé avec succès."
+
+# --- Messages pour les Joueurs ---
+# player:
+#   exp_changed_by_admin: "&7&l« &e&lSH &8&l» &7Votre expérience en &e%job_type%&7 a été modifiée par un administrateur (&e%action%&7)."
+#   level_changed_by_admin: "&7&l« &e&lSH &8&l» &7Votre niveau en &e%job_type%&7 a été défini à &e%level%&7 par un administrateur."
+#   points_changed_by_admin: "&7&l« &e&lSH &8&l» &7Vos points de métier ont été modifiés par un administrateur (&e%action%&7)."
+player:
+  exp_changed_by_admin: ""
+  level_changed_by_admin: ""
+  points_changed_by_admin: ""
+
+# --- Messages des Menus ---
+menu:
+  config_not_found: "&7&l« &c&lSH &8&l» &7La configuration du menu '&c%menu%&7' n'a pas pu être chargée."
+  loading_data: "&7&l« &e&lSH &8&l» &7Chargement de vos données de métier, veuillez patienter..."
+
+# --- Messages des Jobs ---
+jobs:
+  objective_completed: "&7&l« &a&lSH &8&l» &7Objectif terminé: &a%objective_name% &7(Job: &a%job_name%&7)"
+  job_completed: "&7&l« &a&lSH &8&l» &7Félicitations ! Vous avez terminé le job: &a%job_name% &7!"
+  status_completed: "&aTerminé"
+  status_inprogress: "&eEn cours"
+  status_completed_short: "&a✔"
+  status_inprogress_short: "&e⏳"
+  exp_max_level: "&eNiveau Max"
+  exp_max_level_short: "&eMAX"
+  exp_bar_full: "&a||||||||||||||||||||"
+
+# --- Messages des Récompenses ---
+rewards:
+  exp_gained: "&7&l« &a&lSH &8&l» &7Vous avez gagné &a%amount% XP &7pour le métier &a%job_type% &7!"
+  points_gained: "&7&l« &a&lSH &8&l» &7Vous avez gagné &a%amount% points de métier &7!"
+
+# --- Messages de la Boutique ---
+shop:
+  not_enough_points: "&7&l« &c&lSH &8&l» &7Vous n'avez pas assez de points. Coût: &c%cost% points&7."
+  level_too_low: "&7&l« &c&lSH &8&l» &7Vous devez être niveau &c%required_level%&7 en &c%job_name%&7 pour acheter ceci."
+  purchase_successful: "&7&l« &a&lSH &8&l» &7Vous avez acheté &a%item_name% &7pour &a%cost% points &7!"
+  lore_requirement_job: "&eRequiert: &7Niveau %level% %job_name%"
+  lore_requirement_job_unmet: "&cRequiert: &7Niveau %level% %job_name%"
+  lore_status_not_enough_points: "&cPas assez de points !"
+  lore_status_level_required: "&cNiveau de métier requis non atteint."
+  lore_status_can_purchase: "&eCliquez pour acheter !"
+  already_purchased_today: "&7&l« &c&lSH &8&l» &7Vous avez déjà acheté l'article '&c%item_name%&7' aujourd'hui."
+  lore_status_already_purchased: "&cDéjà acheté aujourd'hui !"
+  sell_successful: "&7&l« &a&lSH &8&l» &7Vous avez vendu &a%item_name% &7pour &a%points% points&7!"
+  sell_all_successful: "&7&l« &a&lSH &8&l» &7Vous avez vendu &a%amount%x %item_name% &7pour &a%points% points&7!"
+  not_sellable: "&7&l« &c&lSH &8&l» &7Cet article n'est pas vendable."
+  item_not_found_for_sell: "&7&l« &c&lSH &8&l» &7Vous n'avez pas l'article requis dans votre inventaire pour le vendre."
+
+# --- Messages Généraux du Plugin ---
+general:
+  daily_jobs_reset: |-
+    &r
+    &7&l« &e&lSH &8&l» &7Les jobs journaliers et la boutique ont été réinitialisés !
+    &r
+
+# --- Messages pour PlaceholderAPI (si le placeholder est utilisé sans joueur ou avec une erreur) ---
+papi:
+  job_not_available: "&eN/A"
+  job_not_loaded: "&eChargement..."

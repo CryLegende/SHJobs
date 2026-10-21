@@ -1,0 +1,1749 @@
+# SHJobs Configuration File
+# --- Plugin Information ---
+#
+# == COMMANDS ==
+# /jobs - Ouvre le menu principal des métiers.
+#   Permission: shjobs.player.menu (default: true)
+#
+# /shjobsadmin (alias: /sja) - Commandes d'administration.
+#   Base Permission: shjobs.admin.base (default: op)
+#   Sous-commandes (permissions à implémenter):
+#   - reload: Recharge la configuration du plugin. (shjobs.admin.reload)
+#   - exp give <player> <job_type> <amount>: Donne de l'XP de métier. (shjobs.admin.exp.give)
+#   - exp remove <player> <job_type> <amount>: Retire de l'XP de métier. (shjobs.admin.exp.remove)
+#   - level set <player> <job_type> <level>: Définit le niveau de métier. (shjobs.admin.level.set)
+#   - points give <player> <amount>: Donne des points de métier. (shjobs.admin.points.give)
+#   - points remove <player> <amount>: Retire des points de métier. (shjobs.admin.points.remove)
+#   - playerinfo <player>: Affiche les informations de métier d'un joueur. (shjobs.admin.playerinfo)
+#   - job change <slot_1-3> [job_template_id]: Change un job journalier. (shjobs.admin.job.change)
+#   - shop change <slot_1-6> [shop_item_id]: Change un item de la boutique. (shjobs.admin.shop.changeitem)
+#
+# == PERMISSIONS ==
+# shjobs.player.menu: Accès à /jobs.
+# shjobs.admin.base: Accès de base à /shjobsadmin.
+# shjobs.admin.reload: Permet d'utiliser /sja reload.
+# shjobs.admin.exp.give: Permet de donner de l'XP.
+# shjobs.admin.exp.remove: Permet de retirer de l'XP.
+# shjobs.admin.level.set: Permet de définir un niveau.
+# shjobs.admin.points.give: Permet de donner des points.
+# shjobs.admin.points.remove: Permet de retirer des points.
+# shjobs.admin.playerinfo: Permet de voir les infos d'un joueur.
+# shjobs.admin.job.change: Permet de changer un job journalier.
+# shjobs.admin.shop.changeitem: Permet de changer un item de la boutique.
+# shjobs.job.<job_type>.bypassrequirements: (Optionnel) Permet de prendre des jobs sans les prérequis.
+# shjobs.shop.bypasslevel: (Optionnel) Permet d'acheter des items sans le niveau de métier requis.
+#
+# == PLACEHOLDERS (PlaceholderAPI) ==
+# %shjobs_player_points%: Points de métier du joueur.
+# %shjobs_player_level_<job_type>%: Niveau du joueur dans le métier <job_type> (ex: %shjobs_player_level_mineur%).
+# %shjobs_player_exp_<job_type>%: XP actuelle du joueur dans le métier <job_type>.
+# %shjobs_player_exp_required_<job_type>%: XP requise pour le prochain niveau dans <job_type>.
+# %shjobs_player_exp_percentage_<job_type>%: Pourcentage d'XP vers le prochain niveau dans <job_type>.
+# %shjobs_player_job_daily_<slot>_name%: Nom du job journalier dans l'emplacement <slot> (1-3).
+# %shjobs_player_job_daily_<slot>_progress% : Progression formatée du job journalier <slot>.
+# %shjobs_time_until_reset%: Temps restant avant la réinitialisation journalière (ex: 10h 30m 15s).
+# ... d'autres placeholders pourront être ajoutés pour les détails des objectifs.
+
+# --- Database Settings ---
+database:
+  type: "SQLITE" # Options: SQLITE, MYSQL
+  mysql:
+    host: "localhost"
+    port: 3306
+    database: "shjobs_db"
+    username: "shjobs_user"
+    password: "CHANGE_ME"
+    useSSL: false
+    # connection_properties: "autoReconnect=true&useUnicode=true&characterEncoding=utf8" # Optional MySQL properties
+
+# --- General Settings ---
+general:
+  daily_reset_time: "00:00" # HH:mm format (24-hour clock) for daily jobs and shop reset. Uses server's local time.
+
+# --- Experience & Levels ---
+# XP formulas use JavaScript evaluation. %level% is the target level you are trying to reach.
+# Example: To reach level 2, %level% will be 2. XP for level 1 is always 0.
+experience:
+  # Default XP progression if not specified per job
+  # default_xp_formula: "1000 + (%level% - 1) * 500" # XP needed to reach %level%
+  default_xp_formula: "100" # XP needed to reach %level%
+  default_max_level: 1000
+
+  jobs:
+    bucheron: # Must match a JobType enum key (case-insensitive)
+    # xp_formula: "100"
+    # max_level: 100
+    # Example of fixed XP overrides for specific levels (optional)
+    # exp_per_level:
+    #   2: 750
+    #   3: 1800
+    mineur:
+    # Uses default
+    agriculteur:
+    # Uses default
+    chasseur:
+    # Uses default
+    artisan:
+    # Uses default
+    pecheur:
+    # Uses default
+
+# --- Job Type Definitions ---
+# Used for display names and icons in menus. Keys must match JobType enum.
+job_types:
+  bucheron:
+    display_name: "&6Bûcheron"
+    icon: "IRON_AXE"
+  mineur:
+    display_name: "&7Mineur"
+    icon: "DIAMOND_PICKAXE"
+  agriculteur:
+    display_name: "&eAgriculteur"
+    icon: "GOLDEN_HOE"
+  chasseur:
+    display_name: "&cChasseur"
+    icon: "BOW"
+  artisan:
+    display_name: "&bArtisan"
+    icon: "CRAFTING_TABLE"
+  pecheur:
+    display_name: "&9Pêcheur"
+    icon: "FISHING_ROD"
+
+# --- Job Templates ---
+# Define all possible jobs. 'selection_weight' determines chance of appearing.
+# Placeholders for rewards: %player%, %job_name%
+job_templates:
+  # --- BUCHERON ---
+  bucheron_coupe_chene:
+    display_name: "&2Coupe de Chêne"
+    description:
+      - "&7Abattez une grande quantité de chênes."
+      - "&7Chêne: %obj_chene_progress%/%obj_chene_total%"
+    job_type: "BUCHERON"
+    objectives:
+      obj_chene:
+        type: "BREAK"
+        material: "OAK_LOG"
+        amount: 2000
+        display_name: "Bûches de chêne"
+    rewards:
+      job_exp: 50
+      job_points: 25
+      message_on_complete: "&aBravo %player%! Tâche %job_name% terminée!"
+      sound_on_complete: "ENTITY_PLAYER_LEVELUP:1.0:1.0"
+    selection_weight: 10
+
+  bucheron_foret_mixte:
+    display_name: "&2Forêt Mixte"
+    description:
+      - "&7Récoltez divers types de bois."
+      - "&7Sapin: %obj_sapin_progress%/%obj_sapin_total%"
+      - "&7Bouleau: %obj_bouleau_progress%/%obj_bouleau_total%"
+    job_type: "BUCHERON"
+    objectives:
+      obj_sapin:
+        type: "BREAK"
+        material: "SPRUCE_LOG"
+        amount: 1000
+        display_name: "Bûches de sapin"
+      obj_bouleau:
+        type: "BREAK"
+        material: "BIRCH_LOG"
+        amount: 1000
+        display_name: "Bûches de bouleau"
+    rewards:
+      job_exp: 50
+      job_points: 25
+      message_on_complete: "&aBravo %player%! Tâche %job_name% terminée!"
+      sound_on_complete: "ENTITY_PLAYER_LEVELUP:1.0:1.0"
+    selection_weight: 8
+
+  bucheron_bois_sombre:
+    display_name: "&2Bois Sombre"
+    description:
+      - "&7Constituez un stock de chêne noir."
+      - "&7Chêne noir: %obj_chenenoir_progress%/%obj_chenenoir_total%"
+    job_type: "BUCHERON"
+    objectives:
+      obj_chenenoir:
+        type: "BREAK"
+        material: "DARK_OAK_LOG"
+        amount: 2200
+        display_name: "Bûches de chêne noir"
+    rewards:
+      job_exp: 50
+      job_points: 25
+      message_on_complete: "&aBravo %player%! Tâche %job_name% terminée!"
+      sound_on_complete: "ENTITY_PLAYER_LEVELUP:1.0:1.0"
+    selection_weight: 7
+
+  bucheron_ecorcage:
+    display_name: "&2Écorçage Massif"
+    description:
+      - "&7Écorcez une grande quantité de bûches."
+      - "&7Bois écorcé: %obj_ecorce_progress%/%obj_ecorce_total%"
+    job_type: "BUCHERON"
+    objectives:
+      obj_ecorce:
+        type: "STRIP"
+        material: [
+          # --- Bois de l'Overworld ---
+          "STRIPPED_OAK_LOG",
+          "STRIPPED_OAK_WOOD",
+          "STRIPPED_SPRUCE_LOG",
+          "STRIPPED_SPRUCE_WOOD",
+          "STRIPPED_BIRCH_LOG",
+          "STRIPPED_BIRCH_WOOD",
+          "STRIPPED_JUNGLE_LOG",
+          "STRIPPED_JUNGLE_WOOD",
+          "STRIPPED_ACACIA_LOG",
+          "STRIPPED_ACACIA_WOOD",
+          "STRIPPED_DARK_OAK_LOG",
+          "STRIPPED_DARK_OAK_WOOD",
+          "STRIPPED_MANGROVE_LOG",    # Ajout 1.19
+          "STRIPPED_MANGROVE_WOOD",    # Ajout 1.19
+          "STRIPPED_CHERRY_LOG",       # Ajout 1.20
+          "STRIPPED_CHERRY_WOOD",      # Ajout 1.20
+          "STRIPPED_BAMBOO_BLOCK",     # Ajout 1.20
+
+          # --- Bois du Nether ---
+          "STRIPPED_CRIMSON_STEM",
+          "STRIPPED_CRIMSON_HYPHAE",
+          "STRIPPED_WARPED_STEM",
+          "STRIPPED_WARPED_HYPHAE"
+        ]
+        amount: 1800
+        display_name: "Écorcer bûches"
+    rewards:
+      job_exp: 50
+      job_points: 25
+      message_on_complete: "&aBravo %player%! Tâche %job_name% terminée!"
+      sound_on_complete: "ENTITY_PLAYER_LEVELUP:1.0:1.0"
+    selection_weight: 6
+
+  # --- MINEUR ---
+  mineur_excavation_pierre:
+    display_name: "&8Excavation Pierre"
+    description:
+      - "&7Extrayez de la pierre pour vos constructions."
+      - "&7Pierre: %obj_pierre_progress%/%obj_pierre_total%"
+    job_type: "MINEUR"
+    objectives:
+      obj_pierre:
+        type: "BREAK"
+        material: ["STONE", "COBBLESTONE"]
+        amount: 600
+        display_name: "Miner pierre"
+    rewards:
+      job_exp: 50
+      job_points: 25
+      message_on_complete: "&aBravo %player%! Tâche %job_name% terminée!"
+      sound_on_complete: "ENTITY_PLAYER_LEVELUP:1.0:1.0"
+    selection_weight: 10
+
+  mineur_prospection_base:
+    display_name: "&8Prospection Basique"
+    description:
+      - "&7Récupérez des minerais de base."
+      - "&7Charbon: %obj_charbon_progress%/%obj_charbon_total%"
+      - "&7Fer: %obj_fer_progress%/%obj_fer_total%"
+    job_type: "MINEUR"
+    objectives:
+      obj_charbon:
+        type: "BREAK"
+        material: ["COAL_ORE", "DEEPSLATE_COAL_ORE"]
+        amount: 40
+        display_name: "Miner charbon"
+      obj_fer:
+        type: "BREAK"
+        material: ["IRON_ORE", "DEEPSLATE_IRON_ORE"]
+        amount: 20
+        display_name: "Miner fer"
+    rewards:
+      job_exp: 50
+      job_points: 25
+      message_on_complete: "&aBravo %player%! Tâche %job_name% terminée!"
+      sound_on_complete: "ENTITY_PLAYER_LEVELUP:1.0:1.0"
+    selection_weight: 7
+
+  mineur_roches_variees:
+    display_name: "&8Roches Variées"
+    description:
+      - "&7Collectez différentes roches décoratives."
+      - "&7Granite: %obj_granite_progress%/%obj_granite_total%"
+      - "&7Diorite: %obj_diorite_progress%/%obj_diorite_total%"
+    job_type: "MINEUR"
+    objectives:
+      obj_granite:
+        type: "BREAK"
+        material: "GRANITE"
+        amount: 80
+        display_name: "Miner granite"
+      obj_diorite:
+        type: "BREAK"
+        material: "DIORITE"
+        amount: 80
+        display_name: "Miner diorite"
+    rewards:
+      job_exp: 50
+      job_points: 25
+      message_on_complete: "&aBravo %player%! Tâche %job_name% terminée!"
+      sound_on_complete: "ENTITY_PLAYER_LEVELUP:1.0:1.0"
+    selection_weight: 6
+
+  # --- AGRICULTEUR ---
+  agriculteur_moisson_ble:
+    display_name: "&eMoisson de Blé"
+    description:
+      - "&7Récoltez une grande quantité de blé."
+      - "&7Blé: %obj_ble_progress%/%obj_ble_total%"
+    job_type: "AGRICULTEUR"
+    objectives:
+      obj_ble:
+        type: "BREAK"
+        material: "WHEAT"
+        amount: 3000
+        required_age: 7
+        display_name: "Récolter blé"
+    rewards:
+      job_exp: 50
+      job_points: 25
+      message_on_complete: "&aBravo %player%! Tâche %job_name% terminée!"
+      sound_on_complete: "ENTITY_PLAYER_LEVELUP:1.0:1.0"
+    selection_weight: 10
+
+  agriculteur_recolte_betteraves:
+    display_name: "&eRécolte Betteraves"
+    description:
+      - "&7Devenez fournisseur de betteraves."
+      - "&7Betteraves: %obj_betterave_progress%/%obj_betterave_total%"
+    job_type: "AGRICULTEUR"
+    objectives:
+      obj_betterave:
+        type: "BREAK"
+        material: "BEETROOTS"
+        amount: 2700
+        required_age: 3
+        display_name: "Récolter betteraves"
+    rewards:
+      job_exp: 50
+      job_points: 25
+      message_on_complete: "&aBravo %player%! Tâche %job_name% terminée!"
+      sound_on_complete: "ENTITY_PLAYER_LEVELUP:1.0:1.0"
+    selection_weight: 9
+
+  agriculteur_cueillette_carottes:
+    display_name: "&eCueillette Carottes"
+    description:
+      - "&7Assurez un stock de carottes."
+      - "&7Carottes: %obj_carotte_progress%/%obj_carotte_total%"
+    job_type: "AGRICULTEUR"
+    objectives:
+      obj_carotte:
+        type: "BREAK"
+        material: "CARROTS"
+        amount: 2800
+        required_age: 7
+        display_name: "Récolter carottes"
+    rewards:
+      job_exp: 50
+      job_points: 25
+      message_on_complete: "&aBravo %player%! Tâche %job_name% terminée!"
+      sound_on_complete: "ENTITY_PLAYER_LEVELUP:1.0:1.0"
+    selection_weight: 8
+
+  agriculteur_culture_verrues:
+    display_name: "&eCulture Verrues Nether"
+    description:
+      - "&7Développez votre culture de verrues."
+      - "&7Verrues: %obj_verrue_progress%/%obj_verrue_total%"
+    job_type: "AGRICULTEUR"
+    objectives:
+      obj_verrue:
+        type: "BREAK"
+        material: "NETHER_WART"
+        amount: 2000
+        required_age: 3
+        display_name: "Récolter verrues"
+    rewards:
+      job_exp: 50
+      job_points: 25
+      message_on_complete: "&aBravo %player%! Tâche %job_name% terminée!"
+      sound_on_complete: "ENTITY_PLAYER_LEVELUP:1.0:1.0"
+    selection_weight: 7
+
+  # --- CHASSEUR ---
+  chasseur_chasse_zombies:
+    display_name: "&cChasse aux Zombies"
+    description:
+      - "&7Éliminez les hordes de zombies."
+      - "&7Zombies: %obj_zombie_progress%/%obj_zombie_total%"
+    job_type: "CHASSEUR"
+    objectives:
+      obj_zombie:
+        type: "KILL"
+        entity_type: "ZOMBIE"
+        amount: 1000
+        display_name: "Tuer Zombies"
+    rewards:
+      job_exp: 50
+      job_points: 25
+      message_on_complete: "&aBravo %player%! Tâche %job_name% terminée!"
+      sound_on_complete: "ENTITY_PLAYER_LEVELUP:1.0:1.0"
+    selection_weight: 10
+
+  chasseur_tir_squelettes:
+    display_name: "&cTir aux Squelettes"
+    description:
+      - "&7Mettez fin aux tirs des squelettes."
+      - "&7Squelettes: %obj_squelette_progress%/%obj_squelette_total%"
+    job_type: "CHASSEUR"
+    objectives:
+      obj_squelette:
+        type: "KILL"
+        entity_type: "SKELETON"
+        amount: 600
+        display_name: "Tuer Squelettes"
+    rewards:
+      job_exp: 50
+      job_points: 25
+      message_on_complete: "&aBravo %player%! Tâche %job_name% terminée!"
+      sound_on_complete: "ENTITY_PLAYER_LEVELUP:1.0:1.0"
+    selection_weight: 9
+
+  chasseur_controle_creepers:
+    display_name: "&cContrôle Creepers"
+    description:
+      - "&7Protégez vos constructions des Creepers."
+      - "&7Creepers: %obj_creeper_progress%/%obj_creeper_total%"
+    job_type: "CHASSEUR"
+    objectives:
+      obj_creeper:
+        type: "KILL"
+        entity_type: "CREEPER"
+        amount: 600
+        display_name: "Tuer Creepers"
+    rewards:
+      job_exp: 50
+      job_points: 25
+      message_on_complete: "&aBravo %player%! Tâche %job_name% terminée!"
+      sound_on_complete: "ENTITY_PLAYER_LEVELUP:1.0:1.0"
+    selection_weight: 8
+
+  chasseur_eradication_araignees:
+    display_name: "&cÉradication Araignées"
+    description:
+      - "&7Nettoyez les nids d'araignées."
+      - "&7Araignées: %obj_araignee_progress%/%obj_araignee_total%"
+    job_type: "CHASSEUR"
+    objectives:
+      obj_araignee:
+        type: "KILL"
+        entity_type: "SPIDER"
+        amount: 600
+        display_name: "Tuer Araignées"
+    rewards:
+      job_exp: 50
+      job_points: 25
+      message_on_complete: "&aBravo %player%! Tâche %job_name% terminée!"
+      sound_on_complete: "ENTITY_PLAYER_LEVELUP:1.0:1.0"
+    selection_weight: 7
+
+  chasseur_maitre_boeuf:
+    display_name: "&cMaître du Boeuf"
+    description:
+      - "&7Collectez des ressources bovines."
+      - "&7Vaches: %obj_cow_progress%/%obj_cow_total%"
+    job_type: "CHASSEUR"
+    objectives:
+     obj_cow:
+        type: "KILL"
+        entity_type: "COW"
+        amount: 400
+        display_name: "Tuer Vaches"
+    rewards:
+      job_exp: 35
+      job_points: 15
+    selection_weight: 3
+
+  # --- ARTISAN ---
+  artisan_boulangerie:
+    display_name: "&bBoulangerie"
+    description:
+      - "&7Fabriquez du pain pour la revente ou la consommation."
+      - "&7Pain: %obj_pain_progress%/%obj_pain_total%"
+    job_type: "ARTISAN"
+    objectives:
+      obj_pain:
+        type: "CRAFT"
+        item_type: "BREAD"
+        amount: 1000 # Nécessite 3000 blé
+        display_name: "Fabriquer pain"
+    rewards:
+      job_exp: 50
+      job_points: 25
+      message_on_complete: "&aBravo %player%! Tâche %job_name% terminée!"
+      sound_on_complete: "ENTITY_PLAYER_LEVELUP:1.0:1.0"
+    selection_weight: 10
+
+  artisan_maconnerie_pierre:
+    display_name: "&bMaçonnerie Pierre"
+    description:
+      - "&7Produisez de la pierre taillée, souvent utiles."
+      - "&7Pierres taillées: %obj_briques_progress%/%obj_briques_total%"
+    job_type: "ARTISAN"
+    objectives:
+      obj_briques:
+        type: "CRAFT"
+        item_type: "STONE_BRICKS"
+        amount: 1200 # Nécessite 1200 pierre cuite
+        display_name: "Fabriquer pierre taillée"
+    rewards:
+      job_exp: 50
+      job_points: 25
+      message_on_complete: "&aBravo %player%! Tâche %job_name% terminée!"
+      sound_on_complete: "ENTITY_PLAYER_LEVELUP:1.0:1.0"
+    selection_weight: 9
+
+  artisan_fonderie_fer:
+    display_name: "&bFonderie de Fer"
+    description:
+      - "&7Transformez le minerai brut en lingots."
+      - "&7Lingots fer: %obj_lingots_fer_progress%/%obj_lingots_fer_total%"
+    job_type: "ARTISAN"
+    objectives:
+      obj_lingots_fer:
+        type: "SMELT"
+        material: "IRON_INGOT"
+        amount: 256
+        display_name: "Fondre fer brut"
+    rewards:
+      job_exp: 50
+      job_points: 25
+      message_on_complete: "&aBravo %player%! Tâche %job_name% terminée!"
+      sound_on_complete: "ENTITY_PLAYER_LEVELUP:1.0:1.0"
+    selection_weight: 8
+
+  artisan_preparation_combustible:
+    display_name: "&bPréparation Combustible"
+    description:
+      - "&7Fabriquez des blocs de charbon pour une combustion durable."
+      - "&7Blocs charbon: %obj_blocs_charbon_progress%/%obj_blocs_charbon_total%"
+    job_type: "ARTISAN"
+    objectives:
+      obj_blocs_charbon:
+        type: "CRAFT"
+        item_type: "COAL_BLOCK"
+        amount: 64 # Nécessite 576 charbon
+        display_name: "Fabriquer blocs charbon"
+    rewards:
+      job_exp: 50
+      job_points: 25
+      message_on_complete: "&aBravo %player%! Tâche %job_name% terminée!"
+      sound_on_complete: "ENTITY_PLAYER_LEVELUP:1.0:1.0"
+    selection_weight: 7
+
+  # --- PECHEUR ---
+  pecheur_peche_morue:
+    display_name: "&9Pêche Morue"
+    description:
+      - "&7Attrapez un grand nombre de morues."
+      - "&7Morues: %obj_morue_progress%/%obj_morue_total%"
+    job_type: "PECHEUR"
+    objectives:
+      obj_morue:
+        type: "FISH"
+        item_type: "COD"
+        amount: 40
+        display_name: "Pêcher Morues"
+    rewards:
+      job_exp: 50
+      job_points: 25
+      message_on_complete: "&aBravo %player%! Tâche %job_name% terminée!"
+      sound_on_complete: "ENTITY_PLAYER_LEVELUP:1.0:1.0"
+    selection_weight: 10
+
+  pecheur_peche_saumon:
+    display_name: "&9Pêche Saumon"
+    description:
+      - "&7Prouvez votre talent en pêchant des saumons."
+      - "&7Saumons: %obj_saumon_progress%/%obj_saumon_total%"
+    job_type: "PECHEUR"
+    objectives:
+      obj_saumon:
+        type: "FISH"
+        item_type: "SALMON"
+        amount: 40
+        display_name: "Pêcher saumons"
+    rewards:
+      job_exp: 50
+      job_points: 25
+      message_on_complete: "&aBravo %player%! Tâche %job_name% terminée!"
+      sound_on_complete: "ENTITY_PLAYER_LEVELUP:1.0:1.0"
+    selection_weight: 9
+
+  pecheur_aquarium_colore:
+    display_name: "&9Aquarium Coloré"
+    description:
+      - "&7Collectionnez des poissons tropicaux."
+      - "&7Poissons trop.: %obj_tropical_progress%/%obj_tropical_total%"
+    job_type: "PECHEUR"
+    objectives:
+      obj_tropical:
+        type: "FISH"
+        item_type: "TROPICAL_FISH"
+        amount: 10
+        display_name: "Pêcher des poissons tropicaux"
+    rewards:
+      job_exp: 50
+      job_points: 25
+      message_on_complete: "&aBravo %player%! Tâche %job_name% terminée!"
+      sound_on_complete: "ENTITY_PLAYER_LEVELUP:1.0:1.0"
+    selection_weight: 7
+
+  pecheur_defi_globe:
+    display_name: "&9Défi Poisson-Globe"
+    description:
+      - "&7Maniez votre canne avec précaution."
+      - "&7Poissons-globes: %obj_globe_progress%/%obj_globe_total%"
+    job_type: "PECHEUR"
+    objectives:
+      obj_globe:
+        type: "FISH"
+        item_type: "PUFFERFISH"
+        amount: 10
+        display_name: "Pêcher poissons-globes"
+    rewards:
+      job_exp: 50
+      job_points: 25
+      message_on_complete: "&aBravo %player%! Tâche %job_name% terminée!"
+      sound_on_complete: "ENTITY_PLAYER_LEVELUP:1.0:1.0"
+    selection_weight: 6
+
+# --- Shop Items ---
+# Define all possible items for the daily shop.
+# Placeholders for lore: %item_cost%, %required_job_level%, %required_job_name%
+# Placeholders for commands: %player%
+shop_items:
+  entonnoir_skyblock:
+    display_name: "&fEntonnoir"
+    material: "HOPPER"
+    lore:
+      - "&f&m                                       &r"
+      - ""
+      - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
+      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
+      - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
+      - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
+      - ""
+      - "&7&l« &f&lRequis pour acheter &8&l» "
+      - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
+    cost: 800
+    required_job_type: "ARTISAN"
+    required_job_level: 20
+    commands_on_purchase:
+      - "give %player% HOPPER 1"
+    selection_weight: 6
+    sellable: true
+    sell_points: 400
+    sell_item_id: "hopper"
+
+  ancre_teleportation:
+    display_name: "&5Ancre de Téléportation"
+    material: "RESPAWN_ANCHOR"
+    lore:
+      - "&7Placez cette ancre et liez-la"
+      - "&7à une autre pour créer un"
+      - "&7point de &5téléportation&7."
+      - ""
+      - "&7&o(( &5Accroupissez-vous sur l''ancre"
+      - "&5pour vous &5téléporter ! &7&o))"
+      - "&f&m                                       &r"
+      - ""
+      - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
+      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
+      - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
+      - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
+      - ""
+      - "&7&l« &f&lRequis pour acheter &8&l» "
+      - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
+    cost: 600
+    required_job_type: "ARTISAN"
+    required_job_level: 40
+    commands_on_purchase:
+      - "shanchors give %player% 1"
+    selection_weight: 3
+    sellable: true
+    sell_points: 150
+    sell_item_id: "ancre_tp"
+
+  ardoise_abimes_renforcee:
+    display_name: "&8Ardoise des abîmes renforcée"
+    material: "REINFORCED_DEEPSLATE"
+    lore:
+      - "&8500 Nv. d'île"
+      - "&f&m                                       &r"
+      - ""
+      - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
+      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
+      - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
+      - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
+      - ""
+      - "&7&l« &f&lRequis pour acheter &8&l» "
+      - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
+    cost: 250
+    required_job_type: "MINEUR"
+    required_job_level: 10
+    commands_on_purchase:
+      - "give %player% REINFORCED_DEEPSLATE 1"
+    selection_weight: 8
+    sellable: true
+    sell_points: 50
+    sell_item_id: "ardoise"
+
+  druse_amethyste:
+    display_name: "&6Druses d'améthyste"
+    material: "BUDDING_AMETHYST"
+    lore:
+      - "&8-400 Niveaux d'île"
+      - "&f&m                                       &r"
+      - ""
+      - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
+      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
+      - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
+      - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
+      - ""
+      - "&7&l« &f&lRequis pour acheter &8&l» "
+      - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
+    cost: 900
+    required_job_type: "MINEUR"
+    required_job_level: 35
+    commands_on_purchase:
+      - "give %player% BUDDING_AMETHYST 1"
+    selection_weight: 3
+    sellable: true
+    sell_points: 180
+    sell_item_id: "druse_amethyste"
+
+  redstone_stack:
+    display_name: "&c3 Redstone"
+    material: "REDSTONE"
+    lore:
+      - "&f&m                                       &r"
+      - ""
+      - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
+      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
+      - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
+      - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
+      - ""
+      - "&7&l« &f&lRequis pour acheter &8&l» "
+      - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
+    cost: 200
+    required_job_type: "MINEUR"
+    required_job_level: 20
+    commands_on_purchase:
+      - "give %player% REDSTONE 3"
+    selection_weight: 6
+    sellable: true
+    sell_points: 20
+    sell_item_id: "redstone_3"
+
+  modele_forge_sentry:
+    display_name: "&fModèle de forge"
+    material: "SENTRY_ARMOR_TRIM_SMITHING_TEMPLATE"
+    lore:
+      - "&7Ornement des sentinelles"
+      - "&f&m                                       &r"
+      - ""
+      - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
+      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
+      - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
+      - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
+      - ""
+      - "&7&l« &f&lRequis pour acheter &8&l» "
+      - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
+    cost: 280
+    required_job_type: "ARTISAN"
+    required_job_level: 10
+    commands_on_purchase:
+      - "minecraft:give %player% minecraft:sentry_armor_trim_smithing_template 1"
+    selection_weight: 8
+    sellable: true
+    sell_points: 50
+    sell_item_id: "forge_sentry"
+
+  modele_forge_vex:
+    display_name: "&fModèle de forge"
+    material: "VEX_ARMOR_TRIM_SMITHING_TEMPLATE"
+    lore:
+      - "&7Ornement des Vex"
+      - "&f&m                                       &r"
+      - ""
+      - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
+      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
+      - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
+      - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
+      - ""
+      - "&7&l« &f&lRequis pour acheter &8&l» "
+      - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
+    cost: 280
+    required_job_type: "ARTISAN"
+    required_job_level: 10
+    commands_on_purchase:
+      - "minecraft:give %player% minecraft:vex_armor_trim_smithing_template 1"
+    selection_weight: 8
+    sellable: true
+    sell_points: 50
+    sell_item_id: "forge_vex"
+
+  modele_forge_silence:
+    display_name: "&fModèle de forge"
+    material: "SILENCE_ARMOR_TRIM_SMITHING_TEMPLATE"
+    lore:
+      - "&7Ornement du silence"
+      - "&f&m                                       &r"
+      - ""
+      - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
+      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
+      - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
+      - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
+      - ""
+      - "&7&l« &f&lRequis pour acheter &8&l» "
+      - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
+    cost: 500
+    required_job_type: "ARTISAN"
+    required_job_level: 20
+    commands_on_purchase:
+      - "minecraft:give %player% minecraft:silence_armor_trim_smithing_template 1"
+    selection_weight: 3
+    sellable: true
+    sell_points: 100
+    sell_item_id: "forge_silence"
+
+  modele_forge_abimes:
+    display_name: "&fModèle de forge"
+    material: "WARD_ARMOR_TRIM_SMITHING_TEMPLATE"
+    lore:
+      - "&7Ornement des abîmes"
+      - "&f&m                                       &r"
+      - ""
+      - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
+      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
+      - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
+      - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
+      - ""
+      - "&7&l« &f&lRequis pour acheter &8&l» "
+      - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
+    cost: 500
+    required_job_type: "MINEUR"
+    required_job_level: 20
+    commands_on_purchase:
+      - "minecraft:give %player% minecraft:ward_armor_trim_smithing_template 1"
+    selection_weight: 3
+    sellable: true
+    sell_points: 100
+    sell_item_id: "forge_ward"
+
+  modele_forge_hotes:
+    display_name: "&fModèle de forge"
+    material: "HOST_ARMOR_TRIM_SMITHING_TEMPLATE"
+    lore:
+      - "&7Ornement des hôtes"
+      - "&f&m                                       &r"
+      - ""
+      - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
+      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
+      - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
+      - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
+      - ""
+      - "&7&l« &f&lRequis pour acheter &8&l» "
+      - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
+    cost: 750
+    required_job_type: "ARTISAN"
+    required_job_level: 30
+    commands_on_purchase:
+      - "minecraft:give %player% minecraft:host_armor_trim_smithing_template 1"
+    selection_weight: 3
+    sellable: true
+    sell_points: 100
+    sell_item_id: "forge_host"
+
+  modele_forge_modeleurs:
+    display_name: "&fModèle de forge"
+    material: "SHAPER_ARMOR_TRIM_SMITHING_TEMPLATE"
+    lore:
+      - "&7Ornement des modeleurs"
+      - "&f&m                                       &r"
+      - ""
+      - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
+      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
+      - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
+      - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
+      - ""
+      - "&7&l« &f&lRequis pour acheter &8&l» "
+      - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
+    cost: 750
+    required_job_type: "ARTISAN"
+    required_job_level: 30
+    commands_on_purchase:
+      - "minecraft:give %player% minecraft:shaper_armor_trim_smithing_template 1"
+    selection_weight: 3
+    sellable: true
+    sell_points: 100
+    sell_item_id: "forge_shaper"
+
+  modele_forge_eleveurs:
+    display_name: "&fModèle de forge"
+    material: "RAISER_ARMOR_TRIM_SMITHING_TEMPLATE"
+    lore:
+      - "&7Ornement des éleveurs"
+      - "&f&m                                       &r"
+      - ""
+      - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
+      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
+      - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
+      - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
+      - ""
+      - "&7&l« &f&lRequis pour acheter &8&l» "
+      - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
+    cost: 750
+    required_job_type: "CHASSEUR"
+    required_job_level: 30
+    commands_on_purchase:
+      - "minecraft:give %player% minecraft:raiser_armor_trim_smithing_template 1"
+    selection_weight: 3
+    sellable: true
+    sell_points: 100
+    sell_item_id: "forge_raiser"
+
+  modele_forge_eclaireurs:
+    display_name: "&fModèle de forge"
+    material: "WAYFINDER_ARMOR_TRIM_SMITHING_TEMPLATE"
+    lore:
+      - "&7Ornement des éclaireurs"
+      - "&f&m                                       &r"
+      - ""
+      - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
+      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
+      - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
+      - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
+      - ""
+      - "&7&l« &f&lRequis pour acheter &8&l» "
+      - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
+    cost: 750
+    required_job_type: "ARTISAN"
+    required_job_level: 30
+    commands_on_purchase:
+      - "minecraft:give %player% minecraft:wayfinder_armor_trim_smithing_template 1"
+    selection_weight: 3
+    sellable: true
+    sell_points: 100
+    sell_item_id: "forge_wayfinder"
+
+  modele_forge_dunes:
+    display_name: "&fModèle de forge"
+    material: "DUNE_ARMOR_TRIM_SMITHING_TEMPLATE"
+    lore:
+      - "&7Ornement des dunes"
+      - "&f&m                                       &r"
+      - ""
+      - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
+      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
+      - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
+      - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
+      - ""
+      - "&7&l« &f&lRequis pour acheter &8&l» "
+      - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
+    cost: 750
+    required_job_type: "ARTISAN"
+    required_job_level: 30
+    commands_on_purchase:
+      - "minecraft:give %player% minecraft:dune_armor_trim_smithing_template 1"
+    selection_weight: 3
+    sellable: true
+    sell_points: 100
+    sell_item_id: "forge_dune"
+
+  modele_forge_littoraux:
+    display_name: "&fModèle de forge"
+    material: "COAST_ARMOR_TRIM_SMITHING_TEMPLATE"
+    lore:
+      - "&7Ornement des littoraux"
+      - "&f&m                                       &r"
+      - ""
+      - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
+      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
+      - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
+      - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
+      - ""
+      - "&7&l« &f&lRequis pour acheter &8&l» "
+      - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
+    cost: 750
+    required_job_type: "PECHEUR"
+    required_job_level: 30
+    commands_on_purchase:
+      - "minecraft:give %player% minecraft:coast_armor_trim_smithing_template 1"
+    selection_weight: 3
+    sellable: true
+    sell_points: 100
+    sell_item_id: "forge_coast"
+
+  modele_forge_jungle:
+    display_name: "&fModèle de forge"
+    material: "WILD_ARMOR_TRIM_SMITHING_TEMPLATE"
+    lore:
+      - "&7Ornement des jungles"
+      - "&f&m                                       &r"
+      - ""
+      - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
+      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
+      - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
+      - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
+      - ""
+      - "&7&l« &f&lRequis pour acheter &8&l» "
+      - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
+    cost: 800
+    required_job_type: "BUCHERON"
+    required_job_level: 40
+    commands_on_purchase:
+      - "minecraft:give %player% minecraft:WILD_armor_trim_smithing_template 1"
+    selection_weight: 3
+    sellable: true
+    sell_points: 250
+    sell_item_id: "forge_wild"
+
+  modele_forge_cotes:
+    display_name: "&fModèle de forge"
+    material: "RIB_ARMOR_TRIM_SMITHING_TEMPLATE"
+    lore:
+      - "&7Ornement des côtes"
+      - "&f&m                                       &r"
+      - ""
+      - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
+      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
+      - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
+      - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
+      - ""
+      - "&7&l« &f&lRequis pour acheter &8&l» "
+      - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
+    cost: 800
+    required_job_type: "ARTISAN"
+    required_job_level: 40
+    commands_on_purchase:
+      - "minecraft:give %player% minecraft:rib_armor_trim_smithing_template 1"
+    selection_weight: 3
+    sellable: true
+    sell_points: 150
+    sell_item_id: "forge_rib"
+
+  modele_forge_groins:
+    display_name: "&fModèle de forge"
+    material: "SNOUT_ARMOR_TRIM_SMITHING_TEMPLATE"
+    lore:
+      - "&7Ornement des groins"
+      - "&f&m                                       &r"
+      - ""
+      - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
+      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
+      - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
+      - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
+      - ""
+      - "&7&l« &f&lRequis pour acheter &8&l» "
+      - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
+    cost: 800
+    required_job_type: "ARTISAN"
+    required_job_level: 40
+    commands_on_purchase:
+      - "minecraft:give %player% minecraft:snout_armor_trim_smithing_template 1"
+    selection_weight: 3
+    sellable: true
+    sell_points: 150
+    sell_item_id: "forge_snout"
+
+  modele_forge_marees:
+    display_name: "&fModèle de forge"
+    material: "TIDE_ARMOR_TRIM_SMITHING_TEMPLATE"
+    lore:
+      - "&7Ornement des marées"
+      - "&f&m                                       &r"
+      - ""
+      - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
+      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
+      - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
+      - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
+      - ""
+      - "&7&l« &f&lRequis pour acheter &8&l» "
+      - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
+    cost: 800
+    required_job_type: "PECHEUR"
+    required_job_level: 40
+    commands_on_purchase:
+      - "minecraft:give %player% minecraft:tide_armor_trim_smithing_template 1"
+    selection_weight: 3
+    sellable: true
+    sell_points: 150
+    sell_item_id: "forge_tide"
+
+  modele_forge_tours:
+    display_name: "&fModèle de forge"
+    material: "SPIRE_ARMOR_TRIM_SMITHING_TEMPLATE"
+    lore:
+      - "&7Ornement des tours"
+      - "&f&m                                       &r"
+      - ""
+      - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
+      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
+      - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
+      - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
+      - ""
+      - "&7&l« &f&lRequis pour acheter &8&l» "
+      - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
+    cost: 850
+    required_job_type: "ARTISAN"
+    required_job_level: 45
+    commands_on_purchase:
+      - "minecraft:give %player% minecraft:spire_armor_trim_smithing_template 1"
+    selection_weight: 3
+    sellable: true
+    sell_points: 200
+    sell_item_id: "forge_spire"
+
+  deco_cactus:
+    display_name: "&2Cactus"
+    material: "CACTUS"
+    lore:
+      - "&dItem Décoratif"
+      - ""
+      - "&7Placez cet item sur votre île pour faire"
+      - "&7apparaître une décoration \"cactus\""
+      - "&f&m                                       &r"
+      - ""
+      - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
+      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
+      - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
+      - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
+      - ""
+      - "&7&l« &f&lRequis pour acheter &8&l» "
+      - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
+    cost: 200
+    required_job_type: "ARTISAN"
+    required_job_level: 10
+    commands_on_purchase:
+      - "furniture give Cactus %player%"
+    selection_weight: 2
+    sellable: true
+    sell_points: 40
+    sell_item_id: "deco_cactus"
+
+  deco_ordinateur:
+    display_name: "&eOrdinateur"
+    material: "PAINTING"
+    lore:
+      - "&dItem Décoratif"
+      - ""
+      - "&7Placez cet item sur votre île pour faire"
+      - "&7apparaître une décoration \"Ordinateur\""
+      - "&f&m                                       &r"
+      - ""
+      - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
+      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
+      - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
+      - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
+      - ""
+      - "&7&l« &f&lRequis pour acheter &8&l» "
+      - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
+    cost: 600
+    required_job_type: "ARTISAN"
+    required_job_level: 20
+    commands_on_purchase:
+      - "furniture give Ordinateur %player%"
+    selection_weight: 2
+    sellable: true
+    sell_points: 120
+    sell_item_id: "deco_ordi"
+
+  deco_etagere1:
+    display_name: "&eÉtagère 1"
+    material: "SPRUCE_TRAPDOOR"
+    lore:
+      - "&dItem Décoratif"
+      - ""
+      - "&7Placez cet item sur votre île pour faire"
+      - "&7apparaître une décoration \"Étagère 1\""
+      - "&f&m                                       &r"
+      - ""
+      - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
+      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
+      - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
+      - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
+      - ""
+      - "&7&l« &f&lRequis pour acheter &8&l» "
+      - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
+    cost: 220
+    required_job_type: "ARTISAN"
+    required_job_level: 10
+    commands_on_purchase:
+      - "furniture give Etagere1 %player%"
+    selection_weight: 2
+    sellable: true
+    sell_points: 35
+    sell_item_id: "deco_etagere1"
+
+  deco_etagere2:
+    display_name: "&eÉtagère 2"
+    material: "SPRUCE_TRAPDOOR"
+    lore:
+      - "&dItem Décoratif"
+      - ""
+      - "&7Placez cet item sur votre île pour faire"
+      - "&7apparaître une décoration \"Étagère 2\""
+      - "&f&m                                       &r"
+      - ""
+      - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
+      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
+      - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
+      - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
+      - ""
+      - "&7&l« &f&lRequis pour acheter &8&l» "
+      - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
+    cost: 220
+    required_job_type: "ARTISAN"
+    required_job_level: 10
+    commands_on_purchase:
+      - "furniture give Etagere2 %player%"
+    selection_weight: 2
+    sellable: true
+    sell_points: 35
+    sell_item_id: "deco_etagere2"
+
+  deco_mini_bonhomme_neige:
+    display_name: "&bMini Bonhomme De Neige"
+    material: "POWDER_SNOW_BUCKET"
+    lore:
+      - "&dItem Décoratif"
+      - ""
+      - "&7Placez cet item sur votre île pour faire"
+      - "&7apparaître une décoration \"Mini Bonhomme De Neige\""
+      - "&f&m                                       &r"
+      - ""
+      - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
+      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
+      - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
+      - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
+      - ""
+      - "&7&l« &f&lRequis pour acheter &8&l» "
+      - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
+    cost: 350
+    required_job_type: "ARTISAN"
+    required_job_level: 12
+    commands_on_purchase:
+      - "furniture give MiniBonhommeDeNeige %player%"
+    selection_weight: 2
+    sellable: true
+    sell_points: 70
+    sell_item_id: "deco_bonhomme_neige"
+
+  deco_lampe_chevet_noir:
+    display_name: "&fLampe de chevet (&8Noir&f)"
+    material: "BLACK_CANDLE"
+    lore:
+      - "&dItem Décoratif"
+      - ""
+      - "&7Placez cet item sur votre île pour faire"
+      - "&7apparaître une décoration \"Lampe de chevet (&8Noir&7)\""
+      - "&f&m                                       &r"
+      - ""
+      - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
+      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
+      - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
+      - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
+      - ""
+      - "&7&l« &f&lRequis pour acheter &8&l» "
+      - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
+    cost: 200
+    required_job_type: "ARTISAN"
+    required_job_level: 10
+    commands_on_purchase:
+      - "furniture give cDeskLampBlack %player%"
+    selection_weight: 2
+    sellable: true
+    sell_points: 40
+    sell_item_id: "deco_lampe_noir"
+
+  deco_lampe_chevet_marron:
+    display_name: "&fLampe de chevet (&8Marron&f)"
+    material: "BROWN_CANDLE"
+    lore:
+      - "&dItem Décoratif"
+      - ""
+      - "&7Placez cet item sur votre île pour faire"
+      - "&7apparaître une décoration \"Lampe de chevet (&8Marron&7)\""
+      - "&f&m                                       &r"
+      - ""
+      - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
+      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
+      - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
+      - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
+      - ""
+      - "&7&l« &f&lRequis pour acheter &8&l» "
+      - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
+    cost: 200
+    required_job_type: "ARTISAN"
+    required_job_level: 10
+    commands_on_purchase:
+      - "furniture give cDeskLampBrown %player%"
+    selection_weight: 2
+    sellable: true
+    sell_points: 40
+    sell_item_id: "deco_lampe_marron"
+
+  deco_lampe_chevet_bleu:
+    display_name: "&fLampe de chevet (&9Bleu&f)"
+    material: "BLUE_CANDLE"
+    lore:
+      - "&dItem Décoratif"
+      - ""
+      - "&7Placez cet item sur votre île pour faire"
+      - "&7apparaître une décoration \"Lampe de chevet (&9Bleu&7)\""
+      - "&f&m                                       &r"
+      - ""
+      - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
+      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
+      - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
+      - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
+      - ""
+      - "&7&l« &f&lRequis pour acheter &8&l» "
+      - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
+    cost: 200
+    required_job_type: "ARTISAN"
+    required_job_level: 10
+    commands_on_purchase:
+      - "furniture give cDeskLampBlue %player%"
+    selection_weight: 2
+    sellable: true
+    sell_points: 40
+    sell_item_id: "deco_lampe_bleu"
+
+  deco_lampe_chevet_vert:
+    display_name: "&fLampe de chevet (&2Vert&f)"
+    material: "GREEN_CANDLE"
+    lore:
+      - "&dItem Décoratif"
+      - ""
+      - "&7Placez cet item sur votre île pour faire"
+      - "&7apparaître une décoration \"Lampe de chevet (&2Vert&7)\""
+      - "&f&m                                       &r"
+      - ""
+      - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
+      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
+      - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
+      - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
+      - ""
+      - "&7&l« &f&lRequis pour acheter &8&l» "
+      - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
+    cost: 200
+    required_job_type: "ARTISAN"
+    required_job_level: 10
+    commands_on_purchase:
+      - "furniture give cDeskLampGreen %player%"
+    selection_weight: 2
+    sellable: true
+    sell_points: 40
+    sell_item_id: "deco_lampe_verte"
+
+  deco_epouventail:
+    display_name: "&eÉpouventail"
+    material: "WHEAT"
+    lore:
+      - "&dItem Décoratif"
+      - ""
+      - "&7Placez cet item sur votre île pour faire"
+      - "&7apparaître une décoration \"Épouventail\""
+      - "&f&m                                       &r"
+      - ""
+      - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
+      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
+      - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
+      - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
+      - ""
+      - "&7&l« &f&lRequis pour acheter &8&l» "
+      - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
+    cost: 200
+    required_job_type: "ARTISAN"
+    required_job_level: 10
+    commands_on_purchase:
+      - "furniture give Epouventail %player%"
+    selection_weight: 2
+    sellable: true
+    sell_points: 40
+    sell_item_id: "deco_epouventail"
+
+  cle_box_ordinaire:
+    display_name: "&eClé Ordinaire"
+    material: "TRIPWIRE_HOOK"
+    glowing: true
+    lore:
+      - "&7Ces clés sont obtenables"
+      - "&7en votant pour Skyhand !"
+      - "&7"
+      - "&8&l» &ehttps://skyhand.fr/vote"
+      - "&7"
+      - "&7Clic droit sur la box &eOrdinaire"
+      - "&f&m                                       &r"
+      - ""
+      - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
+      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
+      - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
+      - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
+      - ""
+      - "&7&l« &f&lRequis pour acheter &8&l» "
+      - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
+    cost: 300
+    required_job_type: "CHASSEUR"
+    required_job_level: 10
+    commands_on_purchase:
+      - "shcrates givekey %player% ordinaire 1 physical"
+    selection_weight: 8
+    sellable: true
+    sell_points: 20
+    sell_item_id: "cle_ordinaire"
+
+  cle_box_rare:
+    display_name: "&bClé Rare"
+    material: "TRIPWIRE_HOOK"
+    glowing: true
+    lore:
+      - "&7Ces clés sont obtenables"
+      - "&7sur la boutique de Skyhand !"
+      - "&7"
+      - "&8&l» &bstore.skyhand.fr"
+      - "&7"
+      - "&7Clic droit sur la box &bRare"
+      - "&f&m                                       &r"
+      - ""
+      - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
+      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
+      - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
+      - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
+      - ""
+      - "&7&l« &f&lRequis pour acheter &8&l» "
+      - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
+    cost: 1500
+    required_job_type: "CHASSEUR"
+    required_job_level: 20
+    commands_on_purchase:
+      - "shcrates givekey %player% rare 1 physical"
+    selection_weight: 6
+    sellable: true
+    sell_points: 300
+    sell_item_id: "cle_rare"
+
+  cle_box_legendaire:
+    display_name: "&6Clé Légendaire"
+    material: "TRIPWIRE_HOOK"
+    glowing: true
+    lore:
+      - "&7Ces clés sont obtenables"
+      - "&7sur la boutique de Skyhand !"
+      - "&7"
+      - "&8&l» &6store.skyhand.fr"
+      - "&7"
+      - "&7Clic droit sur la box &6Legendaire"
+      - "&f&m                                       &r"
+      - ""
+      - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
+      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
+      - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
+      - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
+      - ""
+      - "&7&l« &f&lRequis pour acheter &8&l» "
+      - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
+    cost: 4000
+    required_job_type: "CHASSEUR"
+    required_job_level: 50
+    commands_on_purchase:
+      - "shcrates givekey %player% legendaire 1 physical"
+    selection_weight: 1
+    sellable: true
+    sell_points: 500
+    sell_item_id: "cle_legendaire"
+
+  coffre_collecteur_petit:
+    display_name: "&bCoffre collecteur &f(&bpetit&f)"
+    material: "BARREL"
+    lore:
+      - "&7Ce coffre contient au"
+      - "&7total &b9 &7slots"
+      - "&7"
+      - "&7Il collecte les items au sol"
+      - "&7dans le chunk ou il se trouve"
+      - "&f&m                                       &r"
+      - ""
+      - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
+      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
+      - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
+      - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
+      - ""
+      - "&7&l« &f&lRequis pour acheter &8&l» "
+      - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
+    cost: 700
+    required_job_type: "ARTISAN"
+    required_job_level: 15
+    commands_on_purchase:
+      - "advancedchests give %player% collecteur-petit 1"
+    selection_weight: 7
+    sellable: true
+    sell_points: 100
+    sell_item_id: "coffre_collecteur_petit"
+
+  coffre_ameliore_moyen:
+    display_name: "&6Coffre amélioré &f(&6Moyen&f)"
+    material: "CHEST"
+    lore:
+      - "&7Ce coffre contient au"
+      - "&7total &61125 &7slots"
+      - "&7(25 pages)"
+      - "&f&m                                       &r"
+      - ""
+      - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
+      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
+      - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
+      - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
+      - ""
+      - "&7&l« &f&lRequis pour acheter &8&l» "
+      - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
+    cost: 550
+    required_job_type: "ARTISAN"
+    required_job_level: 25
+    commands_on_purchase:
+      - "advancedchests give %player% moyen 1"
+    selection_weight: 5
+    sellable: true
+    sell_points: 80
+    sell_item_id: "coffre_ameliore_moyen"
+
+  spawner_mystere_commun:
+    display_name: "&6Spawner Mystère &7(&eCommun&7)"
+    material: "SPAWNER"
+    lore:
+      - "&8&l• &7Obtenez un type de"
+      - "&7spawner aléatoire parmis"
+      - "&7la liste ci dessous:"
+      - ""
+      - "&f• &eCochon"
+      - "&f• &ePoulet"
+      - "&f• &eLapin"
+      - "&f• &eMouton"
+      - "&f• &dVache"
+      - "&f• &5Zombie"
+      - ""
+      - "&8&l» &fClic droit &7pour utiliser"
+      - "&f&m                                       &r"
+      - ""
+      - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
+      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
+      - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
+      - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
+      - ""
+      - "&7&l« &f&lRequis pour acheter &8&l» "
+      - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
+    cost: 100
+    required_job_type: "CHASSEUR"
+    required_job_level: 15
+    commands_on_purchase:
+      - "voucher give mysteryspawner1 1 %player%"
+    selection_weight: 7
+    sellable: true
+    sell_points: 10
+    sell_item_id: "spawner_mystere_commun"
+
+  enchant_livre_ordinaire:
+    display_name: "&e&lEnchantement Ordinaire"
+    material: "BOOK"
+    lore:
+      - "&f&m                                       &r"
+      - ""
+      - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
+      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
+      - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
+      - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
+      - ""
+      - "&7&l« &f&lRequis pour acheter &8&l» "
+      - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
+    cost: 300
+    required_job_type: "ARTISAN"
+    required_job_level: 10
+    commands_on_purchase:
+      - "advancedenchantments givercbook ordinaire %player% 1"
+    selection_weight: 8
+    sellable: true
+    sell_points: 50
+    sell_item_id: "enchant_ordinaire"
+
+  enchant_livre_rare:
+    display_name: "&6&lEnchantement Rare"
+    material: "BOOK"
+    lore:
+      - "&f&m                                       &r"
+      - ""
+      - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
+      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
+      - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
+      - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
+      - ""
+      - "&7&l« &f&lRequis pour acheter &8&l» "
+      - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
+    cost: 500
+    required_job_type: "ARTISAN"
+    required_job_level: 15
+    commands_on_purchase:
+      - "advancedenchantments givercbook rare %player% 1"
+    selection_weight: 7
+    sellable: true
+    sell_points: 80
+    sell_item_id: "enchant_rare"
+
+  enchant_livre_legendaire:
+    display_name: "&5&lEnchantement Légendaire"
+    material: "ENCHANTED_BOOK"
+    glowing: true
+    lore:
+      - "&f&m                                       &r"
+      - ""
+      - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
+      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
+      - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
+      - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
+      - ""
+      - "&7&l« &f&lRequis pour acheter &8&l» "
+      - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
+    cost: 800
+    required_job_type: "ARTISAN"
+    required_job_level: 25
+    commands_on_purchase:
+      - "advancedenchantments givercbook legendaire %player% 1"
+    selection_weight: 5
+    sellable: true
+    sell_points: 150
+    sell_item_id: "enchant_legendaire"
+
+  froglight_ochre:
+    display_name: "&fGrelampe Ocrée"
+    material: "OCHRE_FROGLIGHT"
+    lore:
+      - "&f&m                                       &r"
+      - ""
+      - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
+      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
+      - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
+      - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
+      - ""
+      - "&7&l« &f&lRequis pour acheter &8&l» "
+      - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
+    cost: 150
+    required_job_type: "PECHEUR"
+    required_job_level: 15
+    commands_on_purchase:
+      - "give %player% ochre_froglight 1"
+    selection_weight: 5
+    sellable: true
+    sell_points: 20
+    sell_item_id: "froglight_ochre"
+
+  froglight_verdant:
+    display_name: "&fGrelampe Verdoyante"
+    material: "VERDANT_FROGLIGHT"
+    lore:
+      - "&f&m                                       &r"
+      - ""
+      - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
+      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
+      - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
+      - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
+      - ""
+      - "&7&l« &f&lRequis pour acheter &8&l» "
+      - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
+    cost: 150
+    required_job_type: "PECHEUR"
+    required_job_level: 15
+    commands_on_purchase:
+      - "give %player% verdant_froglight 1"
+    selection_weight: 5
+    sellable: true
+    sell_points: 20
+    sell_item_id: "froglight_verdant"
+
+  froglight_pearlescent:
+    display_name: "&fGrelampe Nacrée"
+    material: "PEARLESCENT_FROGLIGHT"
+    lore:
+      - "&f&m                                       &r"
+      - ""
+      - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
+      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
+      - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
+      - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
+      - ""
+      - "&7&l« &f&lRequis pour acheter &8&l» "
+      - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
+    cost: 150
+    required_job_type: "PECHEUR"
+    required_job_level: 15
+    commands_on_purchase:
+      - "give %player% pearlescent_froglight 1"
+    selection_weight: 5
+    sellable: true
+    sell_points: 20
+    sell_item_id: "froglight_pearlescent"
+
+  oeuf_dragon_level_ile:
+    display_name: "&5Oeuf de dragon"
+    material: "DRAGON_EGG"
+    lore:
+      - "&7 • Posez le sur votre île"
+      - "&7pour voir celle ci augmenter"
+      - "&7de 1000 levels ! (&b/is level&7)"
+      - "&f&m                                       &r"
+      - ""
+      - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
+      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
+      - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
+      - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
+      - ""
+      - "&7&l« &f&lRequis pour acheter &8&l» "
+      - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
+    cost: 800
+    required_job_type: "CHASSEUR"
+    required_job_level: 30
+    commands_on_purchase:
+      - "give %player% dragon_egg 1"
+    selection_weight: 2
+    sellable: true
+    sell_points: 200
+    sell_item_id: "dragon_egg"
+
+  titre_farm2win:
+    display_name: "&fTitre &7[&2farm2win&7]"
+    material: "WHEAT"
+    lore:
+      - ""
+      - "&7[&2farm2win&7] %luckperms_prefix%%essentials_nickname% &7»"
+      - ""
+      - "&7Couleur adaptative:"
+      - "%shvaultcolor_color%[&2farm2win%shvaultcolor_color%] %luckperms_prefix%%essentials_nickname% &7»"
+      - ""
+      - " &8• &7Titre uniquement obtenable dans la"
+      - "&7box &d&lCosmétiques &7sur les SkyBlock"
+      - "&f&m                                       &r"
+      - ""
+      - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
+      - ""
+      - "&7&l« &f&lRequis pour acheter &8&l» "
+      - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
+    cost: 4000
+    required_job_type: "AGRICULTEUR"
+    required_job_level: 50
+    commands_on_purchase:
+      - "lp user %player% permission set tag.farm2win"
+    selection_weight: 1

@@ -1,0 +1,561 @@
+# SHJobs - Configuration des Menus (menus.yml)
+
+menus:
+  # --- Menu Principal des Métiers (/jobs) ---
+  main_jobs_menu:
+    title: "&8&lMétiers &8| Menu principal" # Titre du GUI, pas un item
+    size: 54
+    items:
+      filler_black_glass:
+        type: "FILLER"
+        material: "BLACK_STAINED_GLASS_PANE"
+        name: "&r"
+        slots: [0,1,2,3,5,6,7,8,9,12,13,14,17,18,21,22,23,26,27,30,32,35,36,37,38,39,40,41,42,43,44,45,46,47,48,50,51,52,53]
+
+      info_item:
+        type: "INFO_ITEM"
+        slot: 4
+        material: "CLOCK"
+        name: "&e&lInformations" # Style référence
+        lore:
+          - ''
+          - "&fTous les métiers sont débloqués de base,"
+          - "&fil vous suffit de compléter les jobs des"
+          - "&fmétiers pour obtenir de l'exp et des points de jobs"
+          - ""
+          - "&8&l« &7Prochaine actualisation des jobs et"
+          - "&7de la boutique dans: &6%time_until_reset% &8&l»" # Or pour le temps
+          - ''
+          - "&7&l« &f&lStatistiques &8&l»" # Style référence
+          - "&8• &7Vos points: &e%shjobs_player_points%" # Style référence
+          - ''
+
+      daily_job_1:
+        type: "DAILY_JOB_1"
+        slot: 10
+        material: "WRITABLE_BOOK"
+        name: "&6&lJob: %job_name%" # Or Gras pour le nom du job
+        lore:
+          - ''
+          - '&8&l« &8ᴍᴇᴛɪᴇʀ %job_type_name% &8&l»'
+          #- ''
+          #- '&7&l« &7Accomplissez chaque jour'
+          #- '&7de jobs pour augmenter le'
+          #- '&7métier %job_type_name% &8&l»'
+          - ''
+        objectives_lore_header: "&fObjectifs &8&l»" # Jaune pour l'en-tête
+        objective_line_format: "&8• &7%obj_display_name%: &f%obj_progress%&7/&f%obj_total%" # Style info
+        rewards_lore:
+          - "&fRécompenses &8&l»" # Jaune pour l'en-tête
+          - "&8• &e%job_exp_reward% XP &7pour &6%job_type_name%"
+          - "&8• &e%job_points_reward% &6Points de Métier" # &b pour Points est ok, ou &e
+        completed_name_format: "&a&l✔ %job_name% (Terminé)" # Vert Gras pour complété
+        completed_glowing: true
+        completed_lore_add:
+          - ""
+          - "&8&l« &aVous avez déjà terminé ce job aujourd'hui. &8&l»" # Vert
+        placeholder_config:
+          material: "PAPER"
+          name: "&c&lJob Indisponible" # Rouge Gras pour indisponible
+          lore:
+            - ''
+            - "&8&l« &cCe job n'est pas disponible" # Rouge
+            - "&cpour le moment. &8&l»"
+            - ''
+
+      daily_job_2: # Appliquer le même style que daily_job_1
+        type: "DAILY_JOB_2"
+        slot: 11
+        material: "WRITABLE_BOOK"
+        name: "&6&lJob: %job_name%" # Or Gras pour le nom du job
+        lore:
+          - ''
+          - '&8&l« &8ᴍᴇᴛɪᴇʀ %job_type_name% &8&l»'
+          #- ''
+          #- '&7&l« &7Accomplissez chaque jour'
+          #- '&7de jobs pour augmenter le'
+          #- '&7métier %job_type_name% &8&l»'
+          - ''
+        objectives_lore_header: "&fObjectifs &8&l»" # Jaune pour l'en-tête
+        objective_line_format: "&8• &7%obj_display_name%: &f%obj_progress%&7/&f%obj_total%" # Style info
+        rewards_lore:
+          - "&fRécompenses &8&l»" # Jaune pour l'en-tête
+          - "&8• &e%job_exp_reward% XP &7pour &6%job_type_name%"
+          - "&8• &e%job_points_reward% &6Points de Métier" # &b pour Points est ok, ou &e
+        completed_name_format: "&a&l✔ %job_name% (Terminé)" # Vert Gras pour complété
+        completed_glowing: true
+        completed_lore_add:
+          - ""
+          - "&8&l« &aVous avez déjà terminé ce job aujourd'hui. &8&l»" # Vert
+        placeholder_config:
+          material: "PAPER"
+          name: "&c&lJob Indisponible" # Rouge Gras pour indisponible
+          lore:
+            - ''
+            - "&8&l« &cCe job n'est pas disponible" # Rouge
+            - "&cpour le moment. &8&l»"
+            - ''
+
+      daily_job_3: # Appliquer le même style que daily_job_1
+        type: "DAILY_JOB_3"
+        slot: 19
+        material: "WRITABLE_BOOK"
+        name: "&6&lJob: %job_name%" # Or Gras pour le nom du job
+        lore:
+          - ''
+          - '&8&l« &8ᴍᴇᴛɪᴇʀ %job_type_name% &8&l»'
+          #- ''
+          #- '&7&l« &7Accomplissez chaque jour'
+          #- '&7de jobs pour augmenter le'
+          #- '&7métier %job_type_name% &8&l»'
+          - ''
+        objectives_lore_header: "&fObjectifs &8&l»" # Jaune pour l'en-tête
+        objective_line_format: "&8• &7%obj_display_name%: &f%obj_progress%&7/&f%obj_total%" # Style info
+        rewards_lore:
+          - "&fRécompenses &8&l»" # Jaune pour l'en-tête
+          - "&8• &e%job_exp_reward% XP &7pour &6%job_type_name%"
+          - "&8• &e%job_points_reward% &6Points de Métier" # &b pour Points est ok, ou &e
+        completed_name_format: "&a&l✔ %job_name% (Terminé)" # Vert Gras pour complété
+        completed_glowing: true
+        completed_lore_add:
+          - ""
+          - "&8&l« &aVous avez déjà terminé ce job aujourd'hui. &8&l»" # Vert
+        placeholder_config:
+          material: "PAPER"
+          name: "&c&lJob Indisponible" # Rouge Gras pour indisponible
+          lore:
+            - ''
+            - "&8&l« &cCe job n'est pas disponible" # Rouge
+            - "&cpour le moment. &8&l»"
+            - ''
+
+      daily_job_4: # Appliquer le même style que daily_job_1
+        type: "DAILY_JOB_4"
+        slot: 20
+        material: "WRITABLE_BOOK"
+        name: "&6&lJob: %job_name%" # Or Gras pour le nom du job
+        lore:
+          - ''
+          - '&8&l« &8ᴍᴇᴛɪᴇʀ %job_type_name% &8&l»'
+          #- ''
+          #- '&7&l« &7Accomplissez chaque jour'
+          #- '&7de jobs pour augmenter le'
+          #- '&7métier %job_type_name% &8&l»'
+          - ''
+        objectives_lore_header: "&fObjectifs &8&l»" # Jaune pour l'en-tête
+        objective_line_format: "&8• &7%obj_display_name%: &f%obj_progress%&7/&f%obj_total%" # Style info
+        rewards_lore:
+          - "&fRécompenses &8&l»" # Jaune pour l'en-tête
+          - "&8• &e%job_exp_reward% XP &7pour &6%job_type_name%"
+          - "&8• &e%job_points_reward% &6Points de Métier" # &b pour Points est ok, ou &e
+        completed_name_format: "&a&l✔ %job_name% (Terminé)" # Vert Gras pour complété
+        completed_glowing: true
+        completed_lore_add:
+          - ""
+          - "&8&l« &aVous avez déjà terminé ce job aujourd'hui. &8&l»" # Vert
+        placeholder_config:
+          material: "PAPER"
+          name: "&c&lJob Indisponible" # Rouge Gras pour indisponible
+          lore:
+            - ''
+            - "&8&l« &cCe job n'est pas disponible" # Rouge
+            - "&cpour le moment. &8&l»"
+            - ''
+
+      daily_job_5: # Appliquer le même style que daily_job_1
+        type: "DAILY_JOB_5"
+        slot: 28
+        material: "WRITABLE_BOOK"
+        name: "&6&lJob: %job_name%" # Or Gras pour le nom du job
+        lore:
+          - ''
+          - '&8&l« &8ᴍᴇᴛɪᴇʀ %job_type_name% &8&l»'
+          #- ''
+          #- '&7&l« &7Accomplissez chaque jour'
+          #- '&7de jobs pour augmenter le'
+          #- '&7métier %job_type_name% &8&l»'
+          - ''
+        objectives_lore_header: "&fObjectifs &8&l»" # Jaune pour l'en-tête
+        objective_line_format: "&8• &7%obj_display_name%: &f%obj_progress%&7/&f%obj_total%" # Style info
+        rewards_lore:
+          - "&fRécompenses &8&l»" # Jaune pour l'en-tête
+          - "&8• &e%job_exp_reward% XP &7pour &6%job_type_name%"
+          - "&8• &e%job_points_reward% &6Points de Métier" # &b pour Points est ok, ou &e
+        completed_name_format: "&a&l✔ %job_name% (Terminé)" # Vert Gras pour complété
+        completed_glowing: true
+        completed_lore_add:
+          - ""
+          - "&8&l« &aVous avez déjà terminé ce job aujourd'hui. &8&l»" # Vert
+        placeholder_config:
+          material: "PAPER"
+          name: "&c&lJob Indisponible" # Rouge Gras pour indisponible
+          lore:
+            - ''
+            - "&8&l« &cCe job n'est pas disponible" # Rouge
+            - "&cpour le moment. &8&l»"
+            - ''
+
+
+      daily_job_6: # Appliquer le même style que daily_job_1
+        type: "DAILY_JOB_6"
+        slot: 29
+        material: "WRITABLE_BOOK"
+        name: "&6&lJob: %job_name%" # Or Gras pour le nom du job
+        lore:
+          - ''
+          - '&8&l« &8ᴍᴇᴛɪᴇʀ %job_type_name% &8&l»'
+          #- ''
+          #- '&7&l« &7Accomplissez chaque jour'
+          #- '&7de jobs pour augmenter le'
+          #- '&7métier %job_type_name% &8&l»'
+          - ''
+        objectives_lore_header: "&fObjectifs &8&l»" # Jaune pour l'en-tête
+        objective_line_format: "&8• &7%obj_display_name%: &f%obj_progress%&7/&f%obj_total%" # Style info
+        rewards_lore:
+          - "&fRécompenses &8&l»" # Jaune pour l'en-tête
+          - "&8• &e%job_exp_reward% XP &7pour &6%job_type_name%"
+          - "&8• &e%job_points_reward% &6Points de Métier" # &b pour Points est ok, ou &e
+        completed_name_format: "&a&l✔ %job_name% (Terminé)" # Vert Gras pour complété
+        completed_glowing: true
+        completed_lore_add:
+          - ""
+          - "&8&l« &aVous avez déjà terminé ce job aujourd'hui. &8&l»" # Vert
+        placeholder_config:
+          material: "PAPER"
+          name: "&c&lJob Indisponible" # Rouge Gras pour indisponible
+          lore:
+            - ''
+            - "&8&l« &cCe job n'est pas disponible" # Rouge
+            - "&cpour le moment. &8&l»"
+            - ''
+
+      
+
+      # Les noms des métiers spécifiques (Bucheron, Mineur, etc.) seront probablement définis
+      # par leur `JobType` (ex: `JobType.BUCHERON.getDisplayName()`).
+      # Je vais styliser le lore ici.
+      job_bucheron:
+        type: "JOB_TYPE_BUCHERON"
+        slot: 15
+        lore:
+          - ''
+          - "&fComplétez des jobs &6Bûcheron &fpour"
+          - "&faugmenter votre niveau de &6Bûcheron."
+          - ""
+          - "&8&l« &7Statistiques métier &6Bûcheron &8&l»"
+          - "&e&l» &7Niveau: &e%job_level%"
+          - "&e&l» &7XP: &b&7[%job_exp_bar%&7]"
+          - ''
+          - "&8&l« &6&lClassement Bûcheron &8&l»"
+          - "&6#1 &f%shjobs_leaderboard_bucheron_1_name% &7- Niv. &e%shjobs_leaderboard_bucheron_1_level%"
+          - "&e#2 &f%shjobs_leaderboard_bucheron_2_name% &7- Niv. &e%shjobs_leaderboard_bucheron_2_level%"
+          - "&e#3 &f%shjobs_leaderboard_bucheron_3_name% &7- Niv. &e%shjobs_leaderboard_bucheron_3_level%"
+          - "&7#4 &f%shjobs_leaderboard_bucheron_4_name% &7- Niv. &e%shjobs_leaderboard_bucheron_4_level%"
+          - "&7#5 &f%shjobs_leaderboard_bucheron_5_name% &7- Niv. &e%shjobs_leaderboard_bucheron_5_level%"
+          - "&7#6 &f%shjobs_leaderboard_bucheron_6_name% &7- Niv. &e%shjobs_leaderboard_bucheron_6_level%"
+          - "&7#7 &f%shjobs_leaderboard_bucheron_7_name% &7- Niv. &e%shjobs_leaderboard_bucheron_7_level%"
+          - "&7#8 &f%shjobs_leaderboard_bucheron_8_name% &7- Niv. &e%shjobs_leaderboard_bucheron_8_level%"
+          - "&7#9 &f%shjobs_leaderboard_bucheron_9_name% &7- Niv. &e%shjobs_leaderboard_bucheron_9_level%"
+          - "&7#10 &f%shjobs_leaderboard_bucheron_10_name% &7- Niv. &e%shjobs_leaderboard_bucheron_10_level%"
+          - ""
+          - "&8&l« &fVotre position: &6#%shjobs_player_rank_bucheron% &8&l»"
+
+      job_mineur:
+        type: "JOB_TYPE_MINEUR"
+        slot: 16
+        lore:
+          - ''
+          - "&fComplétez des jobs &7Mineur &fpour"
+          - "&faugmenter votre niveau de &7Mineur."
+          - ""
+          - "&8&l« &7Statistiques métier &7Mineur &8&l»"
+          - "&e&l» &7Niveau: &e%job_level%"
+          - "&e&l» &7XP: &b&7[%job_exp_bar%&7]"
+          - ''
+          - "&8&l« &7&lClassement Mineur &8&l»"
+          - "&6#1 &f%shjobs_leaderboard_mineur_1_name% &7- Niv. &e%shjobs_leaderboard_mineur_1_level%"
+          - "&e#2 &f%shjobs_leaderboard_mineur_2_name% &7- Niv. &e%shjobs_leaderboard_mineur_2_level%"
+          - "&e#3 &f%shjobs_leaderboard_mineur_3_name% &7- Niv. &e%shjobs_leaderboard_mineur_3_level%"
+          - "&7#4 &f%shjobs_leaderboard_mineur_4_name% &7- Niv. &e%shjobs_leaderboard_mineur_4_level%"
+          - "&7#5 &f%shjobs_leaderboard_mineur_5_name% &7- Niv. &e%shjobs_leaderboard_mineur_5_level%"
+          - "&7#6 &f%shjobs_leaderboard_mineur_6_name% &7- Niv. &e%shjobs_leaderboard_mineur_6_level%"
+          - "&7#7 &f%shjobs_leaderboard_mineur_7_name% &7- Niv. &e%shjobs_leaderboard_mineur_7_level%"
+          - "&7#8 &f%shjobs_leaderboard_mineur_8_name% &7- Niv. &e%shjobs_leaderboard_mineur_8_level%"
+          - "&7#9 &f%shjobs_leaderboard_mineur_9_name% &7- Niv. &e%shjobs_leaderboard_mineur_9_level%"
+          - "&7#10 &f%shjobs_leaderboard_mineur_10_name% &7- Niv. &e%shjobs_leaderboard_mineur_10_level%"
+          - ""
+          - "&8&l« &fVotre position: &7#%shjobs_player_rank_mineur% &8&l»"
+
+      job_agriculteur:
+        type: "JOB_TYPE_AGRICULTEUR"
+        slot: 24
+        lore:
+          - ''
+          - "&fComplétez des jobs &eAgriculteur &fpour"
+          - "&faugmenter votre niveau d'&eAgriculteur."
+          - ""
+          - "&8&l« &7Statistiques métier &eAgriculteur &8&l»"
+          - "&e&l» &7Niveau: &e%job_level%"
+          - "&e&l» &7XP: &b&7[%job_exp_bar%&7]"
+          - ''
+          - "&8&l« &e&lClassement Agriculteur &8&l»"
+          - "&6#1 &f%shjobs_leaderboard_agriculteur_1_name% &7- Niv. &e%shjobs_leaderboard_agriculteur_1_level%"
+          - "&e#2 &f%shjobs_leaderboard_agriculteur_2_name% &7- Niv. &e%shjobs_leaderboard_agriculteur_2_level%"
+          - "&e#3 &f%shjobs_leaderboard_agriculteur_3_name% &7- Niv. &e%shjobs_leaderboard_agriculteur_3_level%"
+          - "&7#4 &f%shjobs_leaderboard_agriculteur_4_name% &7- Niv. &e%shjobs_leaderboard_agriculteur_4_level%"
+          - "&7#5 &f%shjobs_leaderboard_agriculteur_5_name% &7- Niv. &e%shjobs_leaderboard_agriculteur_5_level%"
+          - "&7#6 &f%shjobs_leaderboard_agriculteur_6_name% &7- Niv. &e%shjobs_leaderboard_agriculteur_6_level%"
+          - "&7#7 &f%shjobs_leaderboard_agriculteur_7_name% &7- Niv. &e%shjobs_leaderboard_agriculteur_7_level%"
+          - "&7#8 &f%shjobs_leaderboard_agriculteur_8_name% &7- Niv. &e%shjobs_leaderboard_agriculteur_8_level%"
+          - "&7#9 &f%shjobs_leaderboard_agriculteur_9_name% &7- Niv. &e%shjobs_leaderboard_agriculteur_9_level%"
+          - "&7#10 &f%shjobs_leaderboard_agriculteur_10_name% &7- Niv. &e%shjobs_leaderboard_agriculteur_10_level%"
+          - ""
+          - "&8&l« &fVotre position: &e#%shjobs_player_rank_agriculteur% &8&l»"
+
+      job_chasseur:
+        type: "JOB_TYPE_CHASSEUR"
+        slot: 25
+        lore:
+          - ''
+          - "&fComplétez des jobs &cChasseur &fpour"
+          - "&faugmenter votre niveau de &cChasseur."
+          - ""
+          - "&8&l« &7Statistiques métier &cChasseur &8&l»"
+          - "&e&l» &7Niveau: &e%job_level%"
+          - "&e&l» &7XP: &b&7[%job_exp_bar%&7]"
+          - ''
+          - "&8&l« &c&lClassement Chasseur &8&l»"
+          - "&6#1 &f%shjobs_leaderboard_chasseur_1_name% &7- Niv. &e%shjobs_leaderboard_chasseur_1_level%"
+          - "&e#2 &f%shjobs_leaderboard_chasseur_2_name% &7- Niv. &e%shjobs_leaderboard_chasseur_2_level%"
+          - "&e#3 &f%shjobs_leaderboard_chasseur_3_name% &7- Niv. &e%shjobs_leaderboard_chasseur_3_level%"
+          - "&7#4 &f%shjobs_leaderboard_chasseur_4_name% &7- Niv. &e%shjobs_leaderboard_chasseur_4_level%"
+          - "&7#5 &f%shjobs_leaderboard_chasseur_5_name% &7- Niv. &e%shjobs_leaderboard_chasseur_5_level%"
+          - "&7#6 &f%shjobs_leaderboard_chasseur_6_name% &7- Niv. &e%shjobs_leaderboard_chasseur_6_level%"
+          - "&7#7 &f%shjobs_leaderboard_chasseur_7_name% &7- Niv. &e%shjobs_leaderboard_chasseur_7_level%"
+          - "&7#8 &f%shjobs_leaderboard_chasseur_8_name% &7- Niv. &e%shjobs_leaderboard_chasseur_8_level%"
+          - "&7#9 &f%shjobs_leaderboard_chasseur_9_name% &7- Niv. &e%shjobs_leaderboard_chasseur_9_level%"
+          - "&7#10 &f%shjobs_leaderboard_chasseur_10_name% &7- Niv. &e%shjobs_leaderboard_chasseur_10_level%"
+          - ""
+          - "&8&l« &fVotre position: &c#%shjobs_player_rank_chasseur% &8&l»"
+
+      job_artisan:
+        type: "JOB_TYPE_ARTISAN"
+        slot: 33
+        lore:
+          - ''
+          - "&fComplétez des jobs &bArtisan &fpour"
+          - "&faugmenter votre niveau d'&bArtisan."
+          - ""
+          - "&8&l« &7Statistiques métier &bArtisan &8&l»"
+          - "&e&l» &7Niveau: &e%job_level%"
+          - "&e&l» &7XP: &b&7[%job_exp_bar%&7]"
+          - ''
+          - "&8&l« &b&lClassement Artisan &8&l»"
+          - "&6#1 &f%shjobs_leaderboard_artisan_1_name% &7- Niv. &e%shjobs_leaderboard_artisan_1_level%"
+          - "&e#2 &f%shjobs_leaderboard_artisan_2_name% &7- Niv. &e%shjobs_leaderboard_artisan_2_level%"
+          - "&e#3 &f%shjobs_leaderboard_artisan_3_name% &7- Niv. &e%shjobs_leaderboard_artisan_3_level%"
+          - "&7#4 &f%shjobs_leaderboard_artisan_4_name% &7- Niv. &e%shjobs_leaderboard_artisan_4_level%"
+          - "&7#5 &f%shjobs_leaderboard_artisan_5_name% &7- Niv. &e%shjobs_leaderboard_artisan_5_level%"
+          - "&7#6 &f%shjobs_leaderboard_artisan_6_name% &7- Niv. &e%shjobs_leaderboard_artisan_6_level%"
+          - "&7#7 &f%shjobs_leaderboard_artisan_7_name% &7- Niv. &e%shjobs_leaderboard_artisan_7_level%"
+          - "&7#8 &f%shjobs_leaderboard_artisan_8_name% &7- Niv. &e%shjobs_leaderboard_artisan_8_level%"
+          - "&7#9 &f%shjobs_leaderboard_artisan_9_name% &7- Niv. &e%shjobs_leaderboard_artisan_9_level%"
+          - "&7#10 &f%shjobs_leaderboard_artisan_10_name% &7- Niv. &e%shjobs_leaderboard_artisan_10_level%"
+          - ""
+          - "&8&l« &fVotre position: &b#%shjobs_player_rank_artisan% &8&l»"
+
+      job_pecheur:
+        type: "JOB_TYPE_PECHEUR"
+        slot: 34
+        lore:
+          - ''
+          - "&fComplétez des jobs &9Pêcheur &fpour"
+          - "&faugmenter votre niveau de &9Pêcheur."
+          - ""
+          - "&8&l« &7Statistiques métier &9Pêcheur &8&l»"
+          - "&e&l» &7Niveau: &e%job_level%"
+          - "&e&l» &7XP: &b&7[%job_exp_bar%&7]"
+          - ''
+          - "&8&l« &9&lClassement Pêcheur &8&l»"
+          - "&6#1 &f%shjobs_leaderboard_pecheur_1_name% &7- Niv. &e%shjobs_leaderboard_pecheur_1_level%"
+          - "&e#2 &f%shjobs_leaderboard_pecheur_2_name% &7- Niv. &e%shjobs_leaderboard_pecheur_2_level%"
+          - "&e#3 &f%shjobs_leaderboard_pecheur_3_name% &7- Niv. &e%shjobs_leaderboard_pecheur_3_level%"
+          - "&7#4 &f%shjobs_leaderboard_pecheur_4_name% &7- Niv. &e%shjobs_leaderboard_pecheur_4_level%"
+          - "&7#5 &f%shjobs_leaderboard_pecheur_5_name% &7- Niv. &e%shjobs_leaderboard_pecheur_5_level%"
+          - "&7#6 &f%shjobs_leaderboard_pecheur_6_name% &7- Niv. &e%shjobs_leaderboard_pecheur_6_level%"
+          - "&7#7 &f%shjobs_leaderboard_pecheur_7_name% &7- Niv. &e%shjobs_leaderboard_pecheur_7_level%"
+          - "&7#8 &f%shjobs_leaderboard_pecheur_8_name% &7- Niv. &e%shjobs_leaderboard_pecheur_8_level%"
+          - "&7#9 &f%shjobs_leaderboard_pecheur_9_name% &7- Niv. &e%shjobs_leaderboard_pecheur_9_level%"
+          - "&7#10 &f%shjobs_leaderboard_pecheur_10_name% &7- Niv. &e%shjobs_leaderboard_pecheur_10_level%"
+          - ""
+          - "&8&l« &fVotre position: &9#%shjobs_player_rank_pecheur% &8&l»"
+
+      shop_button:
+        type: "STATIC"
+        slot: 31
+        material: "EMERALD"
+        name: "&e&lBoutique des Métiers" # Style référence
+        lore:
+          - ''
+          - "&8&l« &7Dépensez vos points de métier"
+          - "&7durement gagnés ici ! &8&l»"
+          - ''
+          - "&7&o(( &e&oCliquez pour ouvrir &7&o))" # Style référence
+        glowing: false # Vous pouvez le mettre à true pour correspondre à l'émeraude
+        actions:
+          click:
+            - "[openmenu] shop_menu"
+            - "[sound] ENTITY_EXPERIENCE_ORB_PICKUP:1.0:1.5"
+
+      retour_island:
+          type: "STATIC"
+          slot: 49
+          material: "PAPER"
+          name: "&c⤾ Retour &7(Clic)" # Style référence (en assumant &C est une faute de frappe pour &c)
+          lore:
+            - ''
+            - "&7&o(( &c&oRetourner au menu précédent &7&o))" # Call to action avec couleur du titre
+          glowing: false
+          actions:
+            click:
+              - "[command] dm open island_more"
+
+
+  # --- Menu de la Boutique des Métiers ---
+  shop_menu:
+    title: "&8&lMétiers &8| Boutique"
+    size: 45
+    items:
+      filler_black_glass:
+        type: "STATIC" # J'ai changé en STATIC car FILLER n'est pas standard dans tous les plugins GUI
+        material: "BLACK_STAINED_GLASS_PANE"
+        name: "&r"
+        slots: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,22,26,27,28,29,30,31,32,33,34,35,36,37,38,39,41,42,43,44]
+
+      info_item_shop:
+        type: "INFO_ITEM"
+        slot: 4
+        material: "NETHER_STAR"
+        name: "&e&lInformations Boutique" # Style référence
+        lore:
+          - ''
+          - "&eStatistiques:"
+          - "&e&l» &7Vos points: &e%player_points%"
+          - ''
+          - "&8&l« &7La boutique se réinitialise dans:"
+          - "&6%time_until_reset% &8&l»"
+          - ''
+          - "&8&l« &7Utilisez vos points pour acheter"
+          - "&7des articles exclusifs ! &8&l»"
+        glowing: true
+
+      # Pour les shop_article_X, le nom et le lore de l'article lui-même
+      # viendront de la configuration de l'article (pas d'ici).
+      # Ce qui est stylisé ici, c'est le LORE ADDITIONNEL en cas de non-achat
+      # et le PLACEHOLDER si l'article n'existe pas.
+      shop_article_1:
+        type: "SHOP_ITEM_1"
+        slot: 19
+        # unpurchasable_material: "RED_STAINED_GLASS_PANE"
+        # change_material_if_unpurchasable: false
+        add_unpurchasable_lore: true
+        unpurchasable_lore_lines: # Lore si l'item est visible mais non achetable
+          - ""
+          - "&8&l« &c%purchase_status_text% &8&l»" # Le statut d'erreur, en rouge
+        placeholder_material: "STRUCTURE_VOID"
+        placeholder_name: "&c&lArticle Indisponible" # Style erreur
+        placeholder_lore: # Lore si le slot est vide / item non défini
+          - ''
+          - "&8&l« &7Cet emplacement de la boutique"
+          - "&7est actuellement vide. &8&l»"
+          - ''
+
+      shop_article_2: # Appliquer le même style de placeholder/unpurchasable que shop_article_1
+        type: "SHOP_ITEM_2"
+        slot: 20
+        add_unpurchasable_lore: true
+        unpurchasable_lore_lines:
+          - ""
+          - "&8&l« &c%purchase_status_text% &8&l»"
+        placeholder_material: "STRUCTURE_VOID"
+        placeholder_name: "&c&lArticle Indisponible"
+        placeholder_lore:
+          - ''
+          - "&8&l« &7Cet emplacement de la boutique"
+          - "&7est actuellement vide. &8&l»"
+          - ''
+
+      shop_article_3: # Appliquer le même style
+        type: "SHOP_ITEM_3"
+        slot: 21
+        add_unpurchasable_lore: true
+        unpurchasable_lore_lines:
+          - ""
+          - "&8&l« &c%purchase_status_text% &8&l»"
+        placeholder_material: "STRUCTURE_VOID"
+        placeholder_name: "&c&lArticle Indisponible"
+        placeholder_lore:
+          - ''
+          - "&8&l« &7Cet emplacement de la boutique"
+          - "&7est actuellement vide. &8&l»"
+          - ''
+
+      shop_article_4: # Appliquer le même style
+        type: "SHOP_ITEM_4"
+        slot: 23
+        add_unpurchasable_lore: true
+        unpurchasable_lore_lines:
+          - ""
+          - "&8&l« &c%purchase_status_text% &8&l»"
+        placeholder_material: "STRUCTURE_VOID"
+        placeholder_name: "&c&lArticle Indisponible"
+        placeholder_lore:
+          - ''
+          - "&8&l« &7Cet emplacement de la boutique"
+          - "&7est actuellement vide. &8&l»"
+          - ''
+
+      shop_article_5: # Appliquer le même style
+        type: "SHOP_ITEM_5"
+        slot: 24
+        add_unpurchasable_lore: true
+        unpurchasable_lore_lines:
+          - ""
+          - "&8&l« &c%purchase_status_text% &8&l»"
+        placeholder_material: "STRUCTURE_VOID"
+        placeholder_name: "&c&lArticle Indisponible"
+        placeholder_lore:
+          - ''
+          - "&8&l« &7Cet emplacement de la boutique"
+          - "&7est actuellement vide. &8&l»"
+          - ''
+
+      shop_article_6: # Appliquer le même style
+        type: "SHOP_ITEM_6"
+        slot: 25
+        add_unpurchasable_lore: true
+        unpurchasable_lore_lines:
+          - ""
+          - "&8&l« &c%purchase_status_text% &8&l»"
+        placeholder_material: "STRUCTURE_VOID"
+        placeholder_name: "&c&lArticle Indisponible"
+        placeholder_lore:
+          - ''
+          - "&8&l« &7Cet emplacement de la boutique"
+          - "&7est actuellement vide. &8&l»"
+          - ''
+
+      back_button:
+        type: "STATIC"
+        slot: 40
+        material: "PAPER"
+        name: "&c⤾ Retour &7(Clic)" # Style référence
+        lore:
+          - ''
+          - "&8&l« &7Revenir au menu principal"
+          - "&7des métiers. &8&l»"
+          - ''
+          - "&7&o(( &c&oCliquez pour retourner &7&o))"
+        actions:
+          click:
+            - "[openmenu] main_jobs_menu"

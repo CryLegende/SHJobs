@@ -1,0 +1,15 @@
+current_daily_job_ids:
+- agriculteur_culture_verrues
+- agriculteur_cueillette_carottes
+- chasseur_tir_squelettes
+- agriculteur_moisson_ble
+- mineur_roches_variees
+- mineur_prospection_base
+current_daily_shop_item_ids:
+- enchant_livre_rare
+- deco_mini_bonhomme_neige
+- froglight_ochre
+- cle_box_ordinaire
+- entonnoir_skyblock
+- redstone_stack
+last_reset_date: '2026-08-08'
