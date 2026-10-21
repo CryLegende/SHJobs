@@ -3,11 +3,13 @@ package org.Cry_Legende.sHJobs.shop;
 import org.Cry_Legende.sHJobs.SHJobs;
 import org.Cry_Legende.sHJobs.data.PlayerData;
 import org.Cry_Legende.sHJobs.gui.ShopMenu;
+import org.Cry_Legende.sHJobs.items.ItemMatcher;
 import org.Cry_Legende.sHJobs.jobs.JobType;
 import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
@@ -219,8 +221,8 @@ public class ShopManager {
         ItemStack itemToSell = itemToSellOpt.get();
         int amountToSell = itemToSell.getAmount();
 
-        if (player.getInventory().containsAtLeast(itemToSell, amountToSell)) {
-            player.getInventory().removeItem(itemToSell);
+        if (countMatching(player, itemToSell) >= amountToSell) {
+            removeMatching(player, itemToSell, amountToSell);
             playerData.addJobPoints(shopItemEntry.getSellPoints());
 
             String soldItemName = itemToSell.hasItemMeta() && itemToSell.getItemMeta().hasDisplayName() ? itemToSell.getItemMeta().getDisplayName() : shopItemEntry.getDisplayName();
@@ -262,23 +264,14 @@ public class ShopManager {
         ItemStack itemToSell = itemToSellOpt.get();
         int unitAmount = Math.max(1, itemToSell.getAmount());
 
-        int owned = 0;
-        for (ItemStack content : player.getInventory().getStorageContents()) {
-            if (content != null && content.isSimilar(itemToSell)) {
-                owned += content.getAmount();
-            }
-        }
-
-        int sales = owned / unitAmount;
+        int sales = countMatching(player, itemToSell) / unitAmount;
         if (sales <= 0) {
             plugin.getMessages().sendPlayerMessage(player, "shop.item_not_found_for_sell", "%item_name%", shopItemEntry.getDisplayName());
             player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
             return;
         }
 
-        ItemStack toRemove = itemToSell.clone();
-        toRemove.setAmount(sales * unitAmount);
-        player.getInventory().removeItem(toRemove);
+        removeMatching(player, itemToSell, sales * unitAmount);
 
         long totalPoints = (long) shopItemEntry.getSellPoints() * sales;
         playerData.addJobPoints(totalPoints);
@@ -294,6 +287,42 @@ public class ShopManager {
         if (player.getOpenInventory().getTopInventory().getHolder() instanceof ShopMenu) {
             plugin.getMenuManager().openShopMenu(player);
         }
+    }
+
+    /**
+     * Nombre d'exemplaires de l'article dans l'inventaire du joueur (hors armure et seconde main).
+     */
+    private int countMatching(Player player, ItemStack reference) {
+        int owned = 0;
+        for (ItemStack content : player.getInventory().getStorageContents()) {
+            if (ItemMatcher.matches(reference, content)) {
+                owned += content.getAmount();
+            }
+        }
+        return owned;
+    }
+
+    /**
+     * Retire {@code amount} exemplaires de l'article, pile par pile ; l'appelant a vérifié le stock.
+     */
+    private void removeMatching(Player player, ItemStack reference, int amount) {
+        PlayerInventory inventory = player.getInventory();
+        ItemStack[] contents = inventory.getStorageContents();
+        int left = amount;
+        for (int i = 0; i < contents.length && left > 0; i++) {
+            ItemStack content = contents[i];
+            if (!ItemMatcher.matches(reference, content)) {
+                continue;
+            }
+            int taken = Math.min(left, content.getAmount());
+            left -= taken;
+            if (taken == content.getAmount()) {
+                contents[i] = null;
+            } else {
+                content.setAmount(content.getAmount() - taken);
+            }
+        }
+        inventory.setStorageContents(contents);
     }
 
     public Optional<ShopItem> getShopItemTemplate(String itemId) {

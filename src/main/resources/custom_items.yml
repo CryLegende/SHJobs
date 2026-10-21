@@ -36,12 +36,6 @@ items:
     ==: org.bukkit.inventory.ItemStack
     v: 3578
     type: BUDDING_AMETHYST
-    meta:
-      ==: ItemMeta
-      meta-type: UNSPECIFIC
-      lore:
-      - '{"extra":[{"bold":false,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"dark_gray","text":"-400
-        Niv. d''île"}],"text":""}'
   redstone_3:
     ==: org.bukkit.inventory.ItemStack
     v: 3578
@@ -549,29 +543,11 @@ items:
     ==: org.bukkit.inventory.ItemStack
     v: 3578
     type: PEARLESCENT_FROGLIGHT
-    meta:
-      ==: ItemMeta
-      meta-type: UNSPECIFIC
-      lore:
-      - '{"extra":[{"bold":false,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"dark_gray","text":"0.05
-        Niv. d''île"}],"text":""}'
   froglight_verdant:
     ==: org.bukkit.inventory.ItemStack
     v: 3578
     type: VERDANT_FROGLIGHT
-    meta:
-      ==: ItemMeta
-      meta-type: UNSPECIFIC
-      lore:
-      - '{"extra":[{"bold":false,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"dark_gray","text":"0.05
-        Niv. d''île"}],"text":""}'
   froglight_ochre:
     ==: org.bukkit.inventory.ItemStack
     v: 3578
     type: OCHRE_FROGLIGHT
-    meta:
-      ==: ItemMeta
-      meta-type: UNSPECIFIC
-      lore:
-      - '{"extra":[{"bold":false,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"dark_gray","text":"0.05
-        Niv. d''île"}],"text":""}'
