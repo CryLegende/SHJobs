@@ -123,12 +123,12 @@ public class ItemBuilder {
 
     public ItemBuilder setGlowing(boolean glowing) {
         if (glowing) {
-            addEnchant(Enchantment.ARROW_INFINITE, 1, true); // Un enchantement commun pour faire briller
+            addEnchant(Enchantment.INFINITY, 1, true); // Un enchantement commun pour faire briller
             addItemFlags(ItemFlag.HIDE_ENCHANTS);
         } else {
             ItemMeta meta = itemStack.getItemMeta();
-            if (meta != null && meta.hasEnchant(Enchantment.ARROW_INFINITE) && meta.hasItemFlag(ItemFlag.HIDE_ENCHANTS)) {
-                meta.removeEnchant(Enchantment.ARROW_INFINITE);
+            if (meta != null && meta.hasEnchant(Enchantment.INFINITY) && meta.hasItemFlag(ItemFlag.HIDE_ENCHANTS)) {
+                meta.removeEnchant(Enchantment.INFINITY);
                 // Ne pas retirer HIDE_ENCHANTS si d'autres enchantements cachés sont présents.
                 // C'est une simplification; une gestion plus fine serait nécessaire si on utilise HIDE_ENCHANTS pour autre chose.
                 // Pour l'instant, on assume que ARROW_INFINITE + HIDE_ENCHANTS est uniquement pour le glow.
