@@ -6,6 +6,7 @@ import org.Cry_Legende.sHJobs.jobs.DailyJob;
 import org.Cry_Legende.sHJobs.jobs.JobTemplate;
 import org.Cry_Legende.sHJobs.jobs.JobType;
 import org.Cry_Legende.sHJobs.utils.ItemBuilder;
+import org.Cry_Legende.sHJobs.utils.SoundUtil;
 import org.Cry_Legende.sHJobs.utils.TimeUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -356,11 +357,13 @@ public class JobsMenu extends CustomMenuHolder {
             }
         } else if (action.startsWith("[sound]")) {
             try {
-                String[] parts = action.substring("[sound]".length()).trim().split(":");
-                org.bukkit.Sound sound = org.bukkit.Sound.valueOf(parts[0].toUpperCase());
-                float volume = parts.length > 1 ? Float.parseFloat(parts[1]) : 1.0f;
-                float pitch = parts.length > 2 ? Float.parseFloat(parts[2]) : 1.0f;
-                player.playSound(player.getLocation(), sound, volume, pitch);
+                // ancien nom ou clé du son, puis volume et hauteur éventuels
+                SoundUtil.Spec spec = SoundUtil.parse(action.substring("[sound]".length()));
+                if (spec == null) {
+                    plugin.getLogger().warning("[JobsMenu] Invalid sound action format: " + action + " Error: unknown sound");
+                } else {
+                    player.playSound(player.getLocation(), spec.sound(), spec.volume(), spec.pitch());
+                }
             } catch (Exception e) {
                 plugin.getLogger().warning("[JobsMenu] Invalid sound action format: " + action + " Error: " + e.getMessage());
             }

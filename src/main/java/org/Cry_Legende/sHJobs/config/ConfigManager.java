@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;      // Ajouté pour evaluateSimpleMathExpression
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.regex.Matcher;   // Ajouté pour evaluateSimpleMathExpression
 import java.util.regex.Pattern;  // Ajouté pour evaluateSimpleMathExpression
@@ -38,6 +39,8 @@ public class ConfigManager {
     private Map<JobType, String> jobSpecificXpFormulas;
     private Map<JobType, Integer> jobSpecificMaxLevels;
     private Map<JobType, Map<Integer, Long>> jobSpecificFixedExp;
+    // XP par niveau déjà calculée (la formule passe par des regex, et PlayerData additionne tous les niveaux jusqu'au sien)
+    private final Map<Long, Long> expForLevelCache = new ConcurrentHashMap<>();
 
     public ConfigManager(SHJobs plugin) {
         this.plugin = plugin;
@@ -59,6 +62,7 @@ public class ConfigManager {
     }
 
     private void loadValues() {
+        expForLevelCache.clear();
         storageType = config.getString("database.type", "SQLITE").toUpperCase();
         mysqlHost = config.getString("database.mysql.host", "localhost");
         mysqlPort = config.getInt("database.mysql.port", 3306);
@@ -117,6 +121,10 @@ public class ConfigManager {
 
     public long getExpForLevel(JobType jobType, int targetLevel) {
         if (targetLevel <= 1) return 0;
+        return expForLevelCache.computeIfAbsent(((long) jobType.ordinal() << 32) | targetLevel, k -> computeExpForLevel(jobType, targetLevel));
+    }
+
+    private long computeExpForLevel(JobType jobType, int targetLevel) {
 
         if (jobSpecificFixedExp.containsKey(jobType) && jobSpecificFixedExp.get(jobType).containsKey(targetLevel)) {
             return jobSpecificFixedExp.get(jobType).get(targetLevel);

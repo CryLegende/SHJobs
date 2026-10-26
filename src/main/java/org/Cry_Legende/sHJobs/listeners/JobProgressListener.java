@@ -24,12 +24,11 @@ import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.player.PlayerMoveEvent; // Pour WALK (attention, très coûteux)
 import org.bukkit.inventory.*;
 import org.bukkit.inventory.meta.PotionMeta;
-import org.bukkit.potion.PotionData;
+import org.bukkit.potion.PotionType;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.logging.Level;
 
 public class JobProgressListener implements Listener {
@@ -51,14 +50,16 @@ public class JobProgressListener implements Listener {
             if (dailyJob.isCompleted()) continue; // Job déjà complété
 
             for (JobObjective objective : dailyJob.getTemplate().getObjectives()) {
-                if (dailyJob.isObjectiveCompleted(objective.getId())) continue; // Objectif déjà complété
+                if (objectiveDone(dailyJob, objective)) continue; // Objectif déjà complété
 
                 if (objective.getAction() == actionType) {
                     boolean conditionMet = false;
                     switch (actionType) {
                         case BREAK:
-                            if (primaryTarget instanceof Material && secondaryTarget instanceof Integer) { // secondaryTarget est l'âge
-                                conditionMet = objective.checkBreakCondition((Material) primaryTarget, (Integer) secondaryTarget);
+                            if (primaryTarget instanceof Material material && secondaryTarget instanceof Block block) {
+                                // L'âge n'est lu que si l'objectif l'exige (getBlockData copie l'état du bloc à chaque casse)
+                                int age = objective.getRequiredAge() == -1 ? -1 : ageOf(block);
+                                conditionMet = objective.checkBreakCondition(material, age);
                             }
                             break;
                         case PLACE:
@@ -86,9 +87,9 @@ public class JobProgressListener implements Listener {
                                 conditionMet = objective.checkSmeltCondition(((ItemStack) primaryTarget).getType());
                             }
                             break;
-                        case BREW: // primaryTarget est PotionData
-                            if (primaryTarget instanceof PotionData) {
-                                conditionMet = objective.checkBrewCondition((PotionData) primaryTarget);
+                        case BREW: // primaryTarget est le PotionType de la potion
+                            if (primaryTarget instanceof PotionType potionType) {
+                                conditionMet = objective.checkBrewCondition(potionType);
                             }
                             break;
                         case STRIP:
@@ -137,20 +138,20 @@ public class JobProgressListener implements Listener {
         }
     }
 
+    private static boolean objectiveDone(DailyJob dailyJob, JobObjective objective) {
+        return dailyJob.getProgress(objective.getId()) >= objective.getAmount();
+    }
+
+    private static int ageOf(Block block) {
+        return block.getBlockData() instanceof Ageable ageable ? ageable.getAge() : -1;
+    }
+
     // --- Listeners pour chaque JobAction ---
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent event) {
-        Player player = event.getPlayer();
         Block block = event.getBlock();
-        Material material = block.getType();
-        int age = -1;
-
-        if (block.getBlockData() instanceof Ageable) {
-            Ageable ageable = (Ageable) block.getBlockData();
-            age = ageable.getAge();
-        }
-        handleObjectiveProgress(player, JobAction.BREAK, material, age, 1);
+        handleObjectiveProgress(event.getPlayer(), JobAction.BREAK, block.getType(), block, 1);
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -274,13 +275,12 @@ public class JobProgressListener implements Listener {
             case FURNACE:
             case BLAST_FURNACE:
             case SMOKER:
-                actionType = JobAction.SMELT;
-                targetObject = currentItem.getType();
-                break;
+                // La fonte est comptée par InventoryListener (quantité réellement récupérée)
+                return;
             case BREWING:
                 actionType = JobAction.BREW;
-                if (currentItem.getItemMeta() instanceof PotionMeta) {
-                    targetObject = ((PotionMeta) currentItem.getItemMeta()).getBasePotionData();
+                if (currentItem.getItemMeta() instanceof PotionMeta potionMeta && potionMeta.getBasePotionType() != null) {
+                    targetObject = potionMeta.getBasePotionType();
                 } else {
                     return; // Ce n'est pas une potion standard
                 }
@@ -401,7 +401,6 @@ public class JobProgressListener implements Listener {
     // Attention: PlayerMoveEvent est appelé TRÈS fréquemment. À utiliser avec précaution.
     // Il est préférable de vérifier la distance toutes les X secondes plutôt qu'à chaque mouvement.
     // Pour cet exemple, je vais le faire à chaque mouvement, mais ce n'est PAS recommandé pour la performance.
-    private final Map<UUID, Double> playerWalkDistanceTracker = new HashMap<>(); // Stocke la distance accumulée pour l'objectif WALK
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerMove(PlayerMoveEvent event) {
@@ -412,6 +411,9 @@ public class JobProgressListener implements Listener {
             return; // N'a pas changé de bloc, ignore pour la performance (simple check)
         }
 
+        // Aucun objectif WALK dans la config : rien à suivre
+        if (!plugin.getJobManager().hasWalkObjectives()) return;
+
         PlayerData playerData = plugin.getPlayerCache().getPlayerData(player.getUniqueId());
         if (playerData == null || playerData.getActiveDailyJobs().isEmpty()) return;
 
@@ -419,7 +421,7 @@ public class JobProgressListener implements Listener {
         for (DailyJob dailyJob : playerData.getActiveDailyJobs().values()) {
             if (dailyJob.isCompleted()) continue;
             for (JobObjective objective : dailyJob.getTemplate().getObjectives()) {
-                if (objective.getAction() == JobAction.WALK && !dailyJob.isObjectiveCompleted(objective.getId())) {
+                if (objective.getAction() == JobAction.WALK && !objectiveDone(dailyJob, objective)) {
                     needsWalkObjectiveCheck = true;
                     break;
                 }
@@ -436,7 +438,7 @@ public class JobProgressListener implements Listener {
         for (DailyJob dailyJob : playerData.getActiveDailyJobs().values()) {
             if (dailyJob.isCompleted()) continue;
             for (JobObjective objective : dailyJob.getTemplate().getObjectives()) {
-                if (objective.getAction() == JobAction.WALK && !dailyJob.isObjectiveCompleted(objective.getId())) {
+                if (objective.getAction() == JobAction.WALK && !objectiveDone(dailyJob, objective)) {
 
                     // La progression pour WALK est stockée en tant que distance.
                     // L' "amount" de l'objectif est la distance totale à parcourir.

@@ -1,7 +1,8 @@
 package org.Cry_Legende.sHJobs.utils;
 
-import com.mojang.authlib.GameProfile;
-import com.mojang.authlib.properties.Property;
+import com.destroystokyo.paper.profile.PlayerProfile;
+import com.destroystokyo.paper.profile.ProfileProperty;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
@@ -10,7 +11,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -200,15 +200,10 @@ public class ItemBuilder {
         SkullMeta skullMeta = (SkullMeta) itemStack.getItemMeta();
         if (skullMeta == null) return this;
 
-        GameProfile profile = new GameProfile(UUID.randomUUID(), null);
-        profile.getProperties().put("textures", new Property("textures", textureValue));
-        try {
-            Field profileField = skullMeta.getClass().getDeclaredField("profile");
-            profileField.setAccessible(true);
-            profileField.set(skullMeta, profile);
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            e.printStackTrace(); // Log l'erreur si la réflection échoue
-        }
+        // API de profil de Paper : le champ privé "profile" de la méta n'a plus le même type depuis 1.20.5
+        PlayerProfile profile = Bukkit.createProfile(UUID.randomUUID(), null);
+        profile.setProperty(new ProfileProperty("textures", textureValue));
+        skullMeta.setPlayerProfile(profile);
         itemStack.setItemMeta(skullMeta);
         return this;
     }

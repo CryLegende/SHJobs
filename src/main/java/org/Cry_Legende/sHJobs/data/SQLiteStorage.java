@@ -18,6 +18,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
 public class SQLiteStorage implements StorageManager {
@@ -97,6 +98,12 @@ public class SQLiteStorage implements StorageManager {
     @Override
     public void close() throws SQLException {
         executorService.shutdown();
+        try {
+            // laisse finir les sauvegardes en cours avant de fermer la connexion
+            executorService.awaitTermination(10, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
         if (connection != null && !connection.isClosed()) {
             connection.close();
             plugin.getLogger().info("SQLite connection closed.");
@@ -180,61 +187,65 @@ public class SQLiteStorage implements StorageManager {
     public CompletableFuture<Void> savePlayerData(PlayerData playerData) {
         return CompletableFuture.runAsync(() -> {
             UUID uuid = playerData.getPlayerUUID();
-            String sqlPlayerData = "INSERT OR REPLACE INTO shjobs_player_data (uuid, job_points) VALUES (?, ?);";
-            try (PreparedStatement pstmt = connection.prepareStatement(sqlPlayerData)) {
-                pstmt.setString(1, uuid.toString());
-                pstmt.setLong(2, playerData.getJobPoints());
-                pstmt.executeUpdate();
-            } catch (SQLException e) {
-                plugin.getLogger().log(Level.SEVERE, "Error saving base player data for " + uuid, e);
-                throw new RuntimeException(e);
-            }
-
-            String sqlPlayerJobs = "INSERT OR REPLACE INTO shjobs_player_jobs (player_uuid, job_type, experience, level) VALUES (?, ?, ?, ?);";
-            try (PreparedStatement pstmt = connection.prepareStatement(sqlPlayerJobs)) {
-                for (JobType jobType : JobType.values()) {
-                    pstmt.setString(1, uuid.toString());
-                    pstmt.setString(2, jobType.name());
-                    pstmt.setLong(3, playerData.getExperience(jobType));
-                    pstmt.setInt(4, playerData.getLevel(jobType));
-                    pstmt.addBatch();
-                }
-                pstmt.executeBatch();
-            } catch (SQLException e) {
-                plugin.getLogger().log(Level.SEVERE, "Error saving job-specific data for " + uuid, e);
-                throw new RuntimeException(e);
-            }
-
-            String sqlDeleteOldDailyJobs = "DELETE FROM shjobs_player_daily_jobs WHERE player_uuid = ?;";
-            try (PreparedStatement pstmt = connection.prepareStatement(sqlDeleteOldDailyJobs)) {
-                pstmt.setString(1, uuid.toString());
-                pstmt.executeUpdate();
-            } catch (SQLException e) {
-                plugin.getLogger().log(Level.SEVERE, "Error clearing old daily jobs for " + uuid, e);
-            }
-
-            String sqlDailyJobs = "INSERT INTO shjobs_player_daily_jobs (player_uuid, job_template_id, daily_job_json) VALUES (?, ?, ?);";
-            if (!playerData.getActiveDailyJobs().isEmpty()) {
-                try (PreparedStatement pstmt = connection.prepareStatement(sqlDailyJobs)) {
-                    for (DailyJob dailyJob : playerData.getActiveDailyJobs().values()) {
-                        if (dailyJob.getTemplate() == null) {
-                            plugin.getLogger().warning("Skipping save of a daily job with null template for player " + uuid);
-                            continue;
-                        }
+            // Une seule transaction : sans elle, un échec après le DELETE des jobs du jour les ferait perdre
+            try {
+                connection.setAutoCommit(false);
+                try {
+                    String sqlPlayerData = "INSERT OR REPLACE INTO shjobs_player_data (uuid, job_points) VALUES (?, ?);";
+                    try (PreparedStatement pstmt = connection.prepareStatement(sqlPlayerData)) {
                         pstmt.setString(1, uuid.toString());
-                        pstmt.setString(2, dailyJob.getTemplate().getId());
-                        TempDailyJobStorage tempStorage = new TempDailyJobStorage();
-                        tempStorage.objectiveProgress = dailyJob.getObjectiveProgress();
-                        tempStorage.completed = dailyJob.isCompleted();
-                        String dailyJobJson = gson.toJson(tempStorage);
-                        pstmt.setString(3, dailyJobJson);
-                        pstmt.addBatch();
+                        pstmt.setLong(2, playerData.getJobPoints());
+                        pstmt.executeUpdate();
                     }
-                    pstmt.executeBatch();
+
+                    String sqlPlayerJobs = "INSERT OR REPLACE INTO shjobs_player_jobs (player_uuid, job_type, experience, level) VALUES (?, ?, ?, ?);";
+                    try (PreparedStatement pstmt = connection.prepareStatement(sqlPlayerJobs)) {
+                        for (JobType jobType : JobType.values()) {
+                            pstmt.setString(1, uuid.toString());
+                            pstmt.setString(2, jobType.name());
+                            pstmt.setLong(3, playerData.getExperience(jobType));
+                            pstmt.setInt(4, playerData.getLevel(jobType));
+                            pstmt.addBatch();
+                        }
+                        pstmt.executeBatch();
+                    }
+
+                    String sqlDeleteOldDailyJobs = "DELETE FROM shjobs_player_daily_jobs WHERE player_uuid = ?;";
+                    try (PreparedStatement pstmt = connection.prepareStatement(sqlDeleteOldDailyJobs)) {
+                        pstmt.setString(1, uuid.toString());
+                        pstmt.executeUpdate();
+                    }
+
+                    String sqlDailyJobs = "INSERT INTO shjobs_player_daily_jobs (player_uuid, job_template_id, daily_job_json) VALUES (?, ?, ?);";
+                    if (!playerData.getActiveDailyJobs().isEmpty()) {
+                        try (PreparedStatement pstmt = connection.prepareStatement(sqlDailyJobs)) {
+                            for (DailyJob dailyJob : playerData.getActiveDailyJobs().values()) {
+                                if (dailyJob.getTemplate() == null) {
+                                    plugin.getLogger().warning("Skipping save of a daily job with null template for player " + uuid);
+                                    continue;
+                                }
+                                pstmt.setString(1, uuid.toString());
+                                pstmt.setString(2, dailyJob.getTemplate().getId());
+                                TempDailyJobStorage tempStorage = new TempDailyJobStorage();
+                                tempStorage.objectiveProgress = dailyJob.getObjectiveProgress();
+                                tempStorage.completed = dailyJob.isCompleted();
+                                String dailyJobJson = gson.toJson(tempStorage);
+                                pstmt.setString(3, dailyJobJson);
+                                pstmt.addBatch();
+                            }
+                            pstmt.executeBatch();
+                        }
+                    }
+                    connection.commit();
                 } catch (SQLException e) {
-                    plugin.getLogger().log(Level.SEVERE, "Error saving active daily jobs for " + uuid, e);
-                    throw new RuntimeException(e);
+                    connection.rollback();
+                    throw e;
+                } finally {
+                    connection.setAutoCommit(true);
                 }
+            } catch (SQLException e) {
+                plugin.getLogger().log(Level.SEVERE, "Error saving player data for " + uuid + " (SQLite). Rolled back.", e);
+                throw new RuntimeException(e);
             }
         }, executorService);
     }

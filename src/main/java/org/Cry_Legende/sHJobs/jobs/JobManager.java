@@ -14,6 +14,8 @@ public class JobManager {
     private final SHJobs plugin;
     private final Map<String, JobTemplate> jobTemplates;
     private List<String> currentDailyJobTemplateIds;
+    // Vrai si un modèle contient un objectif WALK (évite de suivre chaque déplacement pour rien)
+    private volatile boolean walkObjectives;
 
     public JobManager(SHJobs plugin) {
         this.plugin = plugin;
@@ -26,6 +28,7 @@ public class JobManager {
      */
     public void loadJobTemplates() {
         jobTemplates.clear();
+        walkObjectives = false;
         ConfigurationSection templatesSection = plugin.getConfigManager().getJobTemplatesSection();
         if (templatesSection == null) {
             plugin.getLogger().warning("No 'job_templates' section found in config.yml.");
@@ -39,7 +42,13 @@ public class JobManager {
             Optional<JobTemplate> templateOpt = JobTemplate.fromConfig(plugin, templateId, templateConfig);
             templateOpt.ifPresent(template -> jobTemplates.put(template.getId(), template));
         }
+        walkObjectives = jobTemplates.values().stream()
+            .anyMatch(template -> template.getObjectives().stream().anyMatch(obj -> obj.getAction() == JobAction.WALK));
         plugin.getLogger().info("Loaded " + jobTemplates.size() + " job templates.");
+    }
+
+    public boolean hasWalkObjectives() {
+        return walkObjectives;
     }
 
     public Optional<JobTemplate> getJobTemplate(String templateId) {

@@ -42,6 +42,8 @@ public class CustomItemManager {
     }
 
     public void loadItems() {
+        // /sja reload doit voir les modifications faites à la main dans custom_items.yml
+        itemsConfig = YamlConfiguration.loadConfiguration(itemsFile);
         customItemsCache.clear();
         ConfigurationSection itemsSection = itemsConfig.getConfigurationSection("items");
         if (itemsSection != null) {

@@ -6,10 +6,10 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionType;
-import org.bukkit.potion.PotionData;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -22,6 +22,7 @@ public class JobObjective {
     private final PotionType potionType;    // Pour BREW (type de base de la potion)
     private final boolean potionExtended;   // Pour BREW
     private final boolean potionUpgraded;   // Pour BREW
+    private final PotionType requiredPotionType; // Pour BREW : variante exacte (SWIFTNESS, LONG_SWIFTNESS ou STRONG_SWIFTNESS), null si elle n'existe pas
     private final int amount;
     private final int requiredAge;          // Pour BREAK (cultures)
     private final String objectiveDisplayName; // Nom affichable pour cet objectif si différent de l'ID
@@ -35,6 +36,7 @@ public class JobObjective {
         this.potionType = builder.potionType;
         this.potionExtended = builder.potionExtended;
         this.potionUpgraded = builder.potionUpgraded;
+        this.requiredPotionType = variantOf(builder.potionType, builder.potionExtended, builder.potionUpgraded);
         this.amount = builder.amount;
         this.requiredAge = builder.requiredAge;
         this.objectiveDisplayName = builder.objectiveDisplayName != null ? builder.objectiveDisplayName : this.id;
@@ -90,11 +92,62 @@ public class JobObjective {
         return potionUpgraded;
     }
 
-    public PotionData getRequiredPotionData() {
-        if (action != JobAction.BREW || potionType == null) {
+    /**
+     * Potion attendue pour BREW. Depuis 1.20.5 les variantes prolongée et renforcée sont des types à part entière
+     * (LONG_x, STRONG_x) : potion_extended / potion_upgraded de la config y sont ramenés.
+     */
+    public PotionType getRequiredPotionType() {
+        if (action != JobAction.BREW) {
             return null;
         }
-        return new PotionData(potionType, potionExtended, potionUpgraded);
+        return requiredPotionType;
+    }
+
+    private static PotionType variantOf(PotionType base, boolean extended, boolean upgraded) {
+        if (base == null) {
+            return null;
+        }
+        if (extended && upgraded) {
+            return null; // PotionData refusait déjà cette combinaison
+        }
+        if (!extended && !upgraded) {
+            return base;
+        }
+        try {
+            return PotionType.valueOf((upgraded ? "STRONG_" : "LONG_") + base.name());
+        } catch (IllegalArgumentException e) {
+            return null; // pas de variante pour cette potion
+        }
+    }
+
+    /**
+     * Type de potion lu en config : nom actuel (SWIFTNESS), ancien nom (SPEED) ou clé (minecraft:swiftness).
+     *
+     * @return null si inconnu
+     */
+    public static PotionType potionTypeFromConfig(String raw) {
+        if (raw == null || raw.isBlank()) {
+            return null;
+        }
+        String s = raw.trim();
+        if (s.indexOf(':') >= 0) {
+            NamespacedKey key = NamespacedKey.fromString(s.toLowerCase(Locale.ROOT));
+            return key == null ? null : Registry.POTION.get(key);
+        }
+        String name = switch (s.toUpperCase(Locale.ROOT)) {
+            // noms d'avant 1.20.5
+            case "SPEED" -> "SWIFTNESS";
+            case "JUMP" -> "LEAPING";
+            case "INSTANT_HEAL" -> "HEALING";
+            case "INSTANT_DAMAGE" -> "HARMING";
+            case "REGEN" -> "REGENERATION";
+            default -> s.toUpperCase(Locale.ROOT);
+        };
+        try {
+            return PotionType.valueOf(name);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
     }
 
     public int getAmount() {
@@ -143,12 +196,10 @@ public class JobObjective {
         return materials.contains(smeltedResultMaterial); // Suppose que 'materials' contient le résultat attendu
     }
 
-    public boolean checkBrewCondition(PotionData brewedPotionData) {
+    public boolean checkBrewCondition(PotionType brewedPotionType) {
         if (action != JobAction.BREW) return false;
         if (potionType == null) return true; // Si aucun type spécifique, n'importe quelle potion compte
-        return brewedPotionData.getType() == this.potionType &&
-            brewedPotionData.isExtended() == this.potionExtended &&
-            brewedPotionData.isUpgraded() == this.potionUpgraded;
+        return brewedPotionType != null && brewedPotionType == requiredPotionType;
     }
 
     public boolean checkStripCondition(Material strippedMaterial) {

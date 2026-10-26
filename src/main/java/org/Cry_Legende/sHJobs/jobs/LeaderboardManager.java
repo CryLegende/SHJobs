@@ -94,6 +94,13 @@ public class LeaderboardManager {
     }
 
     /**
+     * Oublie les rangs d'un joueur déconnecté (le classement du top 10 est conservé à part).
+     */
+    public void forgetPlayer(UUID playerUUID) {
+        playerRankCache.remove(playerUUID);
+    }
+
+    /**
      * Met à jour le rang d'un joueur spécifique pour un métier donné.
      * Utilise les données actuelles du joueur (niveau/xp) pour assurer l'exactitude.
      * Met le rang à -1 temporairement pour signifier "calcul en cours".

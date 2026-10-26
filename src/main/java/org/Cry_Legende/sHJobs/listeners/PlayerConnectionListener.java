@@ -1,8 +1,6 @@
 package org.Cry_Legende.sHJobs.listeners;
 
 import org.Cry_Legende.sHJobs.SHJobs;
-import org.Cry_Legende.sHJobs.jobs.JobType;
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -19,18 +17,10 @@ public class PlayerConnectionListener implements Listener {
 
     @EventHandler(priority = EventPriority.NORMAL)
     public void onPlayerJoin(PlayerJoinEvent event) {
-        Player player = event.getPlayer();
-
         // La logique de chargement des données est déléguée au PlayerCache.
         // PlayerCache.handlePlayerJoin s'occupe de l'asynchronicité et de la mise en cache.
+        // Le classement du joueur est mis à jour par PlayerCache une fois ses données chargées.
         plugin.getPlayerCache().handlePlayerJoin(event);
-
-        // Met à jour le classement du joueur pour tous les métiers en arrière-plan.
-        // C'est "fire and forget", la mise à jour se fera de manière asynchrone
-        // et sera disponible peu de temps après la connexion du joueur.
-        for (JobType jobType : JobType.values()) {
-            plugin.getLeaderboardManager().updatePlayerRank(player.getUniqueId(), jobType);
-        }
     }
 
     @EventHandler(priority = EventPriority.NORMAL)

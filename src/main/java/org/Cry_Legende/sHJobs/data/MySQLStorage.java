@@ -20,6 +20,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
 public class MySQLStorage implements StorageManager {
@@ -107,6 +108,12 @@ public class MySQLStorage implements StorageManager {
     @Override
     public void close() {
         executorService.shutdown();
+        try {
+            // laisse finir les sauvegardes en cours avant de fermer le pool
+            executorService.awaitTermination(10, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
         if (dataSource != null && !dataSource.isClosed()) {
             dataSource.close();
             plugin.getLogger().info("MySQL HikariCP connection pool closed.");
@@ -298,7 +305,7 @@ public class MySQLStorage implements StorageManager {
     @Override
     public CompletableFuture<Integer> getPlayerRankForJob(JobType jobType, int playerLevel, long playerExperience) {
         return CompletableFuture.supplyAsync(() -> {
-            String rankSql = "SELECT COUNT(*) + 1 AS rank FROM `shjobs_player_jobs` WHERE `job_type` = ? AND (`level` > ? OR (`level` = ? AND `experience` > ?));";
+            String rankSql = "SELECT COUNT(*) + 1 AS `player_rank` FROM `shjobs_player_jobs` WHERE `job_type` = ? AND (`level` > ? OR (`level` = ? AND `experience` > ?));";
             try (Connection conn = dataSource.getConnection(); PreparedStatement pstmt = conn.prepareStatement(rankSql)) {
                 pstmt.setString(1, jobType.name());
                 pstmt.setInt(2, playerLevel);
@@ -306,7 +313,7 @@ public class MySQLStorage implements StorageManager {
                 pstmt.setLong(4, playerExperience);
                 ResultSet rs = pstmt.executeQuery();
                 if (rs.next()) {
-                    return rs.getInt("rank");
+                    return rs.getInt("player_rank");
                 }
             } catch (SQLException e) {
                 plugin.getLogger().log(Level.SEVERE, "Error calculating MySQL player rank", e);

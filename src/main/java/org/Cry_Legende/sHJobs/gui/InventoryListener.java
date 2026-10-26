@@ -13,6 +13,8 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.FurnaceInventory;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
@@ -63,119 +65,68 @@ public class InventoryListener implements Listener {
             // Mais pour un menu de jobs/boutique simple, on annule tout.
         }
 
-        // Gérer l'action SMELT (retrait d'item d'un four)
-        // On vérifie si le joueur clique sur le slot de résultat d'un four
-        if (event.getSlotType() == org.bukkit.event.inventory.InventoryType.SlotType.RESULT) {
-            if (topInventory instanceof FurnaceInventory) { // Furnace, BlastFurnace, Smoker
-                ItemStack itemTaken = event.getCurrentItem(); // Item dans le slot de résultat AVANT le clic
-
-                // L'item est retiré APRÈS cet event si non annulé.
-                // Pour SMELT, on veut compter ce que le joueur PREND.
-                // Si le clic est un shift-click, la quantité peut être plus grande.
-                if (itemTaken != null && itemTaken.getType() != Material.AIR) {
-                    // On doit déterminer la quantité réellement prise.
-                    // Si c'est un clic normal, c'est itemTaken.getAmount().
-                    // Si c'est un shift-click, tous les items correspondants dans le slot de résultat sont déplacés.
-                    // L'event.getCurrentItem() est ce qui EST dans le slot.
-                    // L'event.getCursor() est ce qui est sur le curseur.
-
-                    // Si le joueur prend l'item (pas un clic pour mettre un item, bien que ce soit un slot de résultat)
-                    // Les actions typiques pour prendre : CLICK, SHIFT_LEFT, SHIFT_RIGHT
-                    if (event.getAction() == InventoryAction.PICKUP_ALL ||
-                        event.getAction() == InventoryAction.PICKUP_HALF ||
-                        event.getAction() == InventoryAction.PICKUP_ONE ||
-                        event.getAction() == InventoryAction.PICKUP_SOME ||
-                        event.getAction() == InventoryAction.MOVE_TO_OTHER_INVENTORY) { // Shift-click
-
-                        // La quantité prise est dans itemTaken.getAmount() pour les clics simples.
-                        // Pour shift-click (MOVE_TO_OTHER_INVENTORY), event.getCurrentItem() est le stack qui sera déplacé.
-                        int amountTaken = itemTaken.getAmount();
-
-                        // Déléguer à JobProgressListener.handleObjectiveProgress
-                        // Note: JobProgressListener n'a pas de méthode publique directe pour ça.
-                        // On pourrait appeler une méthode spécifique ou passer par la méthode générique.
-                        // Pour la cohérence, on pourrait simuler l'appel à une méthode dans JobProgressListener
-                        // ou, mieux, JobProgressListener pourrait avoir une méthode publique `processSmelt`.
-                        // Ou on réutilise `handleObjectiveProgress` de JobProgressListener en passant les bons params.
-                        // C'est un peu un hack, il serait plus propre d'avoir une méthode dédiée dans JPL.
-
-                        // Pour l'instant, on va appeler une méthode dans JobProgressListener (qui n'existe pas encore comme ça)
-                        // ou on appelle une méthode statique/via instance de plugin
-                        // ((JobProgressListener) plugin.getJobProgressListenerInstance())
-                        //      .processSmeltAction(player, itemTaken, amountTaken);
-                        // Pour cet exemple, on va juste loguer et on créera la méthode dans JPL plus tard si besoin.
-
-                        // Réutilisation de la logique existante (peut nécessiter adaptation de handleObjectiveProgress)
-                        // On suppose que JobProgressListener est enregistré et accessible via plugin.
-                        // On peut aussi créer une instance ici, mais c'est moins propre.
-                        // Si JobProgressListener est bien enregistré:
-                        // SHJobs.getInstance().getJobProgressListener().handleSmelt(...) ; // si méthode publique
-
-                        // Appel direct via le plugin si on a une instance du listener
-                        // (on n'en a pas directement, mais on pourrait ajouter un getter).
-                        // Le plus simple est de refaire un appel à la logique ici pour SMELT
-                        // ou d'exposer une méthode dans PlayerCache/JobManager qui transmet.
-
-                        // Pour l'exemple, on va utiliser une méthode hypothétique sur JobProgressListener
-                        // (ou on pourrait copier/coller une version simplifiée de handleObjectiveProgress ici pour SMELT)
-
-                        // Solution: on utilise un `primaryTarget` qui est l'ItemStack lui-même
-                        // et `secondaryTarget` peut être null. `amount` est la quantité.
-                        // Le JobProgressListener.handleObjectiveProgress doit être capable de gérer un ItemStack pour SMELT.
-                        // On a déjà prévu ça : case SMELT: if (primaryTarget instanceof ItemStack)
-                        // Donc, c'est bon.
-
-                        // On doit s'assurer que le listener de JobProgress est accessible.
-                        // SHJobs.getInstance().getSomeManager().getJobProgressListener().handle(...)
-                        // Pour éviter la dépendance circulaire ou un couplage trop fort,
-                        // on peut passer l'instance du listener ou le joueur et l'item au JobManager qui s'en occupe.
-
-                        // Appel à la logique de progression des jobs :
-                        // Cela suppose que JobProgressListener est instancié et enregistré.
-                        // Pour appeler une méthode de JobProgressListener, on doit soit:
-                        // 1. Le rendre accessible via un getter dans SHJobs (pas top pour l'encapsulation).
-                        // 2. Créer une méthode dans SHJobs ou JobManager qui relaie l'appel.
-                        // 3. Faire la logique de progression pour SMELT directement ici (moins DRY).
-
-                        // Option 2 : Méthode dans JobManager (ou SHJobs)
-                        // plugin.getJobManager().processPlayerSmelt(player, itemTaken, amountTaken);
-                        // Et JobManager appellerait handleObjectiveProgress sur son instance de JPL (qu'il n'a pas)
-                        // ou directement la logique.
-
-                        // Option la plus simple pour l'instant: appeler directement la logique de progression ici.
-                        // Cela duplique un peu, mais évite de complexifier les appels entre managers/listeners.
-                        PlayerData playerData = plugin.getPlayerCache().getPlayerData(player.getUniqueId());
-                        if (playerData != null && !playerData.getActiveDailyJobs().isEmpty()) {
-                            // Recréer une mini-boucle de handleObjectiveProgress pour SMELT
-                            for (DailyJob dailyJob : playerData.getActiveDailyJobs().values()) {
-                                if (dailyJob.isCompleted()) continue;
-                                for (JobObjective objective : dailyJob.getTemplate().getObjectives()) {
-                                    if (objective.getAction() == JobAction.SMELT && !dailyJob.isObjectiveCompleted(objective.getId())) {
-                                        if (objective.checkSmeltCondition(itemTaken.getType())) {
-                                            if (dailyJob.incrementProgress(objective.getId(), amountTaken)) {
-                                                plugin.getMessages().sendPlayerMessage(player, "jobs.objective_completed",
-                                                    "%objective_name%", objective.getObjectiveDisplayName(),
-                                                    "%job_name%", dailyJob.getTemplate().getDisplayName());
-                                            }
-                                            if (dailyJob.isCompleted()) {
-                                                plugin.getMessages().sendPlayerMessage(player, "jobs.job_completed",
-                                                    "%job_name%", dailyJob.getTemplate().getDisplayName());
-                                                plugin.getJobManager().giveJobCompletionRewards(player, dailyJob);
-                                                // Le job est retiré par giveJobCompletionRewards
-                                                // Si on avait plusieurs jobs de smelt, il faudrait continuer la boucle
-                                                // mais comme giveJobCompletionRewards peut modifier la collection de jobs,
-                                                // il vaut mieux retourner ou re-vérifier.
-                                                // Pour la simplicité, si un job est complété, on sort.
-                                                return;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
+        // Gérer l'action SMELT (retrait d'item d'un four : Furnace, BlastFurnace, Smoker)
+        if (event.getSlotType() == InventoryType.SlotType.RESULT && topInventory instanceof FurnaceInventory furnace) {
+            ItemStack itemTaken = event.getCurrentItem(); // Item dans le slot de résultat AVANT le clic
+            if (itemTaken != null && itemTaken.getType() != Material.AIR) {
+                InventoryAction action = event.getAction();
+                if (action == InventoryAction.PICKUP_ALL ||
+                    action == InventoryAction.PICKUP_HALF ||
+                    action == InventoryAction.PICKUP_ONE ||
+                    action == InventoryAction.PICKUP_SOME ||
+                    action == InventoryAction.MOVE_TO_OTHER_INVENTORY) { // Shift-click
+                    // La quantité réellement prise se lit au tick suivant, dans le slot de résultat : un clic sans effet
+                    // (inventaire plein, curseur plein, clic annulé) ne doit pas faire avancer l'objectif.
+                    Material smelted = itemTaken.getType();
+                    int before = itemTaken.getAmount();
+                    plugin.getServer().getScheduler().runTask(plugin, () -> {
+                        ItemStack after = furnace.getResult();
+                        int remaining = after != null && after.getType() == smelted ? after.getAmount() : 0;
+                        int taken = before - remaining;
+                        if (taken > 0 && player.isOnline()) {
+                            progressSmelt(player, smelted, taken);
                         }
+                    });
+                }
+            }
+        }
+    }
+
+    /**
+     * Fait avancer les objectifs SMELT du joueur (les autres actions passent par JobProgressListener).
+     */
+    private void progressSmelt(Player player, Material smelted, int amount) {
+        PlayerData playerData = plugin.getPlayerCache().getPlayerData(player.getUniqueId());
+        if (playerData == null || playerData.getActiveDailyJobs().isEmpty()) {
+            return;
+        }
+        for (DailyJob dailyJob : playerData.getActiveDailyJobs().values()) {
+            if (dailyJob.isCompleted()) continue;
+            for (JobObjective objective : dailyJob.getTemplate().getObjectives()) {
+                if (objective.getAction() == JobAction.SMELT && !dailyJob.isObjectiveCompleted(objective.getId())
+                    && objective.checkSmeltCondition(smelted)) {
+                    if (dailyJob.incrementProgress(objective.getId(), amount)) {
+                        plugin.getMessages().sendPlayerMessage(player, "jobs.objective_completed",
+                            "%objective_name%", objective.getObjectiveDisplayName(),
+                            "%job_name%", dailyJob.getTemplate().getDisplayName());
+                    }
+                    if (dailyJob.isCompleted()) {
+                        plugin.getMessages().sendPlayerMessage(player, "jobs.job_completed",
+                            "%job_name%", dailyJob.getTemplate().getDisplayName());
+                        plugin.getJobManager().giveJobCompletionRewards(player, dailyJob);
+                        return; // la collection de jobs peut changer : on sort
                     }
                 }
             }
+        }
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onInventoryDrag(InventoryDragEvent event) {
+        // Un glisser-déposer sur le menu y laisserait des objets, perdus à la fermeture
+        Inventory top = event.getView().getTopInventory();
+        if (top.getHolder() instanceof CustomMenuHolder && event.getRawSlots().stream().anyMatch(slot -> slot < top.getSize())) {
+            event.setCancelled(true);
         }
     }
 

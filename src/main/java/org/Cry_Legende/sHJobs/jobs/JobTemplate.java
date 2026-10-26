@@ -1,6 +1,7 @@
 package org.Cry_Legende.sHJobs.jobs;
 
 import org.Cry_Legende.sHJobs.SHJobs;
+import org.Cry_Legende.sHJobs.utils.SoundUtil;
 import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
 
@@ -66,8 +67,8 @@ public class JobTemplate {
     }
 
     public List<JobObjective> getObjectives() {
-        // Retourne une copie pour l'immutabilité
-        return new ArrayList<>(objectives);
+        // Liste déjà immuable (List.copyOf) : pas de copie, cette méthode est appelée à chaque casse de bloc
+        return objectives;
     }
 
     public Optional<JobObjective> getObjectiveById(String objectiveId) {
@@ -198,12 +199,12 @@ public class JobTemplate {
                 }
 
                 if (objSection.contains("potion_type")) { // Pour BREW
-                    try {
-                        org.bukkit.potion.PotionType potionType = org.bukkit.potion.PotionType.valueOf(objSection.getString("potion_type").toUpperCase());
+                    org.bukkit.potion.PotionType potionType = JobObjective.potionTypeFromConfig(objSection.getString("potion_type"));
+                    if (potionType != null) {
                         boolean extended = objSection.getBoolean("potion_extended", false);
                         boolean upgraded = objSection.getBoolean("potion_upgraded", false);
                         objBuilder.potionData(potionType, extended, upgraded);
-                    } catch (IllegalArgumentException e) {
+                    } else {
                         plugin.getLogger().warning("Invalid potion_type '" + objSection.getString("potion_type") + "' in objective '" + objectiveId + "' for job '" + id + "'.");
                     }
                 }
@@ -250,12 +251,17 @@ public class JobTemplate {
                 rewardMsg = rewardsSection.getString("message_on_complete");
                 String soundStr = rewardsSection.getString("sound_on_complete");
                 if (soundStr != null && !soundStr.isEmpty()) {
-                    String[] parts = soundStr.split(":");
                     try {
-                        rewardSnd = Sound.valueOf(parts[0].toUpperCase());
-                        if (parts.length > 1) rewardVol = Float.parseFloat(parts[1]);
-                        if (parts.length > 2) rewardPitch = Float.parseFloat(parts[2]);
-                    } catch (IllegalArgumentException | ArrayIndexOutOfBoundsException e) {
+                        // ancien nom ou clé du son, puis volume et hauteur éventuels
+                        SoundUtil.Spec spec = SoundUtil.parse(soundStr);
+                        if (spec == null) {
+                            plugin.getLogger().warning("Invalid sound format '" + soundStr + "' in rewards for job '" + id + "'.");
+                        } else {
+                            rewardSnd = spec.sound();
+                            rewardVol = spec.volume();
+                            rewardPitch = spec.pitch();
+                        }
+                    } catch (NumberFormatException e) {
                         plugin.getLogger().warning("Invalid sound format '" + soundStr + "' in rewards for job '" + id + "'.");
                     }
                 }
