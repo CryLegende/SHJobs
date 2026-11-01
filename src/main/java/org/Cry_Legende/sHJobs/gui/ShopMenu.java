@@ -2,6 +2,7 @@ package org.Cry_Legende.sHJobs.gui;
 
 import org.Cry_Legende.sHJobs.SHJobs;
 import org.Cry_Legende.sHJobs.data.PlayerData;
+import org.Cry_Legende.sHJobs.shop.DailyLimits;
 import org.Cry_Legende.sHJobs.shop.ShopItem;
 import org.Cry_Legende.sHJobs.shop.ShopManager;
 import org.Cry_Legende.sHJobs.utils.ItemBuilder;
@@ -118,6 +119,18 @@ public class ShopMenu extends CustomMenuHolder {
                 continue;
             }
             finalLore.add(plugin.getMenuManager().applyPlaceholders(line, player, placeholders));
+        }
+        // Limites quotidiennes : une ligne par limite, textes shop.lore_purchase_limit / shop.lore_sell_limit
+        DailyLimits limits = plugin.getDailyLimits();
+        if (shopItem.getPurchaseLimitPerDay() > 0) {
+            finalLore.add(plugin.getMessages().getMessage("shop.lore_purchase_limit", false)
+                .replace("%used%", String.valueOf(limits.used(player.getUniqueId(), shopItem.getId(), DailyLimits.Kind.BOUGHT)))
+                .replace("%limit%", String.valueOf(shopItem.getPurchaseLimitPerDay())));
+        }
+        if (shopItem.isSellable() && shopItem.getSellLimitPerDay() > 0) {
+            finalLore.add(plugin.getMessages().getMessage("shop.lore_sell_limit", false)
+                .replace("%used%", String.valueOf(limits.used(player.getUniqueId(), shopItem.getId(), DailyLimits.Kind.SOLD)))
+                .replace("%limit%", String.valueOf(shopItem.getSellLimitPerDay())));
         }
         itemBuilder.setLore(finalLore);
 

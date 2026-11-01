@@ -49,6 +49,7 @@ public final class SHJobs extends JavaPlugin {
     private PlayerCache playerCache;
     private JobManager jobManager;
     private ShopManager shopManager;
+    private org.Cry_Legende.sHJobs.shop.DailyLimits dailyLimits;
     private MenuManager menuManager;
     private CustomItemManager customItemManager;
     private LeaderboardManager leaderboardManager;
@@ -80,6 +81,7 @@ public final class SHJobs extends JavaPlugin {
         this.playerCache = new PlayerCache(this);
         this.jobManager = new JobManager(this);
         this.shopManager = new ShopManager(this);
+        this.dailyLimits = new org.Cry_Legende.sHJobs.shop.DailyLimits(this);
         this.menuManager = new MenuManager(this);
         this.leaderboardManager = new LeaderboardManager(this);
 
@@ -122,6 +124,9 @@ public final class SHJobs extends JavaPlugin {
         }
 
         saveServerState();
+        if (this.dailyLimits != null) {
+            this.dailyLimits.save();
+        }
 
         if (this.playerCache != null) {
             this.playerCache.saveAllOnlinePlayersSync();
@@ -365,6 +370,11 @@ public final class SHJobs extends JavaPlugin {
 
     public JobManager getJobManager() {
         return jobManager;
+    }
+
+    /** Limites quotidiennes d'achat et de revente de la boutique. */
+    public org.Cry_Legende.sHJobs.shop.DailyLimits getDailyLimits() {
+        return dailyLimits;
     }
 
     public ShopManager getShopManager() {

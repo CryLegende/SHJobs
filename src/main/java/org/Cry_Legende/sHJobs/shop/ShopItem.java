@@ -29,6 +29,17 @@ public class ShopItem {
     private final boolean sellable;
     private final int sellPoints;
     private final String sellItemId; // L'ID de l'item dans custom_items.yml
+    // Limites quotidiennes par joueur (0 = illimité), voir DailyLimits
+    private final int purchaseLimitPerDay;
+    private final int sellLimitPerDay;
+
+    public int getPurchaseLimitPerDay() {
+        return purchaseLimitPerDay;
+    }
+
+    public int getSellLimitPerDay() {
+        return sellLimitPerDay;
+    }
 
     private ShopItem(Builder builder) {
         // Achat
@@ -47,6 +58,8 @@ public class ShopItem {
         this.sellable = builder.sellable;
         this.sellPoints = builder.sellPoints;
         this.sellItemId = builder.sellItemId;
+        this.purchaseLimitPerDay = builder.purchaseLimitPerDay;
+        this.sellLimitPerDay = builder.sellLimitPerDay;
     }
 
     // --- Getters pour l'achat (inchangés) ---
@@ -165,6 +178,11 @@ public class ShopItem {
                 .commandsOnPurchase(commands)
                 .selectionWeight(selectionWeight)
                 .sellInfo(sellable, sellPoints, sellItemId) // --- NOUVEAUTÉ ---
+                .dailyLimits(
+                    section.getInt("purchase_limit_per_day",
+                        plugin.getConfigManager().getRawConfig().getInt("general.default_purchase_limit_per_day", 0)),
+                    section.getInt("sell_limit_per_day",
+                        plugin.getConfigManager().getRawConfig().getInt("general.default_sell_limit_per_day", 0)))
                 .build();
             return Optional.of(item);
 
@@ -191,6 +209,8 @@ public class ShopItem {
         private boolean sellable = false;
         private int sellPoints = 0;
         private String sellItemId = "";
+        private int purchaseLimitPerDay = 0;
+        private int sellLimitPerDay = 0;
 
         public Builder(String id, String displayName, Material material) {
             this.id = id;
@@ -234,6 +254,12 @@ public class ShopItem {
             this.sellable = isSellable;
             this.sellPoints = points;
             this.sellItemId = sellId;
+            return this;
+        }
+
+        public Builder dailyLimits(int purchasePerDay, int sellPerDay) {
+            this.purchaseLimitPerDay = Math.max(0, purchasePerDay);
+            this.sellLimitPerDay = Math.max(0, sellPerDay);
             return this;
         }
 

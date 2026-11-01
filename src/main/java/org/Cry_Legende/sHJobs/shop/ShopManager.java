@@ -137,8 +137,17 @@ public class ShopManager {
             return;
         }
 
+        // Limite quotidienne d'achat de cet article (voir DailyLimits)
+        int purchasesLeft = plugin.getDailyLimits().remaining(player.getUniqueId(), item, DailyLimits.Kind.BOUGHT);
+        if (purchasesLeft <= 0) {
+            plugin.getMessages().sendPlayerMessage(player, "shop.purchase_limit_reached",
+                "%item_name%", item.getDisplayName(),
+                "%limit%", String.valueOf(item.getPurchaseLimitPerDay()));
+            return;
+        }
+
         // Limite de sécurité pour éviter des boucles de commandes trop volumineuses
-        int maxRequested = Math.min(requestedQuantity, 64);
+        int maxRequested = Math.min(Math.min(requestedQuantity, 64), purchasesLeft);
         long unitCost = item.getCost();
         long currentPoints = playerData.getJobPoints();
 
@@ -170,6 +179,7 @@ public class ShopManager {
         }
 
         playerData.removeJobPoints(totalCost);
+        plugin.getDailyLimits().add(player.getUniqueId(), item.getId(), DailyLimits.Kind.BOUGHT, quantityToBuy);
 
         String playerName = player.getName();
         for (int i = 0; i < quantityToBuy; i++) {
@@ -221,9 +231,15 @@ public class ShopManager {
         ItemStack itemToSell = itemToSellOpt.get();
         int amountToSell = itemToSell.getAmount();
 
+        if (plugin.getDailyLimits().remaining(player.getUniqueId(), shopItemEntry, DailyLimits.Kind.SOLD) <= 0) {
+            sendSellLimitReached(player, shopItemEntry);
+            return;
+        }
+
         if (countMatching(player, itemToSell) >= amountToSell) {
             removeMatching(player, itemToSell, amountToSell);
             playerData.addJobPoints(shopItemEntry.getSellPoints());
+            plugin.getDailyLimits().add(player.getUniqueId(), shopItemEntry.getId(), DailyLimits.Kind.SOLD, 1);
 
             String soldItemName = itemToSell.hasItemMeta() && itemToSell.getItemMeta().hasDisplayName() ? itemToSell.getItemMeta().getDisplayName() : shopItemEntry.getDisplayName();
             plugin.getMessages().sendPlayerMessage(player, "shop.sell_successful",
@@ -264,14 +280,23 @@ public class ShopManager {
         ItemStack itemToSell = itemToSellOpt.get();
         int unitAmount = Math.max(1, itemToSell.getAmount());
 
+        int salesLeft = plugin.getDailyLimits().remaining(player.getUniqueId(), shopItemEntry, DailyLimits.Kind.SOLD);
+        if (salesLeft <= 0) {
+            sendSellLimitReached(player, shopItemEntry);
+            return;
+        }
+
         int sales = countMatching(player, itemToSell) / unitAmount;
         if (sales <= 0) {
             plugin.getMessages().sendPlayerMessage(player, "shop.item_not_found_for_sell", "%item_name%", shopItemEntry.getDisplayName());
             player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
             return;
         }
+        // Tout vendre s'arrête à la limite du jour : le reste reste dans l'inventaire
+        sales = Math.min(sales, salesLeft);
 
         removeMatching(player, itemToSell, sales * unitAmount);
+        plugin.getDailyLimits().add(player.getUniqueId(), shopItemEntry.getId(), DailyLimits.Kind.SOLD, sales);
 
         long totalPoints = (long) shopItemEntry.getSellPoints() * sales;
         playerData.addJobPoints(totalPoints);
@@ -287,6 +312,13 @@ public class ShopManager {
         if (player.getOpenInventory().getTopInventory().getHolder() instanceof ShopMenu) {
             plugin.getMenuManager().openShopMenu(player);
         }
+    }
+
+    private void sendSellLimitReached(Player player, ShopItem shopItemEntry) {
+        plugin.getMessages().sendPlayerMessage(player, "shop.sell_limit_reached",
+            "%item_name%", shopItemEntry.getDisplayName(),
+            "%limit%", String.valueOf(shopItemEntry.getSellLimitPerDay()));
+        player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
     }
 
     /**

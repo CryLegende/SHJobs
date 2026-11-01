@@ -114,6 +114,11 @@ shop:
   lore_requirement_job: "&eRequiert: &7Niveau %level% %job_name%"
   lore_requirement_job_unmet: "&cRequiert: &7Niveau %level% %job_name%"
   lore_status_not_enough_points: "&cPas assez de points !"
+  # Limites quotidiennes (purchase_limit_per_day / sell_limit_per_day dans config.yml). %used% %limit% %item_name%
+  purchase_limit_reached: "&7&l« &c&lSH &8&l» &7Limite atteinte : &c%limit% achat(s) &7de %item_name% &7par jour. Revenez après la prochaine rotation."
+  sell_limit_reached: "&7&l« &c&lSH &8&l» &7Limite atteinte : &c%limit% revente(s) &7de %item_name% &7par jour. Revenez après la prochaine rotation."
+  lore_purchase_limit: "&8• &7Achats aujourd'hui : &f%used%&7/&f%limit%"
+  lore_sell_limit: "&8• &7Reventes aujourd'hui : &f%used%&7/&f%limit%"
   lore_status_level_required: "&cNiveau de métier requis non atteint."
   lore_status_can_purchase: "&eCliquez pour acheter !"
   already_purchased_today: "&7&l« &c&lSH &8&l» &7Vous avez déjà acheté l'article '&c%item_name%&7' aujourd'hui."

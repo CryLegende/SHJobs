@@ -61,6 +61,10 @@ general:
   daily_reset_time: "00:00" # HH:mm format (24-hour clock) for daily jobs and shop reset. Uses server's local time.
   # Points de métier en bonus quand un joueur termine toutes les quêtes du jour (0 = désactivé).
   all_daily_jobs_bonus_points: 20
+  # Limites quotidiennes par joueur et par article de la boutique (0 = illimité), remises à zéro à la rotation.
+  # Un article peut les remplacer : purchase_limit_per_day / sell_limit_per_day. Une revente = une unité de l'article.
+  default_purchase_limit_per_day: 0
+  default_sell_limit_per_day: 5
 
 # --- Experience & Levels ---
 # XP formulas use JavaScript evaluation. %level% is the target level you are trying to reach.
@@ -671,6 +675,7 @@ shop_items:
       - "&7&l« &f&lRequis pour acheter &8&l» "
       - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
     cost: 600
+    purchase_limit_per_day: 2
     required_job_type: "ARTISAN"
     required_job_level: 40
     commands_on_purchase:
@@ -719,6 +724,7 @@ shop_items:
       - "&7&l« &f&lRequis pour acheter &8&l» "
       - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
     cost: 900
+    purchase_limit_per_day: 2
     required_job_type: "MINEUR"
     required_job_level: 35
     commands_on_purchase:
@@ -1402,6 +1408,7 @@ shop_items:
       - "&7&l« &f&lRequis pour acheter &8&l» "
       - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
     cost: 300
+    purchase_limit_per_day: 5
     required_job_type: "CHASSEUR"
     required_job_level: 10
     commands_on_purchase:
@@ -1432,6 +1439,8 @@ shop_items:
       - "&7&l« &f&lRequis pour acheter &8&l» "
       - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
     cost: 1500
+    purchase_limit_per_day: 2
+    sell_limit_per_day: 2
     required_job_type: "CHASSEUR"
     required_job_level: 20
     commands_on_purchase:
@@ -1462,6 +1471,8 @@ shop_items:
       - "&7&l« &f&lRequis pour acheter &8&l» "
       - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
     cost: 4000
+    purchase_limit_per_day: 1
+    sell_limit_per_day: 1
     required_job_type: "CHASSEUR"
     required_job_level: 50
     commands_on_purchase:
@@ -1490,6 +1501,7 @@ shop_items:
       - "&7&l« &f&lRequis pour acheter &8&l» "
       - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
     cost: 700
+    purchase_limit_per_day: 2
     required_job_type: "ARTISAN"
     required_job_level: 15
     commands_on_purchase:
@@ -1516,6 +1528,7 @@ shop_items:
       - "&7&l« &f&lRequis pour acheter &8&l» "
       - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
     cost: 550
+    purchase_limit_per_day: 2
     required_job_type: "ARTISAN"
     required_job_level: 25
     commands_on_purchase:
@@ -1551,6 +1564,7 @@ shop_items:
       - "&7&l« &f&lRequis pour acheter &8&l» "
       - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
     cost: 100
+    purchase_limit_per_day: 5
     required_job_type: "CHASSEUR"
     required_job_level: 15
     commands_on_purchase:
@@ -1574,6 +1588,8 @@ shop_items:
       - "&7&l« &f&lRequis pour acheter &8&l» "
       - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
     cost: 300
+    purchase_limit_per_day: 5
+    sell_limit_per_day: 3
     required_job_type: "ARTISAN"
     required_job_level: 10
     commands_on_purchase:
@@ -1597,6 +1613,8 @@ shop_items:
       - "&7&l« &f&lRequis pour acheter &8&l» "
       - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
     cost: 500
+    purchase_limit_per_day: 3
+    sell_limit_per_day: 2
     required_job_type: "ARTISAN"
     required_job_level: 15
     commands_on_purchase:
@@ -1621,6 +1639,8 @@ shop_items:
       - "&7&l« &f&lRequis pour acheter &8&l» "
       - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
     cost: 800
+    purchase_limit_per_day: 2
+    sell_limit_per_day: 1
     required_job_type: "ARTISAN"
     required_job_level: 25
     commands_on_purchase:
@@ -1716,6 +1736,8 @@ shop_items:
       - "&7&l« &f&lRequis pour acheter &8&l» "
       - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
     cost: 800
+    purchase_limit_per_day: 1
+    sell_limit_per_day: 1
     required_job_type: "CHASSEUR"
     required_job_level: 30
     commands_on_purchase:
