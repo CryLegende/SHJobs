@@ -103,6 +103,8 @@ jobs:
 rewards:
   exp_gained: "&7&l« &a&lSH &8&l» &7Vous avez gagné &a%amount% XP &7pour le métier &a%job_type% &7!"
   points_gained: "&7&l« &a&lSH &8&l» &7Vous avez gagné &a%amount% points de métier &7!"
+  # Bonus quand les %count% quêtes du jour sont terminées (montant : general.all_daily_jobs_bonus_points)
+  all_daily_completed: "&7&l« &6&lSH &8&l» &7Les &6%count% quêtes &7du jour sont terminées : &6+%amount% points de métier &7en bonus !"
 
 # --- Messages de la Boutique ---
 shop:

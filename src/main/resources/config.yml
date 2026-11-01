@@ -59,6 +59,8 @@ database:
 # --- General Settings ---
 general:
   daily_reset_time: "00:00" # HH:mm format (24-hour clock) for daily jobs and shop reset. Uses server's local time.
+  # Points de métier en bonus quand un joueur termine toutes les quêtes du jour (0 = désactivé).
+  all_daily_jobs_bonus_points: 20
 
 # --- Experience & Levels ---
 # XP formulas use JavaScript evaluation. %level% is the target level you are trying to reach.

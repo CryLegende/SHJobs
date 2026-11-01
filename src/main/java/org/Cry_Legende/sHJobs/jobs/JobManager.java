@@ -242,5 +242,33 @@ public class JobManager {
         template.getRewardSoundOnComplete().ifPresent(sound -> {
             player.playSound(player.getLocation(), sound, template.getRewardSoundVolume(), template.getRewardSoundPitch());
         });
+
+        giveAllDailyCompletedBonus(player, playerData);
+    }
+
+    /**
+     * Bonus de points quand le joueur vient de terminer la dernière des quêtes du jour
+     * ({@code general.all_daily_jobs_bonus_points}, 0 = désactivé). Appelé à chaque fin de quête :
+     * le bonus tombe une seule fois, au moment où la dernière quête se termine.
+     */
+    private void giveAllDailyCompletedBonus(Player player, PlayerData playerData) {
+        int bonus = plugin.getConfigManager().getRawConfig().getInt("general.all_daily_jobs_bonus_points", 0);
+        if (bonus <= 0) {
+            return;
+        }
+        List<String> today = currentDailyJobTemplateIds.stream().filter(Objects::nonNull).toList();
+        if (today.isEmpty()) {
+            return;
+        }
+        for (String templateId : today) {
+            DailyJob job = playerData.getActiveDailyJobs().get(templateId);
+            if (job == null || !job.isCompleted()) {
+                return;
+            }
+        }
+        playerData.addJobPoints(bonus);
+        plugin.getMessages().sendPlayerMessage(player, "rewards.all_daily_completed",
+            "%amount%", String.valueOf(bonus),
+            "%count%", String.valueOf(today.size()));
     }
 }
