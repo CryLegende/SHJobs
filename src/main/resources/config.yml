@@ -63,8 +63,8 @@ general:
   all_daily_jobs_bonus_points: 20
   # Limites quotidiennes par joueur et par article de la boutique (0 = illimité), remises à zéro à la rotation.
   # Un article peut les remplacer : purchase_limit_per_day / sell_limit_per_day. Une revente = une unité de l'article.
-  default_purchase_limit_per_day: 0
-  default_sell_limit_per_day: 5
+  default_purchase_limit_per_day: 1
+  default_sell_limit_per_day: 2
 
 # --- Experience & Levels ---
 # XP formulas use JavaScript evaluation. %level% is the target level you are trying to reach.
@@ -639,7 +639,6 @@ shop_items:
       - "&f&m                                       &r"
       - ""
       - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
-      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
       - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
       - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
       - ""
@@ -653,6 +652,7 @@ shop_items:
     selection_weight: 6
     sellable: true
     sell_points: 400
+    sell_limit_per_day: 1
     sell_item_id: "hopper"
 
   ancre_teleportation:
@@ -668,14 +668,12 @@ shop_items:
       - "&f&m                                       &r"
       - ""
       - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
-      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
       - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
       - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
       - ""
       - "&7&l« &f&lRequis pour acheter &8&l» "
       - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
     cost: 600
-    purchase_limit_per_day: 2
     required_job_type: "ARTISAN"
     required_job_level: 40
     commands_on_purchase:
@@ -683,6 +681,7 @@ shop_items:
     selection_weight: 3
     sellable: true
     sell_points: 150
+    sell_limit_per_day: 1
     sell_item_id: "ancre_tp"
 
   ardoise_abimes_renforcee:
@@ -693,7 +692,6 @@ shop_items:
       - "&f&m                                       &r"
       - ""
       - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
-      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
       - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
       - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
       - ""
@@ -717,14 +715,12 @@ shop_items:
       - "&f&m                                       &r"
       - ""
       - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
-      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
       - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
       - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
       - ""
       - "&7&l« &f&lRequis pour acheter &8&l» "
       - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
     cost: 900
-    purchase_limit_per_day: 2
     required_job_type: "MINEUR"
     required_job_level: 35
     commands_on_purchase:
@@ -732,6 +728,7 @@ shop_items:
     selection_weight: 3
     sellable: true
     sell_points: 180
+    sell_limit_per_day: 1
     sell_item_id: "druse_amethyste"
 
   redstone_stack:
@@ -741,7 +738,6 @@ shop_items:
       - "&f&m                                       &r"
       - ""
       - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
-      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
       - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
       - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
       - ""
@@ -765,7 +761,6 @@ shop_items:
       - "&f&m                                       &r"
       - ""
       - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
-      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
       - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
       - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
       - ""
@@ -789,7 +784,6 @@ shop_items:
       - "&f&m                                       &r"
       - ""
       - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
-      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
       - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
       - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
       - ""
@@ -813,7 +807,6 @@ shop_items:
       - "&f&m                                       &r"
       - ""
       - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
-      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
       - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
       - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
       - ""
@@ -827,6 +820,7 @@ shop_items:
     selection_weight: 3
     sellable: true
     sell_points: 100
+    sell_limit_per_day: 1
     sell_item_id: "forge_silence"
 
   modele_forge_abimes:
@@ -837,7 +831,6 @@ shop_items:
       - "&f&m                                       &r"
       - ""
       - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
-      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
       - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
       - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
       - ""
@@ -851,6 +844,7 @@ shop_items:
     selection_weight: 3
     sellable: true
     sell_points: 100
+    sell_limit_per_day: 1
     sell_item_id: "forge_ward"
 
   modele_forge_hotes:
@@ -861,7 +855,6 @@ shop_items:
       - "&f&m                                       &r"
       - ""
       - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
-      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
       - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
       - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
       - ""
@@ -875,6 +868,7 @@ shop_items:
     selection_weight: 3
     sellable: true
     sell_points: 100
+    sell_limit_per_day: 1
     sell_item_id: "forge_host"
 
   modele_forge_modeleurs:
@@ -885,7 +879,6 @@ shop_items:
       - "&f&m                                       &r"
       - ""
       - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
-      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
       - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
       - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
       - ""
@@ -899,6 +892,7 @@ shop_items:
     selection_weight: 3
     sellable: true
     sell_points: 100
+    sell_limit_per_day: 1
     sell_item_id: "forge_shaper"
 
   modele_forge_eleveurs:
@@ -909,7 +903,6 @@ shop_items:
       - "&f&m                                       &r"
       - ""
       - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
-      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
       - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
       - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
       - ""
@@ -923,6 +916,7 @@ shop_items:
     selection_weight: 3
     sellable: true
     sell_points: 100
+    sell_limit_per_day: 1
     sell_item_id: "forge_raiser"
 
   modele_forge_eclaireurs:
@@ -933,7 +927,6 @@ shop_items:
       - "&f&m                                       &r"
       - ""
       - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
-      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
       - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
       - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
       - ""
@@ -947,6 +940,7 @@ shop_items:
     selection_weight: 3
     sellable: true
     sell_points: 100
+    sell_limit_per_day: 1
     sell_item_id: "forge_wayfinder"
 
   modele_forge_dunes:
@@ -957,7 +951,6 @@ shop_items:
       - "&f&m                                       &r"
       - ""
       - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
-      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
       - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
       - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
       - ""
@@ -971,6 +964,7 @@ shop_items:
     selection_weight: 3
     sellable: true
     sell_points: 100
+    sell_limit_per_day: 1
     sell_item_id: "forge_dune"
 
   modele_forge_littoraux:
@@ -981,7 +975,6 @@ shop_items:
       - "&f&m                                       &r"
       - ""
       - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
-      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
       - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
       - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
       - ""
@@ -995,6 +988,7 @@ shop_items:
     selection_weight: 3
     sellable: true
     sell_points: 100
+    sell_limit_per_day: 1
     sell_item_id: "forge_coast"
 
   modele_forge_jungle:
@@ -1005,7 +999,6 @@ shop_items:
       - "&f&m                                       &r"
       - ""
       - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
-      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
       - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
       - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
       - ""
@@ -1015,10 +1008,11 @@ shop_items:
     required_job_type: "BUCHERON"
     required_job_level: 40
     commands_on_purchase:
-      - "minecraft:give %player% minecraft:WILD_armor_trim_smithing_template 1"
+      - "minecraft:give %player% minecraft:wild_armor_trim_smithing_template 1"
     selection_weight: 3
     sellable: true
     sell_points: 250
+    sell_limit_per_day: 1
     sell_item_id: "forge_wild"
 
   modele_forge_cotes:
@@ -1029,7 +1023,6 @@ shop_items:
       - "&f&m                                       &r"
       - ""
       - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
-      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
       - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
       - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
       - ""
@@ -1043,6 +1036,7 @@ shop_items:
     selection_weight: 3
     sellable: true
     sell_points: 150
+    sell_limit_per_day: 1
     sell_item_id: "forge_rib"
 
   modele_forge_groins:
@@ -1053,7 +1047,6 @@ shop_items:
       - "&f&m                                       &r"
       - ""
       - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
-      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
       - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
       - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
       - ""
@@ -1067,6 +1060,7 @@ shop_items:
     selection_weight: 3
     sellable: true
     sell_points: 150
+    sell_limit_per_day: 1
     sell_item_id: "forge_snout"
 
   modele_forge_marees:
@@ -1077,7 +1071,6 @@ shop_items:
       - "&f&m                                       &r"
       - ""
       - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
-      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
       - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
       - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
       - ""
@@ -1091,6 +1084,7 @@ shop_items:
     selection_weight: 3
     sellable: true
     sell_points: 150
+    sell_limit_per_day: 1
     sell_item_id: "forge_tide"
 
   modele_forge_tours:
@@ -1101,7 +1095,6 @@ shop_items:
       - "&f&m                                       &r"
       - ""
       - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
-      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
       - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
       - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
       - ""
@@ -1115,7 +1108,56 @@ shop_items:
     selection_weight: 3
     sellable: true
     sell_points: 200
+    sell_limit_per_day: 1
     sell_item_id: "forge_spire"
+
+  modele_forge_boulons:
+    display_name: "&fModèle de forge"
+    material: "BOLT_ARMOR_TRIM_SMITHING_TEMPLATE"
+    lore:
+      - "&7Ornement des boulons"
+      - "&f&m                                       &r"
+      - ""
+      - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
+      - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
+      - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
+      - ""
+      - "&7&l« &f&lRequis pour acheter &8&l» "
+      - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
+    cost: 750
+    required_job_type: "ARTISAN"
+    required_job_level: 30
+    commands_on_purchase:
+      - "minecraft:give %player% minecraft:bolt_armor_trim_smithing_template 1"
+    selection_weight: 3
+    sellable: true
+    sell_points: 100
+    sell_limit_per_day: 1
+    sell_item_id: "forge_bolt"
+
+  modele_forge_flux:
+    display_name: "&fModèle de forge"
+    material: "FLOW_ARMOR_TRIM_SMITHING_TEMPLATE"
+    lore:
+      - "&7Ornement des flux"
+      - "&f&m                                       &r"
+      - ""
+      - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
+      - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
+      - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
+      - ""
+      - "&7&l« &f&lRequis pour acheter &8&l» "
+      - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
+    cost: 850
+    required_job_type: "ARTISAN"
+    required_job_level: 45
+    commands_on_purchase:
+      - "minecraft:give %player% minecraft:flow_armor_trim_smithing_template 1"
+    selection_weight: 3
+    sellable: true
+    sell_points: 200
+    sell_limit_per_day: 1
+    sell_item_id: "forge_flow"
 
   deco_cactus:
     display_name: "&2Cactus"
@@ -1128,7 +1170,6 @@ shop_items:
       - "&f&m                                       &r"
       - ""
       - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
-      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
       - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
       - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
       - ""
@@ -1155,7 +1196,6 @@ shop_items:
       - "&f&m                                       &r"
       - ""
       - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
-      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
       - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
       - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
       - ""
@@ -1169,6 +1209,7 @@ shop_items:
     selection_weight: 2
     sellable: true
     sell_points: 120
+    sell_limit_per_day: 1
     sell_item_id: "deco_ordi"
 
   deco_etagere1:
@@ -1182,7 +1223,6 @@ shop_items:
       - "&f&m                                       &r"
       - ""
       - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
-      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
       - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
       - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
       - ""
@@ -1209,7 +1249,6 @@ shop_items:
       - "&f&m                                       &r"
       - ""
       - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
-      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
       - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
       - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
       - ""
@@ -1236,7 +1275,6 @@ shop_items:
       - "&f&m                                       &r"
       - ""
       - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
-      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
       - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
       - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
       - ""
@@ -1263,7 +1301,6 @@ shop_items:
       - "&f&m                                       &r"
       - ""
       - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
-      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
       - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
       - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
       - ""
@@ -1290,7 +1327,6 @@ shop_items:
       - "&f&m                                       &r"
       - ""
       - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
-      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
       - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
       - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
       - ""
@@ -1317,7 +1353,6 @@ shop_items:
       - "&f&m                                       &r"
       - ""
       - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
-      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
       - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
       - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
       - ""
@@ -1344,7 +1379,6 @@ shop_items:
       - "&f&m                                       &r"
       - ""
       - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
-      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
       - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
       - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
       - ""
@@ -1371,7 +1405,6 @@ shop_items:
       - "&f&m                                       &r"
       - ""
       - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
-      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
       - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
       - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
       - ""
@@ -1401,14 +1434,12 @@ shop_items:
       - "&f&m                                       &r"
       - ""
       - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
-      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
       - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
       - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
       - ""
       - "&7&l« &f&lRequis pour acheter &8&l» "
       - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
     cost: 300
-    purchase_limit_per_day: 5
     required_job_type: "CHASSEUR"
     required_job_level: 10
     commands_on_purchase:
@@ -1432,15 +1463,12 @@ shop_items:
       - "&f&m                                       &r"
       - ""
       - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
-      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
       - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
       - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
       - ""
       - "&7&l« &f&lRequis pour acheter &8&l» "
       - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
     cost: 1500
-    purchase_limit_per_day: 2
-    sell_limit_per_day: 2
     required_job_type: "CHASSEUR"
     required_job_level: 20
     commands_on_purchase:
@@ -1448,6 +1476,7 @@ shop_items:
     selection_weight: 6
     sellable: true
     sell_points: 300
+    sell_limit_per_day: 1
     sell_item_id: "cle_rare"
 
   cle_box_legendaire:
@@ -1464,15 +1493,12 @@ shop_items:
       - "&f&m                                       &r"
       - ""
       - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
-      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
       - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
       - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
       - ""
       - "&7&l« &f&lRequis pour acheter &8&l» "
       - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
     cost: 4000
-    purchase_limit_per_day: 1
-    sell_limit_per_day: 1
     required_job_type: "CHASSEUR"
     required_job_level: 50
     commands_on_purchase:
@@ -1480,6 +1506,7 @@ shop_items:
     selection_weight: 1
     sellable: true
     sell_points: 500
+    sell_limit_per_day: 1
     sell_item_id: "cle_legendaire"
 
   coffre_collecteur_petit:
@@ -1494,14 +1521,12 @@ shop_items:
       - "&f&m                                       &r"
       - ""
       - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
-      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
       - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
       - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
       - ""
       - "&7&l« &f&lRequis pour acheter &8&l» "
       - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
     cost: 700
-    purchase_limit_per_day: 2
     required_job_type: "ARTISAN"
     required_job_level: 15
     commands_on_purchase:
@@ -1509,6 +1534,7 @@ shop_items:
     selection_weight: 7
     sellable: true
     sell_points: 100
+    sell_limit_per_day: 1
     sell_item_id: "coffre_collecteur_petit"
 
   coffre_ameliore_moyen:
@@ -1521,14 +1547,12 @@ shop_items:
       - "&f&m                                       &r"
       - ""
       - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
-      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
       - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
       - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
       - ""
       - "&7&l« &f&lRequis pour acheter &8&l» "
       - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
     cost: 550
-    purchase_limit_per_day: 2
     required_job_type: "ARTISAN"
     required_job_level: 25
     commands_on_purchase:
@@ -1557,14 +1581,12 @@ shop_items:
       - "&f&m                                       &r"
       - ""
       - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
-      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
       - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
       - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
       - ""
       - "&7&l« &f&lRequis pour acheter &8&l» "
       - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
     cost: 100
-    purchase_limit_per_day: 5
     required_job_type: "CHASSEUR"
     required_job_level: 15
     commands_on_purchase:
@@ -1581,19 +1603,16 @@ shop_items:
       - "&f&m                                       &r"
       - ""
       - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
-      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
       - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
       - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
       - ""
       - "&7&l« &f&lRequis pour acheter &8&l» "
       - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
     cost: 300
-    purchase_limit_per_day: 5
-    sell_limit_per_day: 3
     required_job_type: "ARTISAN"
     required_job_level: 10
     commands_on_purchase:
-      - "advancedenchantments givercbook ordinaire %player% 1"
+      - "shenchants give rcbook %player% ordinaire 1"
     selection_weight: 8
     sellable: true
     sell_points: 50
@@ -1606,19 +1625,16 @@ shop_items:
       - "&f&m                                       &r"
       - ""
       - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
-      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
       - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
       - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
       - ""
       - "&7&l« &f&lRequis pour acheter &8&l» "
       - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
     cost: 500
-    purchase_limit_per_day: 3
-    sell_limit_per_day: 2
     required_job_type: "ARTISAN"
     required_job_level: 15
     commands_on_purchase:
-      - "advancedenchantments givercbook rare %player% 1"
+      - "shenchants give rcbook %player% rare 1"
     selection_weight: 7
     sellable: true
     sell_points: 80
@@ -1632,22 +1648,20 @@ shop_items:
       - "&f&m                                       &r"
       - ""
       - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
-      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
       - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
       - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
       - ""
       - "&7&l« &f&lRequis pour acheter &8&l» "
       - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
     cost: 800
-    purchase_limit_per_day: 2
-    sell_limit_per_day: 1
     required_job_type: "ARTISAN"
     required_job_level: 25
     commands_on_purchase:
-      - "advancedenchantments givercbook legendaire %player% 1"
+      - "shenchants give rcbook %player% legendaire 1"
     selection_weight: 5
     sellable: true
     sell_points: 150
+    sell_limit_per_day: 1
     sell_item_id: "enchant_legendaire"
 
   froglight_ochre:
@@ -1657,7 +1671,6 @@ shop_items:
       - "&f&m                                       &r"
       - ""
       - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
-      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
       - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
       - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
       - ""
@@ -1680,7 +1693,6 @@ shop_items:
       - "&f&m                                       &r"
       - ""
       - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
-      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
       - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
       - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
       - ""
@@ -1703,7 +1715,6 @@ shop_items:
       - "&f&m                                       &r"
       - ""
       - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
-      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
       - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
       - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
       - ""
@@ -1729,15 +1740,12 @@ shop_items:
       - "&f&m                                       &r"
       - ""
       - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
-      - "&8🔎 Shift+Clic Gauche pour acheter plusieurs items d'un coup..."
       - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
       - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
       - ""
       - "&7&l« &f&lRequis pour acheter &8&l» "
       - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
     cost: 800
-    purchase_limit_per_day: 1
-    sell_limit_per_day: 1
     required_job_type: "CHASSEUR"
     required_job_level: 30
     commands_on_purchase:
@@ -1745,6 +1753,7 @@ shop_items:
     selection_weight: 2
     sellable: true
     sell_points: 200
+    sell_limit_per_day: 1
     sell_item_id: "dragon_egg"
 
   titre_farm2win:
