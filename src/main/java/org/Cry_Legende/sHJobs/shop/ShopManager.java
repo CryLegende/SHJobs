@@ -191,14 +191,22 @@ public class ShopManager {
             }
         }
 
+        plugin.getConfigManager().writeLog("shop_purchase", "boutique",
+            "%player% -> achète %amount%x %item% (%price% points de métier)",
+            "%player%", playerName,
+            "%amount%", String.valueOf(quantityToBuy),
+            "%item%", plugin.getConfigManager().plainText(item.getDisplayName()),
+            "%price%", String.valueOf(totalCost));
+
         if (quantityToBuy == 1) {
             plugin.getMessages().sendPlayerMessage(player, "shop.purchase_successful",
                 "%item_name%", item.getDisplayName(),
                 "%cost%", String.valueOf(totalCost));
         } else {
-            player.sendMessage(plugin.getMessages().colorize(
-                "&aAchat effectué: &f" + quantityToBuy + "x " + item.getDisplayName() + " &7pour &e" + totalCost + " points&7."
-            ));
+            plugin.getMessages().sendPlayerMessage(player, "shop.purchase_successful_quantity",
+                "%amount%", String.valueOf(quantityToBuy),
+                "%item_name%", item.getDisplayName(),
+                "%cost%", String.valueOf(totalCost));
         }
 
         player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.2f);
@@ -224,7 +232,7 @@ public class ShopManager {
         Optional<ItemStack> itemToSellOpt = plugin.getCustomItemManager().getItem(shopItemEntry.getSellItemId());
         if (itemToSellOpt.isEmpty()) {
             plugin.getLogger().severe("Configuration error: Shop entry '" + shopItemEntry.getId() + "' refers to a non-existent custom item: '" + shopItemEntry.getSellItemId() + "'.");
-            player.sendMessage("§cErreur de configuration du serveur. Vente impossible.");
+            plugin.getMessages().sendPlayerMessage(player, "shop.sell_config_error");
             return;
         }
 
@@ -242,6 +250,12 @@ public class ShopManager {
             plugin.getDailyLimits().add(player.getUniqueId(), shopItemEntry.getId(), DailyLimits.Kind.SOLD, 1);
 
             String soldItemName = itemToSell.hasItemMeta() && itemToSell.getItemMeta().hasDisplayName() ? itemToSell.getItemMeta().getDisplayName() : shopItemEntry.getDisplayName();
+            plugin.getConfigManager().writeLog("shop_sale", "boutique",
+                "%player% -> revend %amount%x %item% (%price% points de métier)",
+                "%player%", player.getName(),
+                "%amount%", String.valueOf(amountToSell),
+                "%item%", itemLogName(itemToSell),
+                "%price%", String.valueOf(shopItemEntry.getSellPoints()));
             plugin.getMessages().sendPlayerMessage(player, "shop.sell_successful",
                 "%item_name%", soldItemName,
                 "%points%", String.valueOf(shopItemEntry.getSellPoints()));
@@ -273,7 +287,7 @@ public class ShopManager {
         Optional<ItemStack> itemToSellOpt = plugin.getCustomItemManager().getItem(shopItemEntry.getSellItemId());
         if (itemToSellOpt.isEmpty()) {
             plugin.getLogger().severe("Configuration error: Shop entry '" + shopItemEntry.getId() + "' refers to a non-existent custom item: '" + shopItemEntry.getSellItemId() + "'.");
-            player.sendMessage("§cErreur de configuration du serveur. Vente impossible.");
+            plugin.getMessages().sendPlayerMessage(player, "shop.sell_config_error");
             return;
         }
 
@@ -302,6 +316,12 @@ public class ShopManager {
         playerData.addJobPoints(totalPoints);
 
         String soldItemName = itemToSell.hasItemMeta() && itemToSell.getItemMeta().hasDisplayName() ? itemToSell.getItemMeta().getDisplayName() : shopItemEntry.getDisplayName();
+        plugin.getConfigManager().writeLog("shop_sale", "boutique",
+            "%player% -> revend %amount%x %item% (%price% points de métier)",
+            "%player%", player.getName(),
+            "%amount%", String.valueOf(sales * unitAmount),
+            "%item%", itemLogName(itemToSell),
+            "%price%", String.valueOf(totalPoints));
         plugin.getMessages().sendPlayerMessage(player, "shop.sell_all_successful",
             "%item_name%", soldItemName,
             "%amount%", String.valueOf(sales * unitAmount),
@@ -319,6 +339,21 @@ public class ShopManager {
             "%item_name%", shopItemEntry.getDisplayName(),
             "%limit%", String.valueOf(shopItemEntry.getSellLimitPerDay()));
         player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
+    }
+
+    /**
+     * Nom de l'objet pour une ligne de log : son nom personnalisé, sinon son type écrit lisiblement (Diamond Sword).
+     */
+    private String itemLogName(ItemStack stack) {
+        if (stack.hasItemMeta() && stack.getItemMeta().hasDisplayName()) {
+            return plugin.getConfigManager().plainText(stack.getItemMeta().getDisplayName());
+        }
+        StringBuilder name = new StringBuilder();
+        for (String word : stack.getType().getKey().getKey().split("_")) {
+            if (name.length() > 0) name.append(' ');
+            name.append(Character.toUpperCase(word.charAt(0))).append(word.substring(1));
+        }
+        return name.toString();
     }
 
     /**

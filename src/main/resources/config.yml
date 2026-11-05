@@ -1,48 +1,54 @@
-# SHJobs Configuration File
-# --- Plugin Information ---
+# SHJobs
 #
-# == COMMANDS ==
-# /jobs - Ouvre le menu principal des métiers.
-#   Permission: shjobs.player.menu (default: true)
+# Métiers des joueurs : jobs journaliers, niveaux d'XP et points de métier à dépenser dans la boutique.
+# Les messages sont dans messages.yml, les menus dans menus.yml et les objets revendables dans custom_items.yml.
 #
-# /shjobsadmin (alias: /sja) - Commandes d'administration.
-#   Base Permission: shjobs.admin.base (default: op)
-#   Sous-commandes (permissions à implémenter):
-#   - reload: Recharge la configuration du plugin. (shjobs.admin.reload)
-#   - exp give <player> <job_type> <amount>: Donne de l'XP de métier. (shjobs.admin.exp.give)
-#   - exp remove <player> <job_type> <amount>: Retire de l'XP de métier. (shjobs.admin.exp.remove)
-#   - level set <player> <job_type> <level>: Définit le niveau de métier. (shjobs.admin.level.set)
-#   - points give <player> <amount>: Donne des points de métier. (shjobs.admin.points.give)
-#   - points remove <player> <amount>: Retire des points de métier. (shjobs.admin.points.remove)
-#   - playerinfo <player>: Affiche les informations de métier d'un joueur. (shjobs.admin.playerinfo)
-#   - job change <slot_1-3> [job_template_id]: Change un job journalier. (shjobs.admin.job.change)
-#   - shop change <slot_1-6> [shop_item_id]: Change un item de la boutique. (shjobs.admin.shop.changeitem)
+# Commandes :
+#   /jobs (alias /shjobs)       Ouvre le menu des métiers.
+#   /jobs shop                  Ouvre la boutique des métiers.
+#   /shjobsadmin (alias /sja)   Commandes d'administration, avec les sous-commandes :
+#     reload                                                Recharge la configuration.
+#     exp <give|remove|set> <joueur> <métier> <montant>     Gère l'XP de métier d'un joueur.
+#     level set <joueur> <métier> <niveau>                  Définit le niveau de métier d'un joueur.
+#     points <give|remove|set> <joueur> <montant>           Gère les points de métier d'un joueur.
+#     playerinfo <joueur>                                   Affiche les informations de métier d'un joueur.
+#     job change <slot 1-6> [id_job]                        Change un job journalier.
+#     shopitem change <slot 1-6> [id_article]               Change un article de la boutique du jour.
+#     resetdaily                                            Force la rotation des jobs et de la boutique.
+#     customitem save <id>                                  Enregistre l'objet en main dans custom_items.yml.
 #
-# == PERMISSIONS ==
-# shjobs.player.menu: Accès à /jobs.
-# shjobs.admin.base: Accès de base à /shjobsadmin.
-# shjobs.admin.reload: Permet d'utiliser /sja reload.
-# shjobs.admin.exp.give: Permet de donner de l'XP.
-# shjobs.admin.exp.remove: Permet de retirer de l'XP.
-# shjobs.admin.level.set: Permet de définir un niveau.
-# shjobs.admin.points.give: Permet de donner des points.
-# shjobs.admin.points.remove: Permet de retirer des points.
-# shjobs.admin.playerinfo: Permet de voir les infos d'un joueur.
-# shjobs.admin.job.change: Permet de changer un job journalier.
-# shjobs.admin.shop.changeitem: Permet de changer un item de la boutique.
-# shjobs.job.<job_type>.bypassrequirements: (Optionnel) Permet de prendre des jobs sans les prérequis.
-# shjobs.shop.bypasslevel: (Optionnel) Permet d'acheter des items sans le niveau de métier requis.
+# Permissions :
+#   shjobs.player.menu             Ouvrir /jobs (accordée à tous par défaut).
+#   shjobs.player.shop             Ouvrir /jobs shop.
+#   shjobs.admin.base              Utiliser /shjobsadmin (op par défaut).
+#   shjobs.admin.reload            reload.
+#   shjobs.admin.exp.give          exp give.
+#   shjobs.admin.exp.remove        exp remove.
+#   shjobs.admin.exp.set           exp set.
+#   shjobs.admin.level.set         level set.
+#   shjobs.admin.points.give       points give.
+#   shjobs.admin.points.remove     points remove.
+#   shjobs.admin.points.set        points set.
+#   shjobs.admin.playerinfo        playerinfo.
+#   shjobs.admin.job.change        job change.
+#   shjobs.admin.shop.changeitem   shopitem change.
+#   shjobs.admin.resetdaily        resetdaily.
+#   shjobs.admin.customitem        customitem.
+#   shjobs.admin.customitem.save   customitem save.
 #
-# == PLACEHOLDERS (PlaceholderAPI) ==
-# %shjobs_player_points%: Points de métier du joueur.
-# %shjobs_player_level_<job_type>%: Niveau du joueur dans le métier <job_type> (ex: %shjobs_player_level_mineur%).
-# %shjobs_player_exp_<job_type>%: XP actuelle du joueur dans le métier <job_type>.
-# %shjobs_player_exp_required_<job_type>%: XP requise pour le prochain niveau dans <job_type>.
-# %shjobs_player_exp_percentage_<job_type>%: Pourcentage d'XP vers le prochain niveau dans <job_type>.
-# %shjobs_player_job_daily_<slot>_name%: Nom du job journalier dans l'emplacement <slot> (1-3).
-# %shjobs_player_job_daily_<slot>_progress% : Progression formatée du job journalier <slot>.
-# %shjobs_time_until_reset%: Temps restant avant la réinitialisation journalière (ex: 10h 30m 15s).
-# ... d'autres placeholders pourront être ajoutés pour les détails des objectifs.
+# Placeholders PlaceholderAPI (identifiant shjobs) :
+#   %shjobs_time_until_reset%                                   Temps restant avant la rotation quotidienne (ex : 10h 30m 15s).
+#   %shjobs_player_points%                                      Points de métier du joueur.
+#   %shjobs_player_level_<métier>%                              Niveau du joueur dans un métier (ex : %shjobs_player_level_mineur%).
+#   %shjobs_player_exp_<métier>%                                XP totale du joueur dans un métier.
+#   %shjobs_player_exp_required_<métier>%                       XP requise pour passer au niveau suivant.
+#   %shjobs_player_exp_progress_<métier>%                       XP gagnée dans le niveau en cours, sur l'XP requise.
+#   %shjobs_player_exp_bar_<métier>%                            Barre de progression vers le niveau suivant.
+#   %shjobs_player_exp_percentage_<métier>%                     Pourcentage de progression vers le niveau suivant.
+#   %shjobs_player_rank_<métier>%                               Rang du joueur dans le classement du métier.
+#   %shjobs_leaderboard_<métier>_<rang 1-10>_<name|level|exp>%  Joueur d'un rang du classement du métier.
+#   %shjobs_player_job_daily_<slot 1-6>_name%                   Nom du job journalier du slot.
+#   %shjobs_player_job_daily_<slot 1-6>_progress%               Progression du job journalier du slot.
 
 # --- Database Settings ---
 database:
@@ -65,6 +71,26 @@ general:
   # Un article peut les remplacer : purchase_limit_per_day / sell_limit_per_day. Une revente = une unité de l'article.
   default_purchase_limit_per_day: 1
   default_sell_limit_per_day: 2
+
+# --- Logs ---
+# Lignes écrites dans SHLogs (plugins/SHLogs/SHJobs/), sans date : SHLogs l'ajoute.
+# file : nom du fichier de log. format : ligne écrite.
+logs:
+  # Achat d'un article de la boutique des métiers.
+  # Variables : %player%, %amount% (nombre d'articles achetés), %item% (nom de l'article), %price% (points de métier dépensés).
+  shop_purchase:
+    file: "boutique"
+    format: "%player% -> achète %amount%x %item% (%price% points de métier)"
+  # Revente d'objets à la boutique des métiers, au clic droit ou en une fois avec Shift + clic droit.
+  # Variables : %player%, %amount% (nombre d'objets repris), %item% (nom de l'objet), %price% (points de métier gagnés).
+  shop_sale:
+    file: "boutique"
+    format: "%player% -> revend %amount%x %item% (%price% points de métier)"
+  # Niveau de métier gagné en terminant un job, une ligne par niveau gagné.
+  # Variables : %player%, %level% (niveau atteint), %job% (nom du métier).
+  level_up:
+    file: "niveaux"
+    format: "%player% -> monte au niveau %level% (%job%)"
 
 # --- Experience & Levels ---
 # XP formulas use JavaScript evaluation. %level% is the target level you are trying to reach.
@@ -193,32 +219,31 @@ job_templates:
     objectives:
       obj_ecorce:
         type: "STRIP"
-        material: [
+        material:
           # --- Bois de l'Overworld ---
-          "STRIPPED_OAK_LOG",
-          "STRIPPED_OAK_WOOD",
-          "STRIPPED_SPRUCE_LOG",
-          "STRIPPED_SPRUCE_WOOD",
-          "STRIPPED_BIRCH_LOG",
-          "STRIPPED_BIRCH_WOOD",
-          "STRIPPED_JUNGLE_LOG",
-          "STRIPPED_JUNGLE_WOOD",
-          "STRIPPED_ACACIA_LOG",
-          "STRIPPED_ACACIA_WOOD",
-          "STRIPPED_DARK_OAK_LOG",
-          "STRIPPED_DARK_OAK_WOOD",
-          "STRIPPED_MANGROVE_LOG",    # Ajout 1.19
-          "STRIPPED_MANGROVE_WOOD",    # Ajout 1.19
-          "STRIPPED_CHERRY_LOG",       # Ajout 1.20
-          "STRIPPED_CHERRY_WOOD",      # Ajout 1.20
-          "STRIPPED_BAMBOO_BLOCK",     # Ajout 1.20
+          - "STRIPPED_OAK_LOG"
+          - "STRIPPED_OAK_WOOD"
+          - "STRIPPED_SPRUCE_LOG"
+          - "STRIPPED_SPRUCE_WOOD"
+          - "STRIPPED_BIRCH_LOG"
+          - "STRIPPED_BIRCH_WOOD"
+          - "STRIPPED_JUNGLE_LOG"
+          - "STRIPPED_JUNGLE_WOOD"
+          - "STRIPPED_ACACIA_LOG"
+          - "STRIPPED_ACACIA_WOOD"
+          - "STRIPPED_DARK_OAK_LOG"
+          - "STRIPPED_DARK_OAK_WOOD"
+          - "STRIPPED_MANGROVE_LOG"
+          - "STRIPPED_MANGROVE_WOOD"
+          - "STRIPPED_CHERRY_LOG"
+          - "STRIPPED_CHERRY_WOOD"
+          - "STRIPPED_BAMBOO_BLOCK"
 
           # --- Bois du Nether ---
-          "STRIPPED_CRIMSON_STEM",
-          "STRIPPED_CRIMSON_HYPHAE",
-          "STRIPPED_WARPED_STEM",
-          "STRIPPED_WARPED_HYPHAE"
-        ]
+          - "STRIPPED_CRIMSON_STEM"
+          - "STRIPPED_CRIMSON_HYPHAE"
+          - "STRIPPED_WARPED_STEM"
+          - "STRIPPED_WARPED_HYPHAE"
         amount: 1800
         display_name: "Écorcer bûches"
     rewards:
@@ -238,7 +263,9 @@ job_templates:
     objectives:
       obj_pierre:
         type: "BREAK"
-        material: ["STONE", "COBBLESTONE"]
+        material:
+          - "STONE"
+          - "COBBLESTONE"
         amount: 600
         display_name: "Miner pierre"
     rewards:
@@ -258,12 +285,16 @@ job_templates:
     objectives:
       obj_charbon:
         type: "BREAK"
-        material: ["COAL_ORE", "DEEPSLATE_COAL_ORE"]
+        material:
+          - "COAL_ORE"
+          - "DEEPSLATE_COAL_ORE"
         amount: 40
         display_name: "Miner charbon"
       obj_fer:
         type: "BREAK"
-        material: ["IRON_ORE", "DEEPSLATE_IRON_ORE"]
+        material:
+          - "IRON_ORE"
+          - "DEEPSLATE_IRON_ORE"
         amount: 20
         display_name: "Miner fer"
     rewards:

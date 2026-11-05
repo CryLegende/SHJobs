@@ -213,7 +213,9 @@ public class JobManager {
         if (playerData == null) return;
 
         if (template.getRewardJobExp() > 0) {
+            int levelBefore = playerData.getLevel(template.getJobType());
             playerData.addExperience(template.getJobType(), template.getRewardJobExp());
+            logLevelUps(player, template.getJobType(), levelBefore, playerData.getLevel(template.getJobType()));
             plugin.getMessages().sendPlayerMessage(player, "rewards.exp_gained",
                 "%job_type%", template.getJobType().getDisplayName(),
                 "%amount%", String.valueOf(template.getRewardJobExp()));
@@ -244,6 +246,19 @@ public class JobManager {
         });
 
         giveAllDailyCompletedBonus(player, playerData);
+    }
+
+    /**
+     * Écrit une ligne dans SHLogs par niveau gagné grâce à l'XP d'une quête terminée.
+     */
+    private void logLevelUps(Player player, JobType jobType, int levelBefore, int levelAfter) {
+        for (int level = levelBefore + 1; level <= levelAfter; level++) {
+            plugin.getConfigManager().writeLog("level_up", "niveaux",
+                "%player% -> monte au niveau %level% (%job%)",
+                "%player%", player.getName(),
+                "%level%", String.valueOf(level),
+                "%job%", plugin.getConfigManager().plainText(jobType.getDisplayName()));
+        }
     }
 
     /**

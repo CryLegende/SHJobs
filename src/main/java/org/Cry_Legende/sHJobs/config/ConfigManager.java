@@ -2,6 +2,8 @@ package org.Cry_Legende.sHJobs.config;
 
 import org.Cry_Legende.sHJobs.SHJobs;
 import org.Cry_Legende.sHJobs.jobs.JobType;
+import org.Cry_Legende.sHJobs.utils.ActionLog;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -305,6 +307,23 @@ public class ConfigManager {
 
     public ConfigurationSection getShopItemsSection() {
         return config.getConfigurationSection("shop_items");
+    }
+
+    /**
+     * Écrit une ligne dans SHLogs à partir de l'entrée {@code logs.<key>} de config.yml ({@code file} et {@code format}).
+     * Les paires de {@code replacements} remplacent les variables du format.
+     */
+    public void writeLog(String key, String defaultFile, String defaultFormat, String... replacements) {
+        String line = config.getString("logs." + key + ".format", defaultFormat);
+        for (int i = 0; i + 1 < replacements.length; i += 2) {
+            line = line.replace(replacements[i], replacements[i + 1]);
+        }
+        ActionLog.write(plugin, config.getString("logs." + key + ".file", defaultFile), line);
+    }
+
+    /** Texte venant de la config (codes & ou §) sans les codes couleur, pour une ligne de log. */
+    public String plainText(String text) {
+        return ChatColor.stripColor(ChatColor.translateAlternateColorCodes('&', text));
     }
 
     public String getJobDisplayName(String jobTypeKey) {

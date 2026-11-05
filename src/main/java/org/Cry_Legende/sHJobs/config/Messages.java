@@ -11,10 +11,30 @@ import org.bukkit.entity.Player;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 public class Messages {
+
+    // Textes utilisés quand la clé est absente de messages.yml
+    private static final Map<String, String> DEFAULTS = Map.ofEntries(
+        Map.entry("common.player_data_load_error_menu", "&7&l« &c&lSH &8&l» &7Impossible de charger vos &cdonnées de métier &7pour ce menu."),
+        Map.entry("common.player_data_load_error_critical", "&7&l« &c&lSH &8&l» &7Vos &cdonnées de métier &7n'ont pas pu être chargées. Reconnectez-vous ou contactez un administrateur."),
+        Map.entry("common.random", "aléatoire"),
+        Map.entry("admin.customitem.no_item_in_hand", "&7&l« &c&lSH &8&l» &7Vous devez tenir un item dans votre main."),
+        Map.entry("admin.customitem.save_failure", "&7&l« &c&lSH &8&l» &7Erreur lors de la sauvegarde de l'item avec l'ID '&c%id%&7'."),
+        Map.entry("menu.population_error", "&7&l« &c&lSH &8&l» &7Le menu '&c%menu%&7' n'a pas pu être affiché."),
+        Map.entry("menu.item_section_missing", "&cErreur : section de l'item introuvable"),
+        Map.entry("menu.placeholder_job_empty", "&cEmplacement de Job Vide"),
+        Map.entry("menu.placeholder_job_unavailable", "&cJob Non Disponible"),
+        Map.entry("menu.placeholder_job_invalid", "&cMétier Invalide"),
+        Map.entry("menu.placeholder_shop_unavailable", "&7Article Indisponible"),
+        Map.entry("menu.placeholder_shop_empty", "&7Emplacement Vide"),
+        Map.entry("menu.placeholder_shop_lore", "&cCet article n'est pas disponible actuellement."),
+        Map.entry("shop.purchase_successful_quantity", "&7&l« &a&lSH &8&l» &7Vous avez acheté &a%amount%x %item_name% &7pour &a%cost% points &7!"),
+        Map.entry("shop.sell_config_error", "&7&l« &c&lSH &8&l» &7Erreur de configuration du serveur : vente &cimpossible&7.")
+    );
 
     private final SHJobs plugin;
     private File messagesFile;
@@ -68,7 +88,7 @@ public class Messages {
         if (!loaded) {
             return ChatColor.RED + "Error: messages.yml not loaded. Message path: " + path;
         }
-        String message = messagesConfig.getString(path);
+        String message = messagesConfig.getString(path, DEFAULTS.get(path));
         if (message == null) {
             plugin.getLogger().warning("Missing message in messages.yml for path: " + path);
             return ChatColor.RED + "Missing message: " + path;
@@ -128,7 +148,7 @@ public class Messages {
 
     public void sendPlayerMessage(Player player, String path, String... replacements) {
         // Utiliser applyPlaceholders de MenuManager pour PAPI
-        String rawMessage = messagesConfig.getString(path, ChatColor.RED + "Missing message: " + path);
+        String rawMessage = messagesConfig.getString(path, DEFAULTS.getOrDefault(path, ChatColor.RED + "Missing message: " + path));
         for (int i = 0; i < replacements.length; i += 2) {
             if (i + 1 < replacements.length) {
                 rawMessage = rawMessage.replace(replacements[i], replacements[i + 1]);

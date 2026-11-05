@@ -8,7 +8,6 @@ import org.Cry_Legende.sHJobs.shop.ShopManager;
 import org.Cry_Legende.sHJobs.utils.ItemBuilder;
 import org.Cry_Legende.sHJobs.utils.TimeUtil;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
@@ -38,7 +37,7 @@ public class ShopMenu extends CustomMenuHolder {
         PlayerData playerData = plugin.getPlayerCache().getPlayerData(player.getUniqueId());
         if (playerData == null) {
             player.closeInventory();
-            player.sendMessage(ChatColor.RED + "Error: Could not load your player data.");
+            player.sendMessage(plugin.getMessages().getMessage("common.player_data_load_error_menu", true));
             return;
         }
 
@@ -77,10 +76,10 @@ public class ShopMenu extends CustomMenuHolder {
                                 if (shopItemOpt.isPresent()) {
                                     inventory.setItem(slot, createShopDisplayItem(player, playerData, shopItemOpt.get()));
                                 } else {
-                                    inventory.setItem(slot, createPlaceholderShopItem(player, itemCfg.getConfigurationSection("placeholder_config"), "Article Indisponible", globalPlaceholders));
+                                    inventory.setItem(slot, createPlaceholderShopItem(player, itemCfg.getConfigurationSection("placeholder_config"), "menu.placeholder_shop_unavailable", globalPlaceholders));
                                 }
                             } else {
-                                inventory.setItem(slot, createPlaceholderShopItem(player, itemCfg.getConfigurationSection("placeholder_config"), "Emplacement Vide", globalPlaceholders));
+                                inventory.setItem(slot, createPlaceholderShopItem(player, itemCfg.getConfigurationSection("placeholder_config"), "menu.placeholder_shop_empty", globalPlaceholders));
                             }
                         } catch (NumberFormatException e) {
                             inventory.setItem(slot, plugin.getMenuManager().buildItemFromConfig(itemCfg, player, globalPlaceholders));
@@ -219,10 +218,10 @@ public class ShopMenu extends CustomMenuHolder {
         }
     }
 
-    private ItemStack createPlaceholderShopItem(Player player, ConfigurationSection placeholderSpecificConfig, String defaultName, Map<String, String> globalPlaceholders) {
+    private ItemStack createPlaceholderShopItem(Player player, ConfigurationSection placeholderSpecificConfig, String defaultNameKey, Map<String, String> globalPlaceholders) {
         Material mat = Material.GRAY_STAINED_GLASS_PANE;
-        String name = "&7" + defaultName;
-        List<String> lore = List.of("&cCet article n'est pas disponible actuellement.");
+        String name = plugin.getMessages().getMessage(defaultNameKey, false);
+        List<String> lore = List.of(plugin.getMessages().getMessage("menu.placeholder_shop_lore", false));
         if (placeholderSpecificConfig != null) {
             mat = Material.matchMaterial(placeholderSpecificConfig.getString("material", "GRAY_STAINED_GLASS_PANE"));
             if (mat == null) mat = Material.GRAY_STAINED_GLASS_PANE;

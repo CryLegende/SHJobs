@@ -9,7 +9,6 @@ import org.Cry_Legende.sHJobs.utils.ItemBuilder;
 import org.Cry_Legende.sHJobs.utils.SoundUtil;
 import org.Cry_Legende.sHJobs.utils.TimeUtil;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
@@ -44,7 +43,7 @@ public class JobsMenu extends CustomMenuHolder {
         if (playerData == null) {
             plugin.getLogger().warning("[JobsMenu] PlayerData is NULL for " + player.getName() + " when populating JobsMenu.");
             player.closeInventory();
-            player.sendMessage(ChatColor.RED + "Error: Could not load your player data for the menu.");
+            player.sendMessage(plugin.getMessages().getMessage("common.player_data_load_error_menu", true));
             return;
         }
 
@@ -106,10 +105,10 @@ public class JobsMenu extends CustomMenuHolder {
                                 if (templateOpt.isPresent() && dailyJobOpt.isPresent()) {
                                     inventory.setItem(slot, createDailyJobItem(player, templateOpt.get(), dailyJobOpt.get(), itemCfg, globalPlaceholders));
                                 } else {
-                                    inventory.setItem(slot, createPlaceholderItem(player, itemCfg.getConfigurationSection("placeholder_config"), "Emplacement de Job Vide", globalPlaceholders));
+                                    inventory.setItem(slot, createPlaceholderItem(player, itemCfg.getConfigurationSection("placeholder_config"), "menu.placeholder_job_empty", globalPlaceholders));
                                 }
                             } else {
-                                inventory.setItem(slot, createPlaceholderItem(player, itemCfg.getConfigurationSection("placeholder_config"), "Job Non Disponible", globalPlaceholders));
+                                inventory.setItem(slot, createPlaceholderItem(player, itemCfg.getConfigurationSection("placeholder_config"), "menu.placeholder_job_unavailable", globalPlaceholders));
                             }
                             break;
 
@@ -124,7 +123,7 @@ public class JobsMenu extends CustomMenuHolder {
                                 inventory.setItem(slot, createJobTypeItem(player, playerData, jobTypeEnum, itemCfg, globalPlaceholders));
                             } else {
                                 plugin.getLogger().warning("[JobsMenu] Invalid JobType enum for item type: " + itemType);
-                                inventory.setItem(slot, createPlaceholderItem(player, itemCfg, "Métier Invalide", globalPlaceholders));
+                                inventory.setItem(slot, createPlaceholderItem(player, itemCfg, "menu.placeholder_job_invalid", globalPlaceholders));
                             }
                             break;
 
@@ -146,9 +145,9 @@ public class JobsMenu extends CustomMenuHolder {
         plugin.getLogger().info("[JobsMenu] Finished populating items for " + player.getName());
     }
 
-    private ItemStack createPlaceholderItem(Player player, ConfigurationSection placeholderSpecificConfig, String defaultName, Map<String, String> globalPlaceholders) {
+    private ItemStack createPlaceholderItem(Player player, ConfigurationSection placeholderSpecificConfig, String defaultNameKey, Map<String, String> globalPlaceholders) {
         Material mat = Material.BARRIER;
-        String name = "&c" + defaultName;
+        String name = plugin.getMessages().getMessage(defaultNameKey, false);
         List<String> lore = new ArrayList<>();
 
         if (placeholderSpecificConfig != null) {

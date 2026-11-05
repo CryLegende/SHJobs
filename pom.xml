@@ -107,6 +107,12 @@
             <version>1.5.21</version>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>org.Cry_Legende</groupId>
+            <artifactId>SHLogs</artifactId>
+            <version>2.0</version>
+            <scope>provided</scope>
+        </dependency>
 <!--        <dependency>-->
 <!--            <groupId>net.objecthunter</groupId>-->
 <!--            <artifactId>exp4j</artifactId>-->

@@ -11,7 +11,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack; // --- NOUVEAUTÉ ---
+import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
@@ -51,7 +51,6 @@ public class AdminJobsCommand implements CommandExecutor {
                 plugin.getMessages().sendMessage(sender, "admin.reloaded");
                 break;
 
-            // --- NOUVEAUTÉ ---
             case "customitem":
                 if (!sender.hasPermission("shjobs.admin.customitem")) {
                     plugin.getMessages().sendMessage(sender, "common.no_permission");
@@ -59,7 +58,6 @@ public class AdminJobsCommand implements CommandExecutor {
                 }
                 handleCustomItemCommand(sender, label, args);
                 break;
-            // --- FIN NOUVEAUTÉ ---
 
             case "exp":
                 handleExpCommand(sender, label, args);
@@ -114,15 +112,10 @@ public class AdminJobsCommand implements CommandExecutor {
         plugin.getMessages().sendMessage(sender, "admin.help.job_change");
         plugin.getMessages().sendMessage(sender, "admin.help.shopitem_change");
         plugin.getMessages().sendMessage(sender, "admin.help.resetdaily");
-        // --- NOUVEAUTÉ ---
-        // Pensez à ajouter la ligne suivante à votre fichier messages.yml
-        // admin.help.customitem: "&e/%label% customitem save <id> &7- Sauvegarde l'item en main."
         plugin.getMessages().sendMessage(sender, "admin.help.customitem", "%label%", label);
-        // --- FIN NOUVEAUTÉ ---
         plugin.getMessages().sendMessage(sender, "admin.help.footer");
     }
 
-    // --- NOUVEAUTÉ : Méthode de gestion pour /sja customitem ---
     private void handleCustomItemCommand(CommandSender sender, String label, String[] args) {
         // Usage: /sja customitem save <id>
         if (!(sender instanceof Player)) {
@@ -131,8 +124,6 @@ public class AdminJobsCommand implements CommandExecutor {
         }
 
         if (args.length < 3 || !args[1].equalsIgnoreCase("save")) {
-            // Pensez à ajouter ce message à messages.yml
-            // admin.customitem.usage: "&7&l« &c&lSH &8&l» &7Usage: &c/%label% customitem save <item_id>"
             plugin.getMessages().sendMessage(sender, "admin.customitem.usage", "%label%", label);
             return;
         }
@@ -146,27 +137,20 @@ public class AdminJobsCommand implements CommandExecutor {
         ItemStack itemInHand = player.getInventory().getItemInMainHand();
 
         if (itemInHand == null || itemInHand.getType().isAir()) {
-            // Pensez à ajouter ce message à messages.yml
-            // admin.customitem.no_item_in_hand: "&7&l« &c&lSH &8&l» &7Vous devez tenir un item dans votre main."
             plugin.getMessages().sendMessage(sender, "admin.customitem.no_item_in_hand");
             return;
         }
 
         String itemId = args[2];
         if (plugin.getCustomItemManager().saveItem(itemId, itemInHand)) {
-            // Pensez à ajouter ce message à messages.yml
-            // admin.customitem.save_success: "&7&l« &a&lSH &8&l» &7Item sauvegardé avec l'ID '&a%id%&7' avec succès."
             plugin.getMessages().sendMessage(sender, "admin.customitem.save_success", "%id%", itemId);
         } else {
-            // Pensez à ajouter ce message à messages.yml
-            // admin.customitem.save_failure: "&7&l« &c&lSH &8&l» &7Erreur lors de la sauvegarde de l'item avec l'ID '&c%id%&7'."
             plugin.getMessages().sendMessage(sender, "admin.customitem.save_failure", "%id%", itemId);
         }
     }
-    // --- FIN NOUVEAUTÉ ---
 
 
-    // --- EXP Sub-commands (inchangé) ---
+    // --- EXP Sub-commands ---
     private void handleExpCommand(CommandSender sender, String label, String[] args) {
         if (args.length < 5) {
             plugin.getMessages().sendMessage(sender, "admin.exp.usage", "%label%", label);
@@ -242,7 +226,7 @@ public class AdminJobsCommand implements CommandExecutor {
         }, runnable -> Bukkit.getScheduler().runTask(plugin, runnable));
     }
 
-    // --- LEVEL Sub-commands (inchangé) ---
+    // --- LEVEL Sub-commands ---
     private void handleLevelCommand(CommandSender sender, String label, String[] args) {
         if (args.length < 5 || !args[1].equalsIgnoreCase("set")) {
             plugin.getMessages().sendMessage(sender, "admin.level.usage", "%label%", label);
@@ -298,7 +282,7 @@ public class AdminJobsCommand implements CommandExecutor {
         }, runnable -> Bukkit.getScheduler().runTask(plugin, runnable));
     }
 
-    // --- POINTS Sub-commands (inchangé) ---
+    // --- POINTS Sub-commands ---
     private void handlePointsCommand(CommandSender sender, String label, String[] args) {
         if (args.length < 4) {
             plugin.getMessages().sendMessage(sender, "admin.points.usage", "%label%", label);
@@ -369,7 +353,7 @@ public class AdminJobsCommand implements CommandExecutor {
         }, runnable -> Bukkit.getScheduler().runTask(plugin, runnable));
     }
 
-    // --- PLAYERINFO Sub-command (inchangé) ---
+    // --- PLAYERINFO Sub-command ---
     private void handlePlayerInfoCommand(CommandSender sender, String label, String[] args) {
         if (args.length < 2) {
             plugin.getMessages().sendMessage(sender, "admin.playerinfo.usage", "%label%", label);
@@ -411,7 +395,7 @@ public class AdminJobsCommand implements CommandExecutor {
         }, runnable -> Bukkit.getScheduler().runTask(plugin, runnable));
     }
 
-    // --- JOB MANAGEMENT Sub-command (inchangé) ---
+    // --- JOB MANAGEMENT Sub-command ---
     private void handleJobManagementCommand(CommandSender sender, String label, String[] args) {
         if (args.length < 3 || !args[1].equalsIgnoreCase("change")) {
             plugin.getMessages().sendMessage(sender, "admin.job_change.usage", "%label%", label);
@@ -441,13 +425,13 @@ public class AdminJobsCommand implements CommandExecutor {
         if (plugin.getJobManager().changeDailyJob(slot - 1, templateId)) {
             plugin.getMessages().sendMessage(sender, "admin.job_change.success",
                 "%slot%", String.valueOf(slot),
-                "%template_id%", (templateId != null ? templateId : "aléatoire"));
+                "%template_id%", (templateId != null ? templateId : plugin.getMessages().getMessage("common.random", false)));
         } else {
             plugin.getMessages().sendMessage(sender, "admin.job_change.failure", "%slot%", String.valueOf(slot));
         }
     }
 
-    // --- SHOP ITEM MANAGEMENT Sub-command (inchangé) ---
+    // --- SHOP ITEM MANAGEMENT Sub-command ---
     private void handleShopItemManagementCommand(CommandSender sender, String label, String[] args) {
         if (args.length < 3 || !args[1].equalsIgnoreCase("change")) {
             plugin.getMessages().sendMessage(sender, "admin.shopitem_change.usage", "%label%", label);
@@ -477,7 +461,7 @@ public class AdminJobsCommand implements CommandExecutor {
         if (plugin.getShopManager().changeShopItem(slot - 1, itemId)) {
             plugin.getMessages().sendMessage(sender, "admin.shopitem_change.success",
                 "%slot%", String.valueOf(slot),
-                "%item_id%", (itemId != null ? itemId : "aléatoire"));
+                "%item_id%", (itemId != null ? itemId : plugin.getMessages().getMessage("common.random", false)));
         } else {
             plugin.getMessages().sendMessage(sender, "admin.shopitem_change.failure", "%slot%", String.valueOf(slot));
         }

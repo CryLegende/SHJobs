@@ -15,6 +15,9 @@ common:
   invalid_slot_shop: "&7&l« &c&lSH &8&l» &7Slot invalide: &c%slot%&7. Doit être entre 1 et 6 pour la boutique."
   invalid_job_template_id: "&7&l« &c&lSH &8&l» &7ID de modèle de job invalide: &c%id%"
   invalid_shop_item_id: "&7&l« &c&lSH &8&l» &7ID d'article de boutique invalide: &c%id%"
+  player_data_load_error_menu: "&7&l« &c&lSH &8&l» &7Impossible de charger vos &cdonnées de métier &7pour ce menu."
+  player_data_load_error_critical: "&7&l« &c&lSH &8&l» &7Vos &cdonnées de métier &7n'ont pas pu être chargées. Reconnectez-vous ou contactez un administrateur."
+  random: "aléatoire"
 
 # --- Messages d'Administration ---
 admin:
@@ -70,7 +73,9 @@ admin:
     failure: "&7&l« &c&lSH &8&l» &7Échec du changement de l'item de boutique pour le slot &c%slot%&7."
   customitem:
     usage: "&7&l« &c&lSH &8&l» &7Usage: &c/shjobsadmin customitem save <ID>"
+    no_item_in_hand: "&7&l« &c&lSH &8&l» &7Vous devez tenir un item dans votre main."
     save_success: "&7&l« &a&lSH &8&l» &7L'item a été sauvegardé avec succès."
+    save_failure: "&7&l« &c&lSH &8&l» &7Erreur lors de la sauvegarde de l'item avec l'ID '&c%id%&7'."
 
 # --- Messages pour les Joueurs ---
 # player:
@@ -86,6 +91,14 @@ player:
 menu:
   config_not_found: "&7&l« &c&lSH &8&l» &7La configuration du menu '&c%menu%&7' n'a pas pu être chargée."
   loading_data: "&7&l« &e&lSH &8&l» &7Chargement de vos données de métier, veuillez patienter..."
+  population_error: "&7&l« &c&lSH &8&l» &7Le menu '&c%menu%&7' n'a pas pu être affiché."
+  item_section_missing: "&cErreur : section de l'item introuvable"
+  placeholder_job_empty: "&cEmplacement de Job Vide"
+  placeholder_job_unavailable: "&cJob Non Disponible"
+  placeholder_job_invalid: "&cMétier Invalide"
+  placeholder_shop_unavailable: "&7Article Indisponible"
+  placeholder_shop_empty: "&7Emplacement Vide"
+  placeholder_shop_lore: "&cCet article n'est pas disponible actuellement."
 
 # --- Messages des Jobs ---
 jobs:
@@ -111,6 +124,7 @@ shop:
   not_enough_points: "&7&l« &c&lSH &8&l» &7Vous n'avez pas assez de points. Coût: &c%cost% points&7."
   level_too_low: "&7&l« &c&lSH &8&l» &7Vous devez être niveau &c%required_level%&7 en &c%job_name%&7 pour acheter ceci."
   purchase_successful: "&7&l« &a&lSH &8&l» &7Vous avez acheté &a%item_name% &7pour &a%cost% points &7!"
+  purchase_successful_quantity: "&7&l« &a&lSH &8&l» &7Vous avez acheté &a%amount%x %item_name% &7pour &a%cost% points &7!"
   lore_requirement_job: "&eRequiert: &7Niveau %level% %job_name%"
   lore_requirement_job_unmet: "&cRequiert: &7Niveau %level% %job_name%"
   lore_status_not_enough_points: "&cPas assez de points !"
@@ -127,6 +141,7 @@ shop:
   sell_all_successful: "&7&l« &a&lSH &8&l» &7Vous avez vendu &a%amount%x %item_name% &7pour &a%points% points&7!"
   not_sellable: "&7&l« &c&lSH &8&l» &7Cet article n'est pas vendable."
   item_not_found_for_sell: "&7&l« &c&lSH &8&l» &7Vous n'avez pas l'article requis dans votre inventaire pour le vendre."
+  sell_config_error: "&7&l« &c&lSH &8&l» &7Erreur de configuration du serveur : vente &cimpossible&7."
 
 # --- Messages Généraux du Plugin ---
 general:

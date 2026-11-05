@@ -109,7 +109,7 @@ public class MenuManager {
 
     public ItemStack buildItemFromConfig(ConfigurationSection itemSection, @Nullable Player player, @Nullable Map<String, String> globalPlaceholders) {
         if (itemSection == null) {
-            return new ItemBuilder(Material.BARRIER).setName("&cError: Item section null").build();
+            return new ItemBuilder(Material.BARRIER).setName(plugin.getMessages().getMessage("menu.item_section_missing", false)).build();
         }
 
         String materialName = itemSection.getString("material", "STONE");

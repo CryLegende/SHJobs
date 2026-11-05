@@ -16,11 +16,14 @@
 
 Métiers (/jobs) : jobs journaliers, niveaux, exp et points de métier à dépenser en boutique.
 
+Les achats et reventes de la boutique sont écrits dans le fichier `boutique` de SHLogs (`plugins/SHLogs/SHJobs/`), les niveaux gagnés dans le fichier `niveaux`.
+
 Utilisé sur : **Opale**.
 
 ## Dépendances
 
 - Obligatoires : `PlaceholderAPI`
+- Optionnelle : `SHLogs` (journal de la boutique et des niveaux, sinon écrits dans la console)
 
 ## Commandes
 
