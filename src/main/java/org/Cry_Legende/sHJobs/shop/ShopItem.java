@@ -25,7 +25,7 @@ public class ShopItem {
     private final List<String> commandsOnPurchase;
     private final int selectionWeight;
 
-    // --- NOUVEAUTÉ : Champs pour la vente ---
+    // Champs de revente
     private final boolean sellable;
     private final int sellPoints;
     private final String sellItemId; // L'ID de l'item dans custom_items.yml
@@ -54,7 +54,7 @@ public class ShopItem {
         this.commandsOnPurchase = List.copyOf(builder.commandsOnPurchase);
         this.selectionWeight = builder.selectionWeight;
 
-        // --- NOUVEAUTÉ : Initialisation des champs de vente ---
+        // Initialisation des champs de revente
         this.sellable = builder.sellable;
         this.sellPoints = builder.sellPoints;
         this.sellItemId = builder.sellItemId;
@@ -103,7 +103,7 @@ public class ShopItem {
         return selectionWeight;
     }
 
-    // --- NOUVEAUTÉ : Getters pour la vente ---
+    // Getters de revente
     public boolean isSellable() {
         return sellable;
     }
@@ -160,7 +160,7 @@ public class ShopItem {
                 selectionWeight = 1;
             }
 
-            // --- NOUVEAUTÉ : Chargement des données de vente ---
+            // Chargement des données de revente
             boolean sellable = section.getBoolean("sellable", false);
             int sellPoints = section.getInt("sell_points", 0);
             String sellItemId = section.getString("sell_item_id", "");
@@ -168,7 +168,6 @@ public class ShopItem {
                 plugin.getLogger().warning("ShopItem '" + id + "' is marked as sellable but is missing 'sell_item_id' or has invalid 'sell_points'. Selling is disabled for this item.");
                 sellable = false;
             }
-            // --- FIN NOUVEAUTÉ ---
 
             ShopItem item = new ShopItem.Builder(id, displayName, material)
                 .lore(lore)
@@ -177,7 +176,7 @@ public class ShopItem {
                 .requiredJob(requiredJobType, requiredJobLevel)
                 .commandsOnPurchase(commands)
                 .selectionWeight(selectionWeight)
-                .sellInfo(sellable, sellPoints, sellItemId) // --- NOUVEAUTÉ ---
+                .sellInfo(sellable, sellPoints, sellItemId)
                 .dailyLimits(
                     section.getInt("purchase_limit_per_day",
                         plugin.getConfigManager().getRawConfig().getInt("general.default_purchase_limit_per_day", 0)),
@@ -205,7 +204,7 @@ public class ShopItem {
         private int requiredJobLevel = 1;
         private List<String> commandsOnPurchase = new ArrayList<>();
         private int selectionWeight = 1;
-        // --- NOUVEAUTÉ : Vente ---
+        // Revente
         private boolean sellable = false;
         private int sellPoints = 0;
         private String sellItemId = "";
@@ -249,7 +248,6 @@ public class ShopItem {
             return this;
         }
 
-        // --- NOUVEAUTÉ ---
         public Builder sellInfo(boolean isSellable, int points, String sellId) {
             this.sellable = isSellable;
             this.sellPoints = points;

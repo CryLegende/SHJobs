@@ -20,10 +20,8 @@ import java.util.stream.Collectors;
 public class JobsTabCompleter implements TabCompleter {
 
     private final SHJobs plugin;
-    // --- NOUVEAUTÉ ---
     private final List<String> adminSubCommands = Arrays.asList("reload", "exp", "level", "points", "playerinfo", "info", "job", "shopitem", "resetdaily", "customitem");
     private final List<String> customItemActions = Collections.singletonList("save");
-    // --- FIN NOUVEAUTÉ ---
     private final List<String> expActions = Arrays.asList("give", "remove", "set");
     private final List<String> levelActions = Collections.singletonList("set");
     private final List<String> pointsActions = Arrays.asList("give", "remove", "set");
@@ -49,7 +47,6 @@ public class JobsTabCompleter implements TabCompleter {
         } else if (args.length > 1) {
             String subCommand = args[0].toLowerCase();
             switch (subCommand) {
-                // --- NOUVEAUTÉ ---
                 case "customitem":
                     if (args.length == 2) {
                         StringUtil.copyPartialMatches(args[1], customItemActions, completions);
@@ -57,7 +54,6 @@ public class JobsTabCompleter implements TabCompleter {
                         completions.add("<item_id>"); // Suggère à l'admin de taper un ID
                     }
                     break;
-                // --- FIN NOUVEAUTÉ ---
 
                 case "exp":
                     if (args.length == 2) StringUtil.copyPartialMatches(args[1], expActions, completions);
