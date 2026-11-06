@@ -150,7 +150,6 @@ public class PlayerData {
         while (currentTotalExp >= expNeededForNextLevelStart && currentLevel < maxLevel) {
             currentLevel++;
             this.levels.put(jobType, currentLevel);
-            // TODO: Event pour level up
             if (currentLevel >= maxLevel) {
                 break;
             }

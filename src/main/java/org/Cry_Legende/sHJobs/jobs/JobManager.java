@@ -2,6 +2,7 @@ package org.Cry_Legende.sHJobs.jobs;
 
 import org.Cry_Legende.sHJobs.SHJobs;
 import org.Cry_Legende.sHJobs.data.PlayerData;
+import org.Cry_Legende.sHJobs.utils.SoundUtil;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 
@@ -212,13 +213,21 @@ public class JobManager {
         PlayerData playerData = plugin.getPlayerCache().getPlayerData(player.getUniqueId());
         if (playerData == null) return;
 
+        boolean leveledUp = false;
         if (template.getRewardJobExp() > 0) {
             int levelBefore = playerData.getLevel(template.getJobType());
             playerData.addExperience(template.getJobType(), template.getRewardJobExp());
-            logLevelUps(player, template.getJobType(), levelBefore, playerData.getLevel(template.getJobType()));
+            int levelAfter = playerData.getLevel(template.getJobType());
+            logLevelUps(player, template.getJobType(), levelBefore, levelAfter);
             plugin.getMessages().sendPlayerMessage(player, "rewards.exp_gained",
                 "%job_type%", template.getJobType().getDisplayName(),
                 "%amount%", String.valueOf(template.getRewardJobExp()));
+            leveledUp = levelAfter > levelBefore;
+            if (leveledUp) {
+                plugin.getMessages().sendPlayerMessage(player, "rewards.level_up",
+                    "%job_type%", template.getJobType().getDisplayName(),
+                    "%level%", String.valueOf(levelAfter));
+            }
         }
         if (template.getRewardJobPoints() > 0) {
             playerData.addJobPoints(template.getRewardJobPoints());
@@ -241,9 +250,15 @@ public class JobManager {
                 .replace("%job_name%", template.getDisplayName());
             player.sendMessage(plugin.getMessages().colorize(message));
         }
-        template.getRewardSoundOnComplete().ifPresent(sound -> {
-            player.playSound(player.getLocation(), sound, template.getRewardSoundVolume(), template.getRewardSoundPitch());
-        });
+        // Un niveau gagné remplace le son de fin de quête : un seul son par récompense.
+        SoundUtil.Spec levelUpSound = leveledUp ? SoundUtil.parse(plugin.getConfigManager().getLevelUpSound()) : null;
+        if (levelUpSound != null) {
+            player.playSound(player.getLocation(), levelUpSound.sound(), levelUpSound.volume(), levelUpSound.pitch());
+        } else {
+            template.getRewardSoundOnComplete().ifPresent(sound -> {
+                player.playSound(player.getLocation(), sound, template.getRewardSoundVolume(), template.getRewardSoundPitch());
+            });
+        }
 
         giveAllDailyCompletedBonus(player, playerData);
     }

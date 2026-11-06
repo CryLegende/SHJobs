@@ -37,6 +37,7 @@ public class ConfigManager {
     private LocalTime dailyResetTime;
 
     private String defaultXpFormula;
+    private String levelUpSound;
     private int defaultMaxLevel;
     private Map<JobType, String> jobSpecificXpFormulas;
     private Map<JobType, Integer> jobSpecificMaxLevels;
@@ -83,6 +84,7 @@ public class ConfigManager {
 
         defaultXpFormula = config.getString("experience.default_xp_formula", "1000 + %level% * 100"); // Exemple simple
         defaultMaxLevel = config.getInt("experience.default_max_level", 50);
+        levelUpSound = config.getString("general.level_up_sound", "ENTITY_PLAYER_LEVELUP");
 
         jobSpecificXpFormulas = new HashMap<>();
         jobSpecificMaxLevels = new HashMap<>();
@@ -291,6 +293,10 @@ public class ConfigManager {
 
     public boolean mysqlUseSSL() {
         return mysqlUseSSL;
+    }
+
+    public String getLevelUpSound() {
+        return levelUpSound;
     }
 
     public LocalTime getDailyResetTime() {

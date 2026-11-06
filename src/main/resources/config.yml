@@ -71,6 +71,9 @@ general:
   # Un article peut les remplacer : purchase_limit_per_day / sell_limit_per_day. Une revente = une unité de l'article.
   default_purchase_limit_per_day: 1
   default_sell_limit_per_day: 2
+  # Son joué au gain d'un niveau de métier, avec son message (messages.yml : rewards.level_up).
+  # Format : SON[:volume[:hauteur]]
+  level_up_sound: ENTITY_PLAYER_LEVELUP
 
 # --- Logs ---
 # Lignes écrites dans SHLogs (plugins/SHLogs/SHJobs/), sans date : SHLogs l'ajoute.
