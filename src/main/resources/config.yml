@@ -72,6 +72,24 @@ general:
   default_purchase_limit_per_day: 1
   default_sell_limit_per_day: 2
 
+# --- Retour de progression ---
+# Barre de boss éphémère qui montre l'avancée de la quête pendant que le joueur travaille.
+progress_feedback:
+  enabled: true
+  # Délai minimal entre deux mises à jour de la barre pour un même joueur, en ticks (20 = 1 seconde).
+  update_interval_ticks: 10
+  # Temps sans progression avant que la barre disparaisse, en ticks.
+  hide_after_ticks: 60
+  # Couleur : BLUE, GREEN, PINK, PURPLE, RED, WHITE ou YELLOW.
+  bar_color: GREEN
+  # Découpage : PROGRESS, NOTCHED_6, NOTCHED_10, NOTCHED_12 ou NOTCHED_20.
+  bar_style: NOTCHED_10
+  # Note jouée au passage d'un palier : pourcentage de l'objectif, puis "son:volume:hauteur".
+  milestones:
+    "25": "block.note_block.bell:0.4:1.0595"
+    "50": "block.note_block.bell:0.4:1.4142"
+    "75": "block.note_block.bell:0.4:1.7818"
+
 # --- Logs ---
 # Lignes écrites dans SHLogs (plugins/SHLogs/SHJobs/), sans date : SHLogs l'ajoute.
 # file : nom du fichier de log. format : ligne écrite.

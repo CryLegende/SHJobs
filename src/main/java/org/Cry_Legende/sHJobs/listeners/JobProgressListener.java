@@ -45,7 +45,6 @@ public class JobProgressListener implements Listener {
             return; // Pas de données ou pas de jobs actifs
         }
 
-        boolean changed = false;
         for (DailyJob dailyJob : playerData.getActiveDailyJobs().values()) {
             if (dailyJob.isCompleted()) continue; // Job déjà complété
 
@@ -110,6 +109,7 @@ public class JobProgressListener implements Listener {
                     }
 
                     if (conditionMet) {
+                        int progressBefore = dailyJob.getProgress(objective.getId());
                         if (dailyJob.incrementProgress(objective.getId(), amount)) {
                             // L'objectif est complété
                             plugin.getMessages().sendPlayerMessage(player, "jobs.objective_completed",
@@ -117,7 +117,6 @@ public class JobProgressListener implements Listener {
                                 "%job_name%", dailyJob.getTemplate().getDisplayName());
                             // Le son/message de complétion du job entier est géré quand dailyJob.isCompleted() devient true.
                         }
-                        changed = true;
                         if (dailyJob.isCompleted()) {
                             plugin.getMessages().sendPlayerMessage(player, "jobs.job_completed",
                                 "%job_name%", dailyJob.getTemplate().getDisplayName());
@@ -128,13 +127,10 @@ public class JobProgressListener implements Listener {
                             // Pour l'instant, giveJobCompletionRewards le retire.
                             return; // Sortir tôt si un job est complété et retiré
                         }
+                        plugin.getProgressFeedback().onProgress(player, dailyJob, objective, progressBefore);
                     }
                 }
             }
-        }
-        if (changed) {
-            // Si une progression a eu lieu, on pourrait vouloir mettre à jour un ActionBar ou un BossBar.
-            // Pour le lore du GUI, il sera mis à jour à la prochaine ouverture.
         }
     }
 

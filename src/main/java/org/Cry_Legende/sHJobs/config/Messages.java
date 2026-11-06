@@ -22,6 +22,7 @@ public class Messages {
         Map.entry("common.player_data_load_error_menu", "&7&l« &c&lSH &8&l» &7Impossible de charger vos &cdonnées de métier &7pour ce menu."),
         Map.entry("common.player_data_load_error_critical", "&7&l« &c&lSH &8&l» &7Vos &cdonnées de métier &7n'ont pas pu être chargées. Reconnectez-vous ou contactez un administrateur."),
         Map.entry("common.random", "aléatoire"),
+        Map.entry("jobs.progress_bossbar", "&a%job_name% &8» &f%progress%&7/&f%amount%"),
         Map.entry("admin.customitem.no_item_in_hand", "&7&l« &c&lSH &8&l» &7Vous devez tenir un item dans votre main."),
         Map.entry("admin.customitem.save_failure", "&7&l« &c&lSH &8&l» &7Erreur lors de la sauvegarde de l'item avec l'ID '&c%id%&7'."),
         Map.entry("menu.population_error", "&7&l« &c&lSH &8&l» &7Le menu '&c%menu%&7' n'a pas pu être affiché."),

@@ -28,5 +28,6 @@ public class PlayerConnectionListener implements Listener {
         // La logique de sauvegarde et de déchargement est déléguée au PlayerCache.
         // PlayerCache.handlePlayerQuit s'occupe de l'asynchronicité.
         plugin.getPlayerCache().handlePlayerQuit(event);
+        plugin.getProgressFeedback().forget(event.getPlayer().getUniqueId());
     }
 }

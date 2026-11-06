@@ -16,6 +16,8 @@
 
 Métiers (/jobs) : jobs journaliers, niveaux, exp et points de métier à dépenser en boutique.
 
+Pendant une quête du jour, une barre de boss éphémère montre l'avancée de l'objectif et une note marque chaque palier (`progress_feedback` dans `config.yml`).
+
 Les achats et reventes de la boutique sont écrits dans le fichier `boutique` de SHLogs (`plugins/SHLogs/SHJobs/`), les niveaux gagnés dans le fichier `niveaux`.
 
 Utilisé sur : **Opale**.

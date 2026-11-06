@@ -104,6 +104,8 @@ menu:
 jobs:
   objective_completed: "&7&l« &a&lSH &8&l» &7Objectif terminé: &a%objective_name% &7(Job: &a%job_name%&7)"
   job_completed: "&7&l« &a&lSH &8&l» &7Félicitations ! Vous avez terminé le job: &a%job_name% &7!"
+  # Barre de boss pendant une quête. Variables : %job_name%, %objective_name%, %progress%, %amount%.
+  progress_bossbar: "&a%job_name% &8» &f%progress%&7/&f%amount%"
   status_completed: "&aTerminé"
   status_inprogress: "&eEn cours"
   status_completed_short: "&a✔"
