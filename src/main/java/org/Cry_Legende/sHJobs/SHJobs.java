@@ -53,7 +53,6 @@ public final class SHJobs extends JavaPlugin {
     private MenuManager menuManager;
     private CustomItemManager customItemManager;
     private LeaderboardManager leaderboardManager;
-    private org.Cry_Legende.sHJobs.jobs.ProgressFeedback progressFeedback;
 
     private BukkitTask dailyResetTaskScheduler;
     private BukkitTask realTimeUpdateTaskScheduler;
@@ -71,7 +70,6 @@ public final class SHJobs extends JavaPlugin {
 
         this.configManager = new ConfigManager(this);
         this.messages = new Messages(this);
-        this.progressFeedback = new org.Cry_Legende.sHJobs.jobs.ProgressFeedback(this);
         this.menuConfig = new MenuConfig(this);
         this.customItemManager = new CustomItemManager(this);
 
@@ -120,10 +118,6 @@ public final class SHJobs extends JavaPlugin {
     @Override
     public void onDisable() {
         this.getLogger().info("SHJobs is disabling...");
-
-        if (this.progressFeedback != null) {
-            this.progressFeedback.hideAll();
-        }
 
         if (this.leaderboardManager != null) {
             this.leaderboardManager.stopUpdateTask();
@@ -322,7 +316,6 @@ public final class SHJobs extends JavaPlugin {
 
         this.configManager.reloadConfig();
         this.messages.reloadMessages();
-        this.progressFeedback.reload();
         this.menuConfig.reloadMenuConfig();
         this.customItemManager.loadItems();
 
@@ -394,10 +387,6 @@ public final class SHJobs extends JavaPlugin {
 
     public CustomItemManager getCustomItemManager() {
         return customItemManager;
-    }
-
-    public org.Cry_Legende.sHJobs.jobs.ProgressFeedback getProgressFeedback() {
-        return progressFeedback;
     }
 
     public LeaderboardManager getLeaderboardManager() {
