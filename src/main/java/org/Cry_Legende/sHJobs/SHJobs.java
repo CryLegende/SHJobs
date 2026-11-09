@@ -40,6 +40,18 @@ import java.util.logging.Level;
 
 public final class SHJobs extends JavaPlugin {
 
+    /**
+     * Fil principal du serveur, relevé à l'activation. Avec les ticks de mondes en parallèle (DivineMC), les fils des
+     * mondes sont aussi des fils de tick : Bukkit.isPrimaryThread() y répond vrai, il ne sert donc pas à les distinguer.
+     */
+    private static volatile Thread serverThread;
+
+    /** Vrai uniquement sur le fil principal du serveur (jamais sur le fil d'un monde ou d'une région). */
+    public static boolean onServerThread() {
+        return Thread.currentThread() == serverThread;
+    }
+
+
     private static SHJobs instance;
 
     private ConfigManager configManager;
@@ -63,6 +75,7 @@ public final class SHJobs extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        serverThread = Thread.currentThread();
         instance = this;
         this.getLogger().info("SHJobs is enabling...");
 

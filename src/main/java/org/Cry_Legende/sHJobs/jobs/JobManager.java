@@ -207,7 +207,7 @@ public class JobManager {
      */
     public void giveJobCompletionRewards(Player player, DailyJob dailyJob) {
         // Appelé depuis le thread d'un monde (mort d'un mob) : récompenses et commandes console sur le thread principal
-        if (!plugin.getServer().isPrimaryThread()) {
+        if (!SHJobs.onServerThread()) {
             plugin.getServer().getScheduler().runTask(plugin, () -> giveJobCompletionRewards(player, dailyJob));
             return;
         }
