@@ -206,6 +206,11 @@ public class JobManager {
      * @param dailyJob Le job terminé.
      */
     public void giveJobCompletionRewards(Player player, DailyJob dailyJob) {
+        // Appelé depuis le thread d'un monde (mort d'un mob) : récompenses et commandes console sur le thread principal
+        if (!plugin.getServer().isPrimaryThread()) {
+            plugin.getServer().getScheduler().runTask(plugin, () -> giveJobCompletionRewards(player, dailyJob));
+            return;
+        }
         if (player == null || !player.isOnline() || dailyJob == null || !dailyJob.isCompleted()) {
             return;
         }

@@ -3,17 +3,18 @@ package org.Cry_Legende.sHJobs.jobs;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class DailyJob {
 
     private final JobTemplate template;
     // La clé est l'ID de l'objectif (JobObjective.getId()), la valeur est la progression actuelle.
     private final Map<String, Integer> objectiveProgress;
-    private boolean completed; // Si tous les objectifs sont atteints
+    private volatile boolean completed; // Si tous les objectifs sont atteints
 
     public DailyJob(JobTemplate template) {
         this.template = Objects.requireNonNull(template, "JobTemplate cannot be null for a DailyJob");
-        this.objectiveProgress = new HashMap<>();
+        this.objectiveProgress = new ConcurrentHashMap<>();
         this.completed = false;
         // Initialiser la progression à 0 pour tous les objectifs du template
         for (JobObjective objective : template.getObjectives()) {
@@ -24,7 +25,7 @@ public class DailyJob {
     // Constructeur pour le chargement depuis la DB (si on stocke la progression détaillée)
     public DailyJob(JobTemplate template, Map<String, Integer> objectiveProgress, boolean completed) {
         this.template = template;
-        this.objectiveProgress = new HashMap<>(objectiveProgress); // Copie
+        this.objectiveProgress = new ConcurrentHashMap<>(objectiveProgress); // Copie
         this.completed = completed;
     }
 

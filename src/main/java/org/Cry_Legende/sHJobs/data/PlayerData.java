@@ -4,12 +4,12 @@ import org.Cry_Legende.sHJobs.jobs.JobType;
 import org.Cry_Legende.sHJobs.jobs.DailyJob;
 
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.HashSet; // Import pour Set
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set; // Import pour Set
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class PlayerData {
 
@@ -25,7 +25,7 @@ public class PlayerData {
         this.experience = new EnumMap<>(JobType.class);
         this.levels = new EnumMap<>(JobType.class);
         this.jobPoints = 0;
-        this.activeDailyJobs = new HashMap<>();
+        this.activeDailyJobs = new ConcurrentHashMap<>();
         this.dailyPurchasedShopItemIds = new HashSet<>();
 
         for (JobType type : JobType.values()) {
@@ -41,7 +41,7 @@ public class PlayerData {
         this.experience = new EnumMap<>(experience);
         this.levels = new EnumMap<>(levels);
         this.jobPoints = jobPoints;
-        this.activeDailyJobs = activeDailyJobs != null ? new HashMap<>(activeDailyJobs) : new HashMap<>();
+        this.activeDailyJobs = activeDailyJobs != null ? new ConcurrentHashMap<>(activeDailyJobs) : new ConcurrentHashMap<>();
         this.dailyPurchasedShopItemIds = dailyPurchasedShopItemIds != null ? new HashSet<>(dailyPurchasedShopItemIds) : new HashSet<>();
 
 
@@ -202,7 +202,7 @@ public class PlayerData {
     }
 
     public void setActiveDailyJobs(Map<String, DailyJob> activeDailyJobs) {
-        this.activeDailyJobs = activeDailyJobs != null ? new HashMap<>(activeDailyJobs) : new HashMap<>();
+        this.activeDailyJobs = activeDailyJobs != null ? new ConcurrentHashMap<>(activeDailyJobs) : new ConcurrentHashMap<>();
     }
 
     public Optional<DailyJob> getDailyJobByTemplateId(String templateId) {
