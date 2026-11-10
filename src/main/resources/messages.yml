@@ -34,6 +34,7 @@ admin:
     shopitem_change: "&e/shjobsadmin shopitem change <slot 1-6> [item_id] &7- Change un item de boutique."
     customitem: "&e/shjobsadmin customitem save <ID> &7- Ajout un item custom dans la boutique."
     resetdaily: "&e/shjobsadmin resetdaily &7- Force un reset des jobs et de la boutique."
+    import: "&e/shjobsadmin import &7- Reprend les données de ce serveur dans la base partagée (SHNetwork)."
     footer: "&e--------------------------------------"
   exp:
     usage: "&7&l« &c&lSH &8&l» &7Usage: &c/shjobsadmin exp <give|remove|set> <joueur> <métier> <montant>"
@@ -71,6 +72,13 @@ admin:
     usage: "&7&l« &c&lSH &8&l» &7Usage: &c/shjobsadmin shopitem change <slot 1-6> [item_id]"
     success: "&7&l« &a&lSH &8&l» &7Item de boutique du slot &a%slot%&7 changé en '&a%item_id%&7'."
     failure: "&7&l« &c&lSH &8&l» &7Échec du changement de l'item de boutique pour le slot &c%slot%&7."
+  # Avec SHNetwork : joueur connecté sur un autre serveur, la commande y est envoyée
+  remote_sent: "&7&l« &e&lSH &8&l» &a%player% &7est connecté sur &e%server%&7 : commande envoyée sur ce serveur."
+  import:
+    not_network: "&7&l« &c&lSH &8&l» &7Cette commande demande SHNetwork et le mode réseau actif."
+    started: "&7&l« &e&lSH &8&l» &7Reprise des données de ce serveur dans la base partagée..."
+    done: "&7&l« &a&lSH &8&l» &7Reprise terminée : &a%players% joueurs &7repris, &a%present% &7déjà en base, &a%limits% &7compteurs de limites."
+    failure: "&7&l« &c&lSH &8&l» &7Reprise impossible : &c%error%&7."
   customitem:
     usage: "&7&l« &c&lSH &8&l» &7Usage: &c/shjobsadmin customitem save <ID>"
     no_item_in_hand: "&7&l« &c&lSH &8&l» &7Vous devez tenir un item dans votre main."

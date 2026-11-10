@@ -16,6 +16,11 @@ public class DailyResetTask extends BukkitRunnable {
 
     @Override
     public void run() {
+        if (plugin.getNetwork() != null) {
+            // Avec SHNetwork, la rotation est une seule ligne en base : le serveur meneur la prend, les autres l'appliquent
+            plugin.getNetwork().rollScheduled();
+            return;
+        }
         plugin.getLogger().info("Performing daily reset for SHJobs...");
         try {
             // 1. Sélectionner de nouveaux jobs journaliers

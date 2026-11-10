@@ -65,11 +65,29 @@ public class JobManager {
      * Cette méthode notifie ensuite le PlayerCache pour mettre à jour les jobs des joueurs.
      */
     public void selectNewDailyJobs() {
+        List<String> newJobIds = pickDailyJobIds();
+        this.currentDailyJobTemplateIds = newJobIds;
+        if (jobTemplates.isEmpty()) {
+            return;
+        }
+
+        plugin.getLogger().info("New daily jobs selected: " +
+            this.currentDailyJobTemplateIds.stream()
+                .map(id -> id != null ? id : "EMPTY")
+                .collect(Collectors.joining(", "))
+        );
+        plugin.getPlayerCache().assignNewDailyJobsToAll();
+    }
+
+    /**
+     * Tire 6 jobs journaliers de manière aléatoire pondérée, sans rien appliquer : avec SHNetwork, le serveur
+     * qui gagne la rotation en base publie ce tirage, les autres serveurs ne tirent pas.
+     */
+    public List<String> pickDailyJobIds() {
         List<String> newJobIds = new ArrayList<>(Collections.nCopies(6, null));
         if (jobTemplates.isEmpty()) {
             plugin.getLogger().warning("No job templates loaded. Cannot select daily jobs.");
-            this.currentDailyJobTemplateIds = newJobIds;
-            return;
+            return newJobIds;
         }
 
         List<JobTemplate> availableTemplates = new ArrayList<>(jobTemplates.values());
@@ -95,14 +113,7 @@ public class JobManager {
                 plugin.getLogger().warning("Failed to select a daily job for slot " + (i + 1) + ". The slot will be empty.");
             }
         }
-        this.currentDailyJobTemplateIds = newJobIds;
-
-        plugin.getLogger().info("New daily jobs selected: " +
-            this.currentDailyJobTemplateIds.stream()
-                .map(id -> id != null ? id : "EMPTY")
-                .collect(Collectors.joining(", "))
-        );
-        plugin.getPlayerCache().assignNewDailyJobsToAll();
+        return newJobIds;
     }
 
     private JobTemplate selectWeightedRandom(List<JobTemplate> templates) {

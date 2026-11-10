@@ -13,6 +13,7 @@ import org.Cry_Legende.sHJobs.data.SQLiteStorage;
 import org.Cry_Legende.sHJobs.gui.InventoryListener;
 import org.Cry_Legende.sHJobs.gui.MenuManager;
 import org.Cry_Legende.sHJobs.items.CustomItemManager;
+import org.Cry_Legende.sHJobs.network.NetworkMode;
 import org.Cry_Legende.sHJobs.jobs.JobManager;
 import org.Cry_Legende.sHJobs.jobs.LeaderboardManager;
 import org.Cry_Legende.sHJobs.listeners.JobProgressListener;
@@ -71,7 +72,10 @@ public final class SHJobs extends JavaPlugin {
 
     private File serverStateFile;
     private FileConfiguration serverStateConfig;
-    private LocalDate lastResetDate;
+    private volatile LocalDate lastResetDate;
+
+    // Non nul seulement avec SHNetwork : joueurs, rotation du jour et limites de la boutique en base partagée
+    private NetworkMode network;
 
     @Override
     public void onEnable() {
@@ -86,6 +90,11 @@ public final class SHJobs extends JavaPlugin {
         this.menuConfig = new MenuConfig(this);
         this.customItemManager = new CustomItemManager(this);
 
+        if (!enableNetwork()) {
+            this.getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
+
         if (!setupStorage()) {
             this.getServer().getPluginManager().disablePlugin(this);
             return;
@@ -97,12 +106,18 @@ public final class SHJobs extends JavaPlugin {
         this.dailyLimits = new org.Cry_Legende.sHJobs.shop.DailyLimits(this);
         this.menuManager = new MenuManager(this);
         this.leaderboardManager = new LeaderboardManager(this);
+        if (network != null) {
+            this.dailyLimits.useSharedStore(network.db());
+        }
 
         this.jobManager.loadJobTemplates();
         this.shopManager.loadShopItems();
         this.menuManager.loadMenus();
 
         loadOrSelectDailyServerState();
+        if (!isEnabled()) {
+            return;
+        }
 
         getCommand("jobs").setExecutor(new JobsCommand(this));
         getCommand("shjobsadmin").setExecutor(new AdminJobsCommand(this));
@@ -124,6 +139,9 @@ public final class SHJobs extends JavaPlugin {
         scheduleDailyResetTask();
         this.realTimeUpdateTaskScheduler = new RealTimeUpdateTask(this).runTaskTimer(this, 20L, 20L);
         this.leaderboardManager.startUpdateTask();
+        if (network != null) {
+            network.start();
+        }
 
         this.getLogger().info("SHJobs has been enabled successfully!");
     }
@@ -136,13 +154,18 @@ public final class SHJobs extends JavaPlugin {
             this.leaderboardManager.stopUpdateTask();
         }
 
-        saveServerState();
+        if (this.network == null) {
+            saveServerState();
+        }
         if (this.dailyLimits != null) {
             this.dailyLimits.save();
         }
 
         if (this.playerCache != null) {
             this.playerCache.saveAllOnlinePlayersSync();
+        }
+        if (this.network != null && this.dailyLimits != null) {
+            this.dailyLimits.flushAll(5000L);
         }
 
         if (this.storageManager != null) {
@@ -152,6 +175,10 @@ public final class SHJobs extends JavaPlugin {
             } catch (SQLException e) {
                 this.getLogger().log(Level.SEVERE, "Error closing database connection.", e);
             }
+        }
+
+        if (this.network != null) {
+            this.network.close();
         }
 
         if (dailyResetTaskScheduler != null && !dailyResetTaskScheduler.isCancelled()) {
@@ -164,7 +191,40 @@ public final class SHJobs extends JavaPlugin {
         this.getLogger().info("SHJobs has been disabled.");
     }
 
+    /**
+     * Passe en mode réseau si SHNetwork est installé et que reseau.actif est vrai. Les classes qui touchent à
+     * SHNetwork ne sont chargées que dans ce cas. Faux si le mode réseau est demandé mais inutilisable : le plugin
+     * ne démarre pas avec des données locales qui divergeraient de celles des autres serveurs.
+     */
+    private boolean enableNetwork() {
+        if (!configManager.getRawConfig().getBoolean("reseau.actif", true)) {
+            return true;
+        }
+        if (!Bukkit.getPluginManager().isPluginEnabled("SHNetwork")) {
+            return true;
+        }
+        try {
+            this.network = NetworkMode.open(this);
+            this.getLogger().info("SHNetwork détecté : joueurs, rotation du jour et limites de la boutique partagés entre les serveurs.");
+            return true;
+        } catch (Throwable e) {
+            this.getLogger().log(Level.SEVERE, "SHNetwork présent mais mode réseau inutilisable, plugin désactivé.", e);
+            return false;
+        }
+    }
+
     private boolean setupStorage() {
+        if (network != null) {
+            try {
+                this.storageManager = network.createStorage();
+                this.storageManager.init();
+                this.getLogger().info("Database initialized successfully using the shared network database.");
+                return true;
+            } catch (SQLException e) {
+                this.getLogger().log(Level.SEVERE, "Failed to initialize database. Disabling plugin.", e);
+                return false;
+            }
+        }
         String storageType = configManager.getStorageType().toUpperCase();
         if (storageType.equals("MYSQL")) {
             this.storageManager = new MySQLStorage(this);
@@ -207,6 +267,15 @@ public final class SHJobs extends JavaPlugin {
     }
 
     private void loadOrSelectDailyServerState() {
+        if (network != null) {
+            try {
+                network.loadDailyState();
+            } catch (SQLException | RuntimeException e) {
+                this.getLogger().log(Level.SEVERE, "Rotation du jour illisible dans la base partagée, plugin désactivé.", e);
+                this.getServer().getPluginManager().disablePlugin(this);
+            }
+            return;
+        }
         String lastResetDateStr = serverStateConfig.getString("last_reset_date");
         if (lastResetDateStr != null) {
             try {
@@ -261,6 +330,11 @@ public final class SHJobs extends JavaPlugin {
     }
 
     public void saveServerState() {
+        if (network != null) {
+            // Le tirage du jour est en base : l'enregistrer le publie aux autres serveurs
+            network.publishRotation();
+            return;
+        }
         if (serverStateConfig == null || serverStateFile == null) {
             getLogger().warning("Cannot save server state, config/file is null.");
             return;
@@ -298,9 +372,17 @@ public final class SHJobs extends JavaPlugin {
         this.lastResetDate = date;
     }
 
-    private void scheduleDailyResetTask() {
+    /** Retire la tâche de rotation quotidienne (avec SHNetwork : ce serveur n'est plus le meneur). */
+    public void cancelDailyResetTask() {
         if (dailyResetTaskScheduler != null && !dailyResetTaskScheduler.isCancelled()) {
             dailyResetTaskScheduler.cancel();
+        }
+    }
+
+    public void scheduleDailyResetTask() {
+        cancelDailyResetTask();
+        if (network != null && !network.isLeader()) {
+            return; // avec SHNetwork, seul le serveur meneur lance la rotation
         }
 
         LocalDateTime now = LocalDateTime.now();
@@ -359,6 +441,11 @@ public final class SHJobs extends JavaPlugin {
     // --- Getters ---
     public static SHJobs getInstance() {
         return instance;
+    }
+
+    /** Mode réseau (SHNetwork), nul sur un serveur normal. */
+    public NetworkMode getNetwork() {
+        return network;
     }
 
     public ConfigManager getConfigManager() {

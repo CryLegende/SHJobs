@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 public class JobsTabCompleter implements TabCompleter {
 
     private final SHJobs plugin;
-    private final List<String> adminSubCommands = Arrays.asList("reload", "exp", "level", "points", "playerinfo", "info", "job", "shopitem", "resetdaily", "customitem");
+    private final List<String> adminSubCommands = Arrays.asList("reload", "exp", "level", "points", "playerinfo", "info", "job", "shopitem", "resetdaily", "customitem", "import");
     private final List<String> customItemActions = Collections.singletonList("save");
     private final List<String> expActions = Arrays.asList("give", "remove", "set");
     private final List<String> levelActions = Collections.singletonList("set");

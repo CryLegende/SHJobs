@@ -31,6 +31,12 @@ public class PlayerCache {
     private final Set<UUID> failedLoads = ConcurrentHashMap.newKeySet();
     // Les rappels des futures reviennent sur le fil principal
     private final Executor mainThread;
+    // Mode réseau : sauvegarde de départ en cours de chaque joueur (fil principal uniquement), pour que la tâche de
+    // SHNetwork et l'événement de déconnexion ne sauvegardent pas deux fois
+    private final Map<UUID, CompletableFuture<Void>> departures = new HashMap<>();
+    // Mode réseau : joueurs dont la lecture attend la sauvegarde du serveur qu'ils quittent. Toute lecture demandée
+    // pendant ce temps (/jobs tapé dès l'arrivée) attend aussi, sinon elle lirait des données déjà dépassées.
+    private final Map<UUID, CompletableFuture<Void>> arrivals = new ConcurrentHashMap<>();
 
     public PlayerCache(SHJobs plugin) {
         this.plugin = plugin;
@@ -41,6 +47,10 @@ public class PlayerCache {
     }
 
     public CompletableFuture<PlayerData> loadPlayerData(UUID playerUUID) {
+        CompletableFuture<Void> arriving = arrivals.get(playerUUID);
+        if (arriving != null && !arriving.isDone()) {
+            return arriving.thenCompose(ignored -> loadPlayerData(playerUUID));
+        }
         plugin.getLogger().info("[PlayerCache] Request to load PlayerData for " + playerUUID);
         if (playerDataCache.containsKey(playerUUID) && isPlayerDataFullyLoaded(playerUUID)) {
             plugin.getLogger().info("[PlayerCache] PlayerData for " + playerUUID + " already in cache and marked as fully loaded.");
@@ -209,7 +219,17 @@ public class PlayerCache {
         // Marquer que les données ne sont pas encore (ou plus) complètement chargées
         fullyLoadedData.put(playerUUID, false);
 
-        loadPlayerData(playerUUID).thenAcceptAsync(playerData -> {
+        // Avec SHNetwork, les données ne se lisent qu'une fois le serveur de départ arrivé au bout de sa sauvegarde
+        CompletableFuture<PlayerData> loading;
+        if (plugin.getNetwork() == null) {
+            loading = loadPlayerData(playerUUID);
+        } else {
+            CompletableFuture<Void> ready = plugin.getNetwork().beforeLoad(playerUUID);
+            arrivals.put(playerUUID, ready);
+            ready.whenComplete((ignored, error) -> arrivals.remove(playerUUID, ready));
+            loading = ready.thenCompose(ignored -> loadPlayerData(playerUUID));
+        }
+        loading.thenAcceptAsync(playerData -> {
                 if (!player.isOnline()) { // Revérifier si le joueur est toujours en ligne
                     plugin.getLogger().info("[PlayerCache] Player " + player.getName() + " disconnected during data load on join.");
                     unloadPlayerData(playerUUID); // S'assurer de nettoyer si le joueur part vite
@@ -243,6 +263,11 @@ public class PlayerCache {
         UUID playerUUID = player.getUniqueId();
         plugin.getLogger().info("[PlayerCache] Handling PlayerQuitEvent for " + player.getName() + " (" + playerUUID + ")");
 
+        if (plugin.getNetwork() != null) {
+            saveOnDeparture(playerUUID);
+            return;
+        }
+
         savePlayerData(playerUUID) // Tenter de sauvegarder
             .whenCompleteAsync((result, throwable) -> { // S'exécute après savePlayerData, que ce soit un succès ou une erreur
                 if (throwable != null) {
@@ -256,5 +281,33 @@ public class PlayerCache {
                     unloadPlayerData(playerUUID);
                 }
             }, mainThread); // Exécuter le whenComplete sur le thread principal
+    }
+
+    /**
+     * Mode réseau : sauvegarde du joueur (données et limites de la boutique) puis déchargement, au départ du joueur.
+     * Appelée sur le fil principal, par la tâche de départ de SHNetwork ou par l'événement de déconnexion : celui
+     * des deux qui passe en premier lance la sauvegarde, l'autre reçoit le même futur.
+     */
+    public CompletableFuture<Void> saveOnDeparture(UUID playerUUID) {
+        CompletableFuture<Void> running = departures.get(playerUUID);
+        if (running != null) {
+            return running;
+        }
+        CompletableFuture<Void> saved = CompletableFuture.allOf(savePlayerData(playerUUID), plugin.getDailyLimits().flush(playerUUID));
+        CompletableFuture<Void> done = saved.whenCompleteAsync((result, throwable) -> {
+            if (throwable != null) {
+                plugin.getLogger().log(Level.SEVERE, "[PlayerCache] EXCEPTION during save for " + playerUUID + " on departure.", throwable);
+            } else {
+                plugin.getLogger().info("[PlayerCache] Player data save completed for " + playerUUID + " on departure.");
+            }
+            departures.remove(playerUUID);
+            // Décharger dans tous les cas, sauf si le joueur s'est reconnecté entre-temps
+            if (Bukkit.getPlayer(playerUUID) == null) {
+                unloadPlayerData(playerUUID);
+                plugin.getDailyLimits().forget(playerUUID);
+            }
+        }, mainThread);
+        departures.put(playerUUID, done);
+        return done;
     }
 }

@@ -10,6 +10,7 @@ import org.Cry_Legende.sHJobs.jobs.DailyJob;
 import org.Cry_Legende.sHJobs.jobs.JobTemplate;
 import org.Cry_Legende.sHJobs.jobs.JobType;
 import org.Cry_Legende.sHJobs.jobs.LeaderboardEntry;
+import org.Cry_Legende.sHJobs.network.SharedDb;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -26,12 +27,20 @@ import java.util.logging.Level;
 public class MySQLStorage implements StorageManager {
 
     private final SHJobs plugin;
-    private HikariDataSource dataSource;
+    // Base partagée du mode réseau : le pool appartient à SharedDb et n'est pas fermé ici
+    private final SharedDb shared;
+    private javax.sql.DataSource dataSource;
     private final ExecutorService executorService;
     private final Gson gson;
 
     public MySQLStorage(SHJobs plugin) {
+        this(plugin, null);
+    }
+
+    /** Stockage dans la base partagée du mode réseau (SHNetwork). */
+    public MySQLStorage(SHJobs plugin, SharedDb shared) {
         this.plugin = plugin;
+        this.shared = shared;
         // Un pool de threads pour gérer les requêtes asynchrones vers MySQL
         int poolSize = Math.max(2, Math.min(Runtime.getRuntime().availableProcessors() / 2, 4));
         this.executorService = Executors.newFixedThreadPool(poolSize, r -> {
@@ -44,6 +53,11 @@ public class MySQLStorage implements StorageManager {
 
     @Override
     public void init() throws SQLException {
+        if (shared != null) {
+            dataSource = shared.dataSource();
+            createTables();
+            return;
+        }
         ConfigManager cfg = plugin.getConfigManager();
         HikariConfig hikariConfig = new HikariConfig();
         hikariConfig.setJdbcUrl("jdbc:mysql://" + cfg.getMysqlHost() + ":" + cfg.getMysqlPort() + "/" + cfg.getMysqlDatabase() + "?useSSL=" + cfg.mysqlUseSSL());
@@ -98,11 +112,27 @@ public class MySQLStorage implements StorageManager {
             + "CONSTRAINT `fk_player_daily_jobs_uuid` FOREIGN KEY (`player_uuid`) REFERENCES `shjobs_player_data`(`uuid`) ON DELETE CASCADE"
             + ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
         try (Connection conn = dataSource.getConnection(); Statement stmt = conn.createStatement()) {
-            stmt.execute(createPlayerDataSQL);
-            stmt.execute(createPlayerJobsSQL);
-            stmt.execute(createPlayerDailyJobsSQL);
+            if (shared != null) {
+                // Base partagée : une table déjà là ne demande aucun droit CREATE à l'utilisateur
+                ensureTable(stmt, "shjobs_player_data", createPlayerDataSQL);
+                ensureTable(stmt, "shjobs_player_jobs", createPlayerJobsSQL);
+                ensureTable(stmt, "shjobs_player_daily_jobs", createPlayerDailyJobsSQL);
+            } else {
+                stmt.execute(createPlayerDataSQL);
+                stmt.execute(createPlayerJobsSQL);
+                stmt.execute(createPlayerDailyJobsSQL);
+            }
             plugin.getLogger().info("MySQL tables checked/created successfully.");
         }
+    }
+
+    private static void ensureTable(Statement stmt, String table, String ddl) throws SQLException {
+        try (ResultSet rs = stmt.executeQuery("SELECT 1 FROM `" + table + "` LIMIT 1")) {
+            return;
+        } catch (SQLException missing) {
+            // la table n'existe pas encore : création ci-dessous
+        }
+        stmt.execute(ddl);
     }
 
     @Override
@@ -114,8 +144,8 @@ public class MySQLStorage implements StorageManager {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
-        if (dataSource != null && !dataSource.isClosed()) {
-            dataSource.close();
+        if (shared == null && dataSource instanceof HikariDataSource pool && !pool.isClosed()) {
+            pool.close();
             plugin.getLogger().info("MySQL HikariCP connection pool closed.");
         }
     }

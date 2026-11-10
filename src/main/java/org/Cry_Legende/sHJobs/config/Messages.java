@@ -33,7 +33,13 @@ public class Messages {
         Map.entry("menu.placeholder_shop_empty", "&7Emplacement Vide"),
         Map.entry("menu.placeholder_shop_lore", "&cCet article n'est pas disponible actuellement."),
         Map.entry("shop.purchase_successful_quantity", "&7&l« &a&lSH &8&l» &7Vous avez acheté &a%amount%x %item_name% &7pour &a%cost% points &7!"),
-        Map.entry("shop.sell_config_error", "&7&l« &c&lSH &8&l» &7Erreur de configuration du serveur : vente &cimpossible&7.")
+        Map.entry("shop.sell_config_error", "&7&l« &c&lSH &8&l» &7Erreur de configuration du serveur : vente &cimpossible&7."),
+        Map.entry("admin.help.import", "&e/shjobsadmin import &7- Reprend les données de ce serveur dans la base partagée (SHNetwork)."),
+        Map.entry("admin.remote_sent", "&7&l« &e&lSH &8&l» &a%player% &7est connecté sur &e%server%&7 : commande envoyée sur ce serveur."),
+        Map.entry("admin.import.not_network", "&7&l« &c&lSH &8&l» &7Cette commande demande SHNetwork et le mode réseau actif."),
+        Map.entry("admin.import.started", "&7&l« &e&lSH &8&l» &7Reprise des données de ce serveur dans la base partagée..."),
+        Map.entry("admin.import.done", "&7&l« &a&lSH &8&l» &7Reprise terminée : &a%players% joueurs &7repris, &a%present% &7déjà en base, &a%limits% &7compteurs de limites."),
+        Map.entry("admin.import.failure", "&7&l« &c&lSH &8&l» &7Reprise impossible : &c%error%&7.")
     );
 
     private final SHJobs plugin;

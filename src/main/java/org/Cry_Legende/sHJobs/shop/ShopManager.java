@@ -401,11 +401,27 @@ public class ShopManager {
     }
 
     public void selectNewDailyShopItems() {
+        List<String> newShopItemIds = pickDailyShopItemIds();
+        this.currentDailyShopItemIds = newShopItemIds;
+        if (allShopItems.isEmpty()) {
+            return;
+        }
+        plugin.getLogger().info("New daily shop items selected: " +
+            this.currentDailyShopItemIds.stream()
+                .map(id -> id != null ? id : "EMPTY")
+                .collect(Collectors.joining(", "))
+        );
+    }
+
+    /**
+     * Tire 6 articles du jour de manière aléatoire pondérée, sans rien appliquer : avec SHNetwork, le serveur
+     * qui gagne la rotation en base publie ce tirage, les autres serveurs ne tirent pas.
+     */
+    public List<String> pickDailyShopItemIds() {
         List<String> newShopItemIds = new ArrayList<>(Collections.nCopies(6, null));
         if (allShopItems.isEmpty()) {
             plugin.getLogger().warning("No shop items loaded. Cannot select daily shop items.");
-            this.currentDailyShopItemIds = newShopItemIds;
-            return;
+            return newShopItemIds;
         }
         List<ShopItem> availableItems = new ArrayList<>(allShopItems.values());
         Set<String> selectedInThisBatch = new HashSet<>();
@@ -425,12 +441,7 @@ public class ShopManager {
                 }
             }
         }
-        this.currentDailyShopItemIds = newShopItemIds;
-        plugin.getLogger().info("New daily shop items selected: " +
-            this.currentDailyShopItemIds.stream()
-                .map(id -> id != null ? id : "EMPTY")
-                .collect(Collectors.joining(", "))
-        );
+        return newShopItemIds;
     }
 
     private ShopItem selectWeightedRandom(List<ShopItem> items) {

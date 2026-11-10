@@ -89,9 +89,27 @@ public class AdminJobsCommand implements CommandExecutor {
                     plugin.getMessages().sendMessage(sender, "common.no_permission");
                     return true;
                 }
-                plugin.getJobManager().selectNewDailyJobs();
-                plugin.getShopManager().selectNewDailyShopItems();
+                if (plugin.getNetwork() != null) {
+                    // Avec SHNetwork, une seule rotation pour tous les serveurs : elle est prise en base puis publiée
+                    plugin.getNetwork().roll(true);
+                } else {
+                    plugin.getJobManager().selectNewDailyJobs();
+                    plugin.getShopManager().selectNewDailyShopItems();
+                }
                 plugin.getMessages().sendMessage(sender, "admin.daily_reset_forced");
+                break;
+
+            case "import":
+                if (!sender.hasPermission("shjobs.admin.import")) {
+                    plugin.getMessages().sendMessage(sender, "common.no_permission");
+                    return true;
+                }
+                if (plugin.getNetwork() == null) {
+                    plugin.getMessages().sendMessage(sender, "admin.import.not_network");
+                    return true;
+                }
+                plugin.getMessages().sendMessage(sender, "admin.import.started");
+                plugin.getNetwork().importLocal(sender);
                 break;
 
             default:
@@ -100,6 +118,28 @@ public class AdminJobsCommand implements CommandExecutor {
                 break;
         }
         return true;
+    }
+
+    /**
+     * Avec SHNetwork : si le joueur visé est connecté sur un autre serveur, ses données sont en mémoire là-bas et ne
+     * seront écrites en base qu'à son départ. La commande est donc lancée sur son serveur, avec la permission de
+     * l'émetteur vérifiée ici. Vrai si elle a été envoyée.
+     */
+    private boolean sendToPlayerServer(CommandSender sender, String targetName, String permission, String[] args) {
+        if (plugin.getNetwork() == null || !sender.hasPermission(permission)) {
+            return false;
+        }
+        Optional<String> server = plugin.getNetwork().otherServerOf(targetName);
+        if (server.isEmpty()) {
+            return false;
+        }
+        plugin.getNetwork().runFor(targetName, "shjobsadmin " + String.join(" ", args));
+        plugin.getMessages().sendMessage(sender, "admin.remote_sent", "%player%", targetName, "%server%", server.get());
+        return true;
+    }
+
+    private static boolean isGiveRemoveSet(String action) {
+        return action.equals("give") || action.equals("remove") || action.equals("set");
     }
 
     private void sendAdminHelp(CommandSender sender, String label) {
@@ -112,6 +152,7 @@ public class AdminJobsCommand implements CommandExecutor {
         plugin.getMessages().sendMessage(sender, "admin.help.job_change");
         plugin.getMessages().sendMessage(sender, "admin.help.shopitem_change");
         plugin.getMessages().sendMessage(sender, "admin.help.resetdaily");
+        plugin.getMessages().sendMessage(sender, "admin.help.import");
         plugin.getMessages().sendMessage(sender, "admin.help.customitem", "%label%", label);
         plugin.getMessages().sendMessage(sender, "admin.help.footer");
     }
@@ -157,6 +198,9 @@ public class AdminJobsCommand implements CommandExecutor {
             return;
         }
         String action = args[1].toLowerCase();
+        if (isGiveRemoveSet(action) && sendToPlayerServer(sender, args[2], "shjobs.admin.exp." + action, args)) {
+            return;
+        }
         OfflinePlayer target = Bukkit.getOfflinePlayer(args[2]);
         Optional<JobType> jobTypeOpt = JobType.fromString(args[3]);
         long amount;
@@ -237,6 +281,9 @@ public class AdminJobsCommand implements CommandExecutor {
             return;
         }
 
+        if (sendToPlayerServer(sender, args[2], "shjobs.admin.level.set", args)) {
+            return;
+        }
         OfflinePlayer target = Bukkit.getOfflinePlayer(args[2]);
         Optional<JobType> jobTypeOpt = JobType.fromString(args[3]);
         int level;
@@ -289,6 +336,9 @@ public class AdminJobsCommand implements CommandExecutor {
             return;
         }
         String action = args[1].toLowerCase();
+        if (isGiveRemoveSet(action) && sendToPlayerServer(sender, args[2], "shjobs.admin.points." + action, args)) {
+            return;
+        }
         OfflinePlayer target = Bukkit.getOfflinePlayer(args[2]);
         long amount;
 

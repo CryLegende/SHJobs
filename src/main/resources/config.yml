@@ -15,6 +15,7 @@
 #     job change <slot 1-6> [id_job]                        Change un job journalier.
 #     shopitem change <slot 1-6> [id_article]               Change un article de la boutique du jour.
 #     resetdaily                                            Force la rotation des jobs et de la boutique.
+#     import                                                Reprend les données de ce serveur dans la base partagée (mode réseau).
 #     customitem save <id>                                  Enregistre l'objet en main dans custom_items.yml.
 #
 # Permissions :
@@ -33,6 +34,7 @@
 #   shjobs.admin.job.change        job change.
 #   shjobs.admin.shop.changeitem   shopitem change.
 #   shjobs.admin.resetdaily        resetdaily.
+#   shjobs.admin.import            import.
 #   shjobs.admin.customitem        customitem.
 #   shjobs.admin.customitem.save   customitem save.
 #
@@ -61,6 +63,32 @@ database:
     password: "CHANGE_ME"
     useSSL: false
     # connection_properties: "autoReconnect=true&useUnicode=true&characterEncoding=utf8" # Optional MySQL properties
+
+# --- Réseau (plusieurs serveurs de jeu) ---
+# Actif seulement si SHNetwork est installé ; sans lui, rien ne change : stockage de database.type, rotation du jour
+# dans shjobs_server_state.yml, limites de la boutique dans daily_limits.yml.
+# Avec SHNetwork, tout est partagé entre les serveurs dans la base ci-dessous (database.type est ignoré) :
+#   - les joueurs (points, niveaux, quêtes du jour) : lus à la connexion une fois que le serveur quitté a fini de les
+#     sauvegarder, écrits au départ ;
+#   - la rotation du jour : tirée une seule fois par le serveur meneur, appliquée par tous les autres ;
+#   - les limites quotidiennes de la boutique : changer de serveur ne les remet pas à zéro ;
+#   - /sja exp|level|points sur un joueur connecté ailleurs est exécuté sur son serveur.
+# /sja import reprend dans la base les joueurs de database/shjobs_data.db et les limites de daily_limits.yml.
+# Demande un redémarrage : tout le bloc.
+reseau:
+  actif: true
+  # Canal du bus SHNetwork où la rotation du jour est annoncée aux autres serveurs
+  canal: shjobs
+  base-de-donnees:
+    url: "jdbc:mariadb://127.0.0.1:3306/bo_net"
+    utilisateur: shjobs
+    mot-de-passe: CHANGE_ME
+    # Délai maximal de connexion à la base, en millisecondes
+    delai-ms: 5000
+  # Temps d'attente maximal, en secondes, de la sauvegarde d'un joueur par le serveur qu'il quitte avant de lire ses données
+  attente-sauvegarde-secondes: 10
+  # Intervalle, en secondes, de relecture de la rotation en base : rattrape un message du bus perdu
+  relecture-rotation-secondes: 30
 
 # --- General Settings ---
 general:
