@@ -33,7 +33,7 @@ public class JobsCommand implements CommandExecutor {
         Player player = (Player) sender;
 
         if (args.length == 0) {
-            if (!player.hasPermission("shjobs.player.menu")) {
+            if (!player.hasPermission("shjobs.use")) {
                 plugin.getMessages().sendPlayerMessage(player, "common.no_permission");
                 return true;
             }
@@ -42,7 +42,7 @@ public class JobsCommand implements CommandExecutor {
         }
 
         if (args[0].equalsIgnoreCase("shop")) {
-            if (!player.hasPermission("shjobs.player.shop")) {
+            if (!player.hasPermission("shjobs.shop")) {
                 plugin.getMessages().sendPlayerMessage(player, "common.no_permission");
                 return true;
             }

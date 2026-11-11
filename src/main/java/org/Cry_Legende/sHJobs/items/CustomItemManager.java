@@ -9,9 +9,11 @@ import org.bukkit.inventory.ItemStack;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 public class CustomItemManager {
 
@@ -58,6 +60,11 @@ public class CustomItemManager {
             }
         }
         plugin.getLogger().info("Loaded " + customItemsCache.size() + " custom items from registry.");
+    }
+
+    /** Ids des objets enregistrés, triés. */
+    public List<String> getItemIds() {
+        return customItemsCache.keySet().stream().sorted().collect(Collectors.toList());
     }
 
     /**

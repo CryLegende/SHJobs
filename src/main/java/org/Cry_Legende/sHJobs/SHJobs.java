@@ -24,6 +24,7 @@ import org.Cry_Legende.sHJobs.tasks.DailyResetTask;
 import org.Cry_Legende.sHJobs.tasks.RealTimeUpdateTask;
 
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -37,6 +38,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 
 public final class SHJobs extends JavaPlugin {
@@ -58,7 +60,9 @@ public final class SHJobs extends JavaPlugin {
     private ConfigManager configManager;
     private Messages messages;
     private MenuConfig menuConfig;
-    private StorageManager storageManager;
+    private volatile StorageManager storageManager;
+    // Réglages de base de données du stockage ouvert : un rechargement ne le rouvre que s'ils ont changé
+    private String activeStorageSignature = "";
     private PlayerCache playerCache;
     private JobManager jobManager;
     private ShopManager shopManager;
@@ -119,9 +123,12 @@ public final class SHJobs extends JavaPlugin {
             return;
         }
 
-        getCommand("jobs").setExecutor(new JobsCommand(this));
-        getCommand("shjobsadmin").setExecutor(new AdminJobsCommand(this));
-        getCommand("shjobsadmin").setTabCompleter(new JobsTabCompleter(this));
+        JobsCommand jobsCommand = new JobsCommand(this);
+        JobsTabCompleter tabCompleter = new JobsTabCompleter(this);
+        getCommand("jobs").setExecutor(jobsCommand);
+        getCommand("jobs").setTabCompleter(tabCompleter);
+        getCommand("shjobs").setExecutor(new AdminJobsCommand(this, jobsCommand));
+        getCommand("shjobs").setTabCompleter(tabCompleter);
         this.getLogger().info("Commands registered.");
 
         getServer().getPluginManager().registerEvents(new PlayerConnectionListener(this), this);
@@ -214,40 +221,63 @@ public final class SHJobs extends JavaPlugin {
     }
 
     private boolean setupStorage() {
+        StorageManager opened = openStorage();
+        if (opened == null) {
+            return false;
+        }
+        this.storageManager = opened;
+        this.activeStorageSignature = storageSignature();
+        return true;
+    }
+
+    /** Ouvre et initialise le stockage configuré. Null (erreur dans la console) si c'est impossible. */
+    private StorageManager openStorage() {
         if (network != null) {
             try {
-                this.storageManager = network.createStorage();
-                this.storageManager.init();
+                StorageManager shared = network.createStorage();
+                shared.init();
                 this.getLogger().info("Database initialized successfully using the shared network database.");
-                return true;
+                return shared;
             } catch (SQLException e) {
                 this.getLogger().log(Level.SEVERE, "Failed to initialize database. Disabling plugin.", e);
-                return false;
+                return null;
             }
         }
         String storageType = configManager.getStorageType().toUpperCase();
+        StorageManager storage;
         if (storageType.equals("MYSQL")) {
-            this.storageManager = new MySQLStorage(this);
+            storage = new MySQLStorage(this);
         } else if (storageType.equals("SQLITE")) {
             File dataFolder = new File(this.getDataFolder(), "database");
             if (!dataFolder.exists() && !dataFolder.mkdirs()) {
                 this.getLogger().severe("Could not create database directory for SQLite. Disabling plugin.");
-                return false;
+                return null;
             }
-            this.storageManager = new SQLiteStorage(this, new File(dataFolder, "shjobs_data.db").getAbsolutePath());
+            storage = new SQLiteStorage(this, new File(dataFolder, "shjobs_data.db").getAbsolutePath());
         } else {
             this.getLogger().severe("Invalid storage type specified in config.yml: " + configManager.getStorageType() + ". Disabling plugin.");
-            return false;
+            return null;
         }
 
         try {
-            this.storageManager.init();
+            storage.init();
             this.getLogger().info("Database initialized successfully using " + storageType + ".");
-            return true;
+            return storage;
         } catch (SQLException e) {
             this.getLogger().log(Level.SEVERE, "Failed to initialize database. Disabling plugin.", e);
-            return false;
+            try {
+                storage.close();
+            } catch (SQLException | RuntimeException ignored) {
+                // la connexion n'a jamais été ouverte
+            }
+            return null;
         }
+    }
+
+    private String storageSignature() {
+        return String.join("|", configManager.getStorageType(), configManager.getMysqlHost(),
+            String.valueOf(configManager.getMysqlPort()), configManager.getMysqlDatabase(), configManager.getMysqlUsername(),
+            configManager.getMysqlPassword(), String.valueOf(configManager.mysqlUseSSL()));
     }
 
     private void setupServerStateFile() {
@@ -401,8 +431,51 @@ public final class SHJobs extends JavaPlugin {
         getLogger().info("Daily reset task scheduled. Next reset at: " + nextRun.toString());
     }
 
-    public void reloadPluginLogic() {
+    /**
+     * Résultat d'un rechargement.
+     *
+     * @param file           fichier dont la syntaxe est invalide : rien n'a été appliqué (null si tout s'est bien passé)
+     * @param error          première ligne de l'erreur de ce fichier
+     * @param databaseFailed la nouvelle base n'a pas pu être ouverte : l'ancienne reste utilisée
+     * @param networkChanged le bloc reseau a changé : il ne s'applique qu'au redémarrage
+     */
+    public record ReloadResult(String file, String error, boolean databaseFailed, boolean networkChanged) {
+        public boolean failed() {
+            return file != null;
+        }
+    }
+
+    private static String firstLine(Exception e) {
+        String text = e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage();
+        int end = text.indexOf('\n');
+        return (end < 0 ? text : text.substring(0, end)).trim();
+    }
+
+    private Map<String, Object> networkSettings() {
+        var section = configManager.getRawConfig().getConfigurationSection("reseau");
+        return section == null ? Map.of() : section.getValues(true);
+    }
+
+    /**
+     * Relit config.yml, messages.yml, menus.yml et custom_items.yml. Si l'un d'eux a une erreur de syntaxe, rien n'est
+     * appliqué. La base n'est rouverte que si database.* a changé, et l'ancienne est gardée si la nouvelle ne s'ouvre
+     * pas. La rotation du jour (shjobs_server_state.yml, base partagée) et les données des joueurs ne sont pas touchées.
+     */
+    public ReloadResult reloadPluginLogic() {
+        for (String name : new String[]{"config.yml", "messages.yml", "menus.yml", "custom_items.yml"}) {
+            File file = new File(getDataFolder(), name);
+            if (!file.exists()) {
+                continue;
+            }
+            try {
+                new YamlConfiguration().load(file);
+            } catch (IOException | InvalidConfigurationException e) {
+                return new ReloadResult(name, firstLine(e), false, false);
+            }
+        }
+
         getLogger().info("Reloading SHJobs...");
+        Map<String, Object> networkBefore = networkSettings();
 
         if (dailyResetTaskScheduler != null && !dailyResetTaskScheduler.isCancelled()) dailyResetTaskScheduler.cancel();
         if (realTimeUpdateTaskScheduler != null && !realTimeUpdateTaskScheduler.isCancelled())
@@ -414,28 +487,36 @@ public final class SHJobs extends JavaPlugin {
         this.menuConfig.reloadMenuConfig();
         this.customItemManager.loadItems();
 
-        if (this.storageManager != null) {
-            try {
-                this.storageManager.close();
-            } catch (SQLException e) {
-                getLogger().log(Level.WARNING, "Error closing storage during reload.", e);
+        boolean databaseFailed = false;
+        if (network == null && !storageSignature().equals(activeStorageSignature)) {
+            StorageManager fresh = openStorage();
+            if (fresh == null) {
+                databaseFailed = true;
+                getLogger().severe("New database settings unusable during reload: the previous connection is kept.");
+            } else {
+                StorageManager previous = this.storageManager;
+                this.storageManager = fresh;
+                this.activeStorageSignature = storageSignature();
+                if (previous != null) {
+                    try {
+                        previous.close();
+                    } catch (SQLException e) {
+                        getLogger().log(Level.WARNING, "Error closing the previous storage during reload.", e);
+                    }
+                }
             }
-        }
-        if (!setupStorage()) {
-            getLogger().severe("Failed to re-initialize storage during reload.");
         }
 
         this.jobManager.loadJobTemplates();
         this.shopManager.loadShopItems();
         this.menuManager.loadMenus();
 
-        loadOrSelectDailyServerState();
-
         scheduleDailyResetTask();
         this.realTimeUpdateTaskScheduler = new RealTimeUpdateTask(this).runTaskTimer(this, 20L, 20L);
         this.leaderboardManager.startUpdateTask();
 
         getLogger().info("SHJobs reloaded successfully.");
+        return new ReloadResult(null, null, databaseFailed, !networkBefore.equals(networkSettings()));
     }
 
     // --- Getters ---

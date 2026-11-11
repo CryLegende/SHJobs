@@ -15,19 +15,22 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
+/**
+ * Complétion de /jobs (shop) et de /shjobs : les sous-commandes d'administration, filtrées par les permissions de
+ * l'expéditeur.
+ */
 public class JobsTabCompleter implements TabCompleter {
 
-    private final SHJobs plugin;
-    private final List<String> adminSubCommands = Arrays.asList("reload", "exp", "level", "points", "playerinfo", "info", "job", "shopitem", "resetdaily", "customitem", "import");
-    private final List<String> customItemActions = Collections.singletonList("save");
-    private final List<String> expActions = Arrays.asList("give", "remove", "set");
-    private final List<String> levelActions = Collections.singletonList("set");
-    private final List<String> pointsActions = Arrays.asList("give", "remove", "set");
-    private final List<String> jobManagementActions = Collections.singletonList("change");
-    private final List<String> shopManagementActions = Collections.singletonList("change");
+    private static final String PERM = "shjobs.admin.";
 
+    private final SHJobs plugin;
+    private final List<String> customItemActions = Arrays.asList("save", "list", "give");
+    private final List<String> expActions = Arrays.asList("give", "remove", "set");
+    private final List<String> pointsActions = Arrays.asList("give", "remove", "set");
+    private final List<String> listModes = Arrays.asList("jobs", "shop");
 
     public JobsTabCompleter(SHJobs plugin) {
         this.plugin = plugin;
@@ -36,50 +39,100 @@ public class JobsTabCompleter implements TabCompleter {
     @Nullable
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
-        if (!command.getName().equalsIgnoreCase("shjobsadmin")) {
-            return null;
+        List<String> completions = new ArrayList<>();
+        List<String> playerSubs = sender.hasPermission("shjobs.shop") ? List.of("shop") : List.of();
+
+        // /jobs : seule la boutique se complète
+        if (!command.getName().equalsIgnoreCase("shjobs")) {
+            if (args.length == 1) {
+                StringUtil.copyPartialMatches(args[0], playerSubs, completions);
+            }
+            return completions;
         }
 
-        List<String> completions = new ArrayList<>();
+        List<String> allowed = AdminJobsCommand.allowedSubcommands(sender);
+        if (allowed.isEmpty()) {
+            // Aucun droit d'administration : /shjobs se comporte comme /jobs
+            if (args.length == 1) {
+                StringUtil.copyPartialMatches(args[0], playerSubs, completions);
+            }
+            return completions;
+        }
 
         if (args.length == 1) {
-            StringUtil.copyPartialMatches(args[0], adminSubCommands, completions);
+            List<String> subs = new ArrayList<>(allowed);
+            if (allowed.contains("playerinfo")) {
+                subs.add("info");
+            }
+            subs.addAll(playerSubs);
+            StringUtil.copyPartialMatches(args[0], subs, completions);
         } else if (args.length > 1) {
-            String subCommand = args[0].toLowerCase();
+            String subCommand = args[0].toLowerCase(Locale.ROOT);
             switch (subCommand) {
+                case "list":
+                    if (args.length == 2 && allowed.contains("list")) {
+                        StringUtil.copyPartialMatches(args[1], listModes, completions);
+                    }
+                    break;
+
                 case "customitem":
+                    if (!allowed.contains("customitem")) {
+                        break;
+                    }
                     if (args.length == 2) {
-                        StringUtil.copyPartialMatches(args[1], customItemActions, completions);
-                    } else if (args.length == 3 && args[1].equalsIgnoreCase("save")) {
+                        StringUtil.copyPartialMatches(args[1], customItemActions.stream()
+                            .filter(action -> sender.hasPermission(PERM + "customitem." + action))
+                            .collect(Collectors.toList()), completions);
+                    } else if (args.length == 3 && args[1].equalsIgnoreCase("save") && sender.hasPermission(PERM + "customitem.save")) {
                         completions.add("<item_id>"); // Suggère à l'admin de taper un ID
+                    } else if (args.length == 3 && args[1].equalsIgnoreCase("give") && sender.hasPermission(PERM + "customitem.give")) {
+                        StringUtil.copyPartialMatches(args[2], plugin.getCustomItemManager().getItemIds(), completions);
+                    } else if (args.length == 4 && args[1].equalsIgnoreCase("give") && sender.hasPermission(PERM + "customitem.give")) {
+                        return null; // Noms de joueurs (Bukkit gère)
                     }
                     break;
 
                 case "exp":
-                    if (args.length == 2) StringUtil.copyPartialMatches(args[1], expActions, completions);
-                    else if (args.length == 3) return null; // Noms de joueurs (Bukkit gère)
+                    if (!allowed.contains("exp")) {
+                        break;
+                    }
+                    if (args.length == 2) {
+                        StringUtil.copyPartialMatches(args[1], expActions.stream()
+                            .filter(action -> sender.hasPermission(PERM + "exp." + action)).collect(Collectors.toList()), completions);
+                    } else if (args.length == 3) return null; // Noms de joueurs (Bukkit gère)
                     else if (args.length == 4)
                         StringUtil.copyPartialMatches(args[3], Arrays.stream(JobType.values()).map(Enum::name).collect(Collectors.toList()), completions);
                     else if (args.length == 5) completions.add("<amount>");
                     break;
                 case "level":
-                    if (args.length == 2) StringUtil.copyPartialMatches(args[1], levelActions, completions);
+                    if (!allowed.contains("level")) {
+                        break;
+                    }
+                    if (args.length == 2) StringUtil.copyPartialMatches(args[1], Collections.singletonList("set"), completions);
                     else if (args.length == 3) return null; // Noms de joueurs
                     else if (args.length == 4)
                         StringUtil.copyPartialMatches(args[3], Arrays.stream(JobType.values()).map(Enum::name).collect(Collectors.toList()), completions);
                     else if (args.length == 5) completions.add("<level>");
                     break;
                 case "points":
-                    if (args.length == 2) StringUtil.copyPartialMatches(args[1], pointsActions, completions);
-                    else if (args.length == 3) return null; // Noms de joueurs
+                    if (!allowed.contains("points")) {
+                        break;
+                    }
+                    if (args.length == 2) {
+                        StringUtil.copyPartialMatches(args[1], pointsActions.stream()
+                            .filter(action -> sender.hasPermission(PERM + "points." + action)).collect(Collectors.toList()), completions);
+                    } else if (args.length == 3) return null; // Noms de joueurs
                     else if (args.length == 4) completions.add("<amount>");
                     break;
                 case "playerinfo":
                 case "info":
-                    if (args.length == 2) return null; // Noms de joueurs
+                    if (allowed.contains("playerinfo") && args.length == 2) return null; // Noms de joueurs
                     break;
                 case "job":
-                    if (args.length == 2) StringUtil.copyPartialMatches(args[1], jobManagementActions, completions);
+                    if (!allowed.contains("job")) {
+                        break;
+                    }
+                    if (args.length == 2) StringUtil.copyPartialMatches(args[1], Collections.singletonList("change"), completions);
                     else if (args.length == 3 && args[1].equalsIgnoreCase("change"))
                         StringUtil.copyPartialMatches(args[2], Arrays.asList("1", "2", "3", "4", "5", "6"), completions);
                     else if (args.length == 4 && args[1].equalsIgnoreCase("change")) {
@@ -88,13 +141,18 @@ public class JobsTabCompleter implements TabCompleter {
                     }
                     break;
                 case "shopitem":
-                    if (args.length == 2) StringUtil.copyPartialMatches(args[1], shopManagementActions, completions);
+                    if (!allowed.contains("shopitem")) {
+                        break;
+                    }
+                    if (args.length == 2) StringUtil.copyPartialMatches(args[1], Collections.singletonList("change"), completions);
                     else if (args.length == 3 && args[1].equalsIgnoreCase("change"))
                         StringUtil.copyPartialMatches(args[2], Arrays.asList("1", "2", "3", "4", "5", "6"), completions);
                     else if (args.length == 4 && args[1].equalsIgnoreCase("change")) {
                         List<String> shopItemIds = plugin.getShopManager().getAllShopItemTemplates().stream().map(ShopItem::getId).collect(Collectors.toList());
                         StringUtil.copyPartialMatches(args[3], shopItemIds, completions);
                     }
+                    break;
+                default:
                     break;
             }
         }

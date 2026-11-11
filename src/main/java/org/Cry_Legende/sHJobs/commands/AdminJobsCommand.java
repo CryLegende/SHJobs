@@ -1,10 +1,10 @@
 package org.Cry_Legende.sHJobs.commands;
 
 import org.Cry_Legende.sHJobs.SHJobs;
-import org.Cry_Legende.sHJobs.data.PlayerData;
 import org.Cry_Legende.sHJobs.jobs.JobTemplate;
 import org.Cry_Legende.sHJobs.jobs.JobType;
 import org.Cry_Legende.sHJobs.shop.ShopItem;
+import org.Cry_Legende.sHJobs.utils.TimeUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
@@ -14,48 +14,88 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
-import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
+/**
+ * /shjobs (alias shjobsadmin, sja) : administration de SHJobs. Un expéditeur qui n'a aucun droit d'administration
+ * obtient exactement ce que donnait /jobs (menu, boutique), comme avant que /shjobs ne devienne la commande d'admin.
+ */
 public class AdminJobsCommand implements CommandExecutor {
 
-    private final SHJobs plugin;
+    private static final String PERM = "shjobs.admin.";
 
-    public AdminJobsCommand(SHJobs plugin) {
+    /** Sous-commandes d'administration dans l'ordre d'affichage de la ligne d'usage, avec les permissions qui les ouvrent. */
+    private static final List<String> SUBCOMMANDS = List.of("reload", "list", "exp", "level", "points", "playerinfo",
+        "job", "shopitem", "resetdaily", "customitem", "import");
+
+    private final SHJobs plugin;
+    private final JobsCommand jobsCommand;
+
+    public AdminJobsCommand(SHJobs plugin, JobsCommand jobsCommand) {
         this.plugin = plugin;
+        this.jobsCommand = jobsCommand;
+    }
+
+    /** Permissions dont une seule suffit pour utiliser la sous-commande. */
+    static List<String> permissionsOf(String sub) {
+        return switch (sub) {
+            case "reload" -> List.of(PERM + "reload");
+            case "list" -> List.of(PERM + "list");
+            case "exp" -> List.of(PERM + "exp.give", PERM + "exp.remove", PERM + "exp.set");
+            case "level" -> List.of(PERM + "level.set");
+            case "points" -> List.of(PERM + "points.give", PERM + "points.remove", PERM + "points.set");
+            case "playerinfo", "info" -> List.of(PERM + "playerinfo");
+            case "job" -> List.of(PERM + "job.change");
+            case "shopitem" -> List.of(PERM + "shop.changeitem");
+            case "resetdaily" -> List.of(PERM + "resetdaily");
+            case "customitem" -> List.of(PERM + "customitem");
+            case "import" -> List.of(PERM + "import");
+            default -> List.of();
+        };
+    }
+
+    /** Sous-commandes d'administration que l'expéditeur a le droit d'utiliser. */
+    static List<String> allowedSubcommands(CommandSender sender) {
+        List<String> allowed = new ArrayList<>();
+        for (String sub : SUBCOMMANDS) {
+            if (permissionsOf(sub).stream().anyMatch(sender::hasPermission)) {
+                allowed.add(sub);
+            }
+        }
+        return allowed;
     }
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        if (!sender.hasPermission("shjobs.admin.base")) {
-            plugin.getMessages().sendMessage(sender, "common.no_permission");
+        List<String> allowed = allowedSubcommands(sender);
+        String subCommand = args.length == 0 ? "" : args[0].toLowerCase(Locale.ROOT);
+
+        // Aucun droit d'administration, ou fonction joueur : le comportement de /jobs
+        if (allowed.isEmpty() || subCommand.equals("shop")) {
+            return jobsCommand.onCommand(sender, command, label, args);
+        }
+
+        String canonical = subCommand.equals("info") ? "playerinfo" : subCommand;
+        if (!allowed.contains(canonical)) {
+            plugin.getMessages().sendMessage(sender, "admin.usage", "%subs%", String.join("&7|&e", allowed));
             return true;
         }
 
-        if (args.length == 0) {
-            sendAdminHelp(sender, label);
-            return true;
-        }
-
-        String subCommand = args[0].toLowerCase();
-
-        switch (subCommand) {
+        switch (canonical) {
             case "reload":
-                if (!sender.hasPermission("shjobs.admin.reload")) {
-                    plugin.getMessages().sendMessage(sender, "common.no_permission");
-                    return true;
-                }
-                plugin.reloadPluginLogic();
-                plugin.getMessages().sendMessage(sender, "admin.reloaded");
+                handleReload(sender);
+                break;
+
+            case "list":
+                handleListCommand(sender, label, args);
                 break;
 
             case "customitem":
-                if (!sender.hasPermission("shjobs.admin.customitem")) {
-                    plugin.getMessages().sendMessage(sender, "common.no_permission");
-                    return true;
-                }
                 handleCustomItemCommand(sender, label, args);
                 break;
 
@@ -72,7 +112,6 @@ public class AdminJobsCommand implements CommandExecutor {
                 break;
 
             case "playerinfo":
-            case "info":
                 handlePlayerInfoCommand(sender, label, args);
                 break;
 
@@ -85,10 +124,6 @@ public class AdminJobsCommand implements CommandExecutor {
                 break;
 
             case "resetdaily":
-                if (!sender.hasPermission("shjobs.admin.resetdaily")) {
-                    plugin.getMessages().sendMessage(sender, "common.no_permission");
-                    return true;
-                }
                 if (plugin.getNetwork() != null) {
                     // Avec SHNetwork, une seule rotation pour tous les serveurs : elle est prise en base puis publiée
                     plugin.getNetwork().roll(true);
@@ -100,10 +135,6 @@ public class AdminJobsCommand implements CommandExecutor {
                 break;
 
             case "import":
-                if (!sender.hasPermission("shjobs.admin.import")) {
-                    plugin.getMessages().sendMessage(sender, "common.no_permission");
-                    return true;
-                }
                 if (plugin.getNetwork() == null) {
                     plugin.getMessages().sendMessage(sender, "admin.import.not_network");
                     return true;
@@ -113,11 +144,25 @@ public class AdminJobsCommand implements CommandExecutor {
                 break;
 
             default:
-                plugin.getMessages().sendMessage(sender, "common.unknown_command_arg", "%command%", "/" + label + " " + subCommand);
-                sendAdminHelp(sender, label);
+                plugin.getMessages().sendMessage(sender, "admin.usage", "%subs%", String.join("&7|&e", allowed));
                 break;
         }
         return true;
+    }
+
+    private void handleReload(CommandSender sender) {
+        SHJobs.ReloadResult result = plugin.reloadPluginLogic();
+        if (result.failed()) {
+            plugin.getMessages().sendMessage(sender, "admin.reload_failed", "%file%", result.file(), "%error%", result.error());
+            return;
+        }
+        plugin.getMessages().sendMessage(sender, "admin.reloaded");
+        if (result.databaseFailed()) {
+            plugin.getMessages().sendMessage(sender, "admin.reload_database_failed");
+        }
+        if (result.networkChanged()) {
+            plugin.getMessages().sendMessage(sender, "admin.reload_network_restart");
+        }
     }
 
     /**
@@ -142,52 +187,127 @@ public class AdminJobsCommand implements CommandExecutor {
         return action.equals("give") || action.equals("remove") || action.equals("set");
     }
 
-    private void sendAdminHelp(CommandSender sender, String label) {
-        plugin.getMessages().sendMessage(sender, "admin.help.header", "%label%", label);
-        plugin.getMessages().sendMessage(sender, "admin.help.reload");
-        plugin.getMessages().sendMessage(sender, "admin.help.exp");
-        plugin.getMessages().sendMessage(sender, "admin.help.level");
-        plugin.getMessages().sendMessage(sender, "admin.help.points");
-        plugin.getMessages().sendMessage(sender, "admin.help.playerinfo");
-        plugin.getMessages().sendMessage(sender, "admin.help.job_change");
-        plugin.getMessages().sendMessage(sender, "admin.help.shopitem_change");
-        plugin.getMessages().sendMessage(sender, "admin.help.resetdaily");
-        plugin.getMessages().sendMessage(sender, "admin.help.import");
-        plugin.getMessages().sendMessage(sender, "admin.help.customitem", "%label%", label);
-        plugin.getMessages().sendMessage(sender, "admin.help.footer");
+    // --- LIST Sub-command ---
+    private void handleListCommand(CommandSender sender, String label, String[] args) {
+        String mode = args.length > 1 ? args[1].toLowerCase(Locale.ROOT) : "";
+        switch (mode) {
+            case "" -> {
+                plugin.getMessages().sendMessage(sender, "admin.list.header",
+                    "%time%", TimeUtil.formatDuration(plugin.getConfigManager().getDailyResetTime()));
+                sendRotation(sender, "admin.list.job_line", plugin.getJobManager().getCurrentDailyJobTemplateIds(),
+                    id -> plugin.getJobManager().getJobTemplate(id).map(JobTemplate::getDisplayName).orElse(null));
+                sendRotation(sender, "admin.list.shop_line", plugin.getShopManager().getCurrentDailyShopItemIds(),
+                    id -> plugin.getShopManager().getShopItemTemplate(id).map(ShopItem::getDisplayName).orElse(null));
+            }
+            case "jobs" -> sendIds(sender, "admin.list.jobs_header", plugin.getJobManager().getAllJobTemplates().stream()
+                .map(JobTemplate::getId).sorted().collect(Collectors.toList()));
+            case "shop" -> sendIds(sender, "admin.list.shop_header", plugin.getShopManager().getAllShopItemTemplates().stream()
+                .map(ShopItem::getId).sorted().collect(Collectors.toList()));
+            default -> plugin.getMessages().sendMessage(sender, "admin.list.usage", "%label%", label);
+        }
+    }
+
+    private void sendRotation(CommandSender sender, String lineKey, List<String> ids, Function<String, String> nameOf) {
+        for (int i = 0; i < ids.size(); i++) {
+            String id = ids.get(i);
+            String name = id == null ? null : nameOf.apply(id);
+            plugin.getMessages().sendMessage(sender, lineKey,
+                "%slot%", String.valueOf(i + 1),
+                "%id%", id == null ? plugin.getMessages().getMessage("admin.list.empty", false) : id,
+                "%name%", name == null ? "" : plugin.getConfigManager().plainText(name));
+        }
+    }
+
+    /** Une en-tête avec le nombre d'ids, puis les ids par lignes de huit. */
+    private void sendIds(CommandSender sender, String headerKey, List<String> ids) {
+        plugin.getMessages().sendMessage(sender, headerKey, "%count%", String.valueOf(ids.size()));
+        for (int i = 0; i < ids.size(); i += 8) {
+            plugin.getMessages().sendMessage(sender, "admin.list.ids_line",
+                "%ids%", String.join("&8, &7", ids.subList(i, Math.min(ids.size(), i + 8))));
+        }
     }
 
     private void handleCustomItemCommand(CommandSender sender, String label, String[] args) {
-        // Usage: /sja customitem save <id>
-        if (!(sender instanceof Player)) {
-            plugin.getMessages().sendMessage(sender, "common.player_only");
-            return;
+        // Usage: /shjobs customitem <save <id>|list|give <id> [joueur]>
+        String action = args.length > 1 ? args[1].toLowerCase(Locale.ROOT) : "";
+        switch (action) {
+            case "save" -> {
+                if (!sender.hasPermission(PERM + "customitem.save")) {
+                    plugin.getMessages().sendMessage(sender, "common.no_permission");
+                } else if (!(sender instanceof Player player)) {
+                    plugin.getMessages().sendMessage(sender, "common.player_only");
+                } else if (args.length < 3) {
+                    plugin.getMessages().sendMessage(sender, "admin.customitem.usage", "%label%", label);
+                } else {
+                    saveCustomItem(player, args[2]);
+                }
+            }
+            case "list" -> {
+                if (!sender.hasPermission(PERM + "customitem.list")) {
+                    plugin.getMessages().sendMessage(sender, "common.no_permission");
+                    return;
+                }
+                List<String> ids = plugin.getCustomItemManager().getItemIds();
+                plugin.getMessages().sendMessage(sender, "admin.customitem.list.header", "%count%", String.valueOf(ids.size()));
+                for (int i = 0; i < ids.size(); i += 8) {
+                    plugin.getMessages().sendMessage(sender, "admin.list.ids_line",
+                        "%ids%", String.join("&8, &7", ids.subList(i, Math.min(ids.size(), i + 8))));
+                }
+            }
+            case "give" -> {
+                if (!sender.hasPermission(PERM + "customitem.give")) {
+                    plugin.getMessages().sendMessage(sender, "common.no_permission");
+                } else {
+                    giveCustomItem(sender, label, args);
+                }
+            }
+            default -> plugin.getMessages().sendMessage(sender, "admin.customitem.usage", "%label%", label);
         }
+    }
 
-        if (args.length < 3 || !args[1].equalsIgnoreCase("save")) {
-            plugin.getMessages().sendMessage(sender, "admin.customitem.usage", "%label%", label);
-            return;
-        }
-
-        if (!sender.hasPermission("shjobs.admin.customitem.save")) {
-            plugin.getMessages().sendMessage(sender, "common.no_permission");
-            return;
-        }
-
-        Player player = (Player) sender;
+    private void saveCustomItem(Player player, String itemId) {
         ItemStack itemInHand = player.getInventory().getItemInMainHand();
 
         if (itemInHand == null || itemInHand.getType().isAir()) {
-            plugin.getMessages().sendMessage(sender, "admin.customitem.no_item_in_hand");
+            plugin.getMessages().sendMessage(player, "admin.customitem.no_item_in_hand");
             return;
         }
 
-        String itemId = args[2];
         if (plugin.getCustomItemManager().saveItem(itemId, itemInHand)) {
-            plugin.getMessages().sendMessage(sender, "admin.customitem.save_success", "%id%", itemId);
+            plugin.getMessages().sendMessage(player, "admin.customitem.save_success", "%id%", itemId);
         } else {
-            plugin.getMessages().sendMessage(sender, "admin.customitem.save_failure", "%id%", itemId);
+            plugin.getMessages().sendMessage(player, "admin.customitem.save_failure", "%id%", itemId);
         }
+    }
+
+    /** /shjobs customitem give <id> [joueur] : une copie de l'objet enregistré, à soi ou au joueur connecté nommé. */
+    private void giveCustomItem(CommandSender sender, String label, String[] args) {
+        if (args.length < 3) {
+            plugin.getMessages().sendMessage(sender, "admin.customitem.usage", "%label%", label);
+            return;
+        }
+        Player target;
+        if (args.length > 3) {
+            target = Bukkit.getPlayerExact(args[3]);
+            if (target == null) {
+                plugin.getMessages().sendMessage(sender, "admin.customitem.give.player_offline", "%player%", args[3]);
+                return;
+            }
+        } else if (sender instanceof Player player) {
+            target = player;
+        } else {
+            plugin.getMessages().sendMessage(sender, "admin.customitem.give.player_required");
+            return;
+        }
+        Optional<ItemStack> item = plugin.getCustomItemManager().getItem(args[2]);
+        if (item.isEmpty()) {
+            plugin.getMessages().sendMessage(sender, "admin.customitem.give.unknown", "%id%", args[2]);
+            return;
+        }
+        for (ItemStack left : target.getInventory().addItem(item.get()).values()) {
+            target.getWorld().dropItem(target.getLocation(), left);
+        }
+        plugin.getMessages().sendMessage(sender, "admin.customitem.give.success", "%id%", args[2], "%player%", target.getName());
     }
 
 
@@ -198,7 +318,15 @@ public class AdminJobsCommand implements CommandExecutor {
             return;
         }
         String action = args[1].toLowerCase();
-        if (isGiveRemoveSet(action) && sendToPlayerServer(sender, args[2], "shjobs.admin.exp." + action, args)) {
+        if (!isGiveRemoveSet(action)) {
+            plugin.getMessages().sendMessage(sender, "admin.exp.usage", "%label%", label);
+            return;
+        }
+        if (!sender.hasPermission(PERM + "exp." + action)) {
+            plugin.getMessages().sendMessage(sender, "common.no_permission");
+            return;
+        }
+        if (sendToPlayerServer(sender, args[2], PERM + "exp." + action, args)) {
             return;
         }
         OfflinePlayer target = Bukkit.getOfflinePlayer(args[2]);
@@ -226,28 +354,16 @@ public class AdminJobsCommand implements CommandExecutor {
 
             switch (action) {
                 case "give":
-                    if (!sender.hasPermission("shjobs.admin.exp.give")) {
-                        plugin.getMessages().sendMessage(sender, "common.no_permission");
-                        return;
-                    }
                     playerData.addExperience(jobType, amount);
                     plugin.getMessages().sendMessage(sender, "admin.exp.give.success",
                         "%player%", target.getName(), "%amount%", String.valueOf(amount), "%job_type%", jobType.getDisplayName());
                     break;
                 case "remove":
-                    if (!sender.hasPermission("shjobs.admin.exp.remove")) {
-                        plugin.getMessages().sendMessage(sender, "common.no_permission");
-                        return;
-                    }
                     playerData.removeExperience(jobType, amount);
                     plugin.getMessages().sendMessage(sender, "admin.exp.remove.success",
                         "%player%", target.getName(), "%amount%", String.valueOf(amount), "%job_type%", jobType.getDisplayName());
                     break;
                 case "set":
-                    if (!sender.hasPermission("shjobs.admin.exp.set")) {
-                        plugin.getMessages().sendMessage(sender, "common.no_permission");
-                        return;
-                    }
                     playerData.setExperience(jobType, amount);
                     playerData.recalculateLevel(jobType);
                     plugin.getMessages().sendMessage(sender, "admin.exp.set.success",
@@ -276,12 +392,12 @@ public class AdminJobsCommand implements CommandExecutor {
             plugin.getMessages().sendMessage(sender, "admin.level.usage", "%label%", label);
             return;
         }
-        if (!sender.hasPermission("shjobs.admin.level.set")) {
+        if (!sender.hasPermission(PERM + "level.set")) {
             plugin.getMessages().sendMessage(sender, "common.no_permission");
             return;
         }
 
-        if (sendToPlayerServer(sender, args[2], "shjobs.admin.level.set", args)) {
+        if (sendToPlayerServer(sender, args[2], PERM + "level.set", args)) {
             return;
         }
         OfflinePlayer target = Bukkit.getOfflinePlayer(args[2]);
@@ -336,7 +452,15 @@ public class AdminJobsCommand implements CommandExecutor {
             return;
         }
         String action = args[1].toLowerCase();
-        if (isGiveRemoveSet(action) && sendToPlayerServer(sender, args[2], "shjobs.admin.points." + action, args)) {
+        if (!isGiveRemoveSet(action)) {
+            plugin.getMessages().sendMessage(sender, "admin.points.usage", "%label%", label);
+            return;
+        }
+        if (!sender.hasPermission(PERM + "points." + action)) {
+            plugin.getMessages().sendMessage(sender, "common.no_permission");
+            return;
+        }
+        if (sendToPlayerServer(sender, args[2], PERM + "points." + action, args)) {
             return;
         }
         OfflinePlayer target = Bukkit.getOfflinePlayer(args[2]);
@@ -358,19 +482,11 @@ public class AdminJobsCommand implements CommandExecutor {
 
             switch (action) {
                 case "give":
-                    if (!sender.hasPermission("shjobs.admin.points.give")) {
-                        plugin.getMessages().sendMessage(sender, "common.no_permission");
-                        return;
-                    }
                     playerData.addJobPoints(amount);
                     plugin.getMessages().sendMessage(sender, "admin.points.give.success",
                         "%player%", target.getName(), "%amount%", String.valueOf(amount));
                     break;
                 case "remove":
-                    if (!sender.hasPermission("shjobs.admin.points.remove")) {
-                        plugin.getMessages().sendMessage(sender, "common.no_permission");
-                        return;
-                    }
                     if (!playerData.removeJobPoints(amount)) {
                         plugin.getMessages().sendMessage(sender, "admin.points.remove.not_enough", "%player%", target.getName());
                     } else {
@@ -379,10 +495,6 @@ public class AdminJobsCommand implements CommandExecutor {
                     }
                     break;
                 case "set":
-                    if (!sender.hasPermission("shjobs.admin.points.set")) {
-                        plugin.getMessages().sendMessage(sender, "common.no_permission");
-                        return;
-                    }
                     playerData.setJobPoints(amount);
                     plugin.getMessages().sendMessage(sender, "admin.points.set.success",
                         "%player%", target.getName(), "%amount%", String.valueOf(amount));
@@ -407,10 +519,6 @@ public class AdminJobsCommand implements CommandExecutor {
     private void handlePlayerInfoCommand(CommandSender sender, String label, String[] args) {
         if (args.length < 2) {
             plugin.getMessages().sendMessage(sender, "admin.playerinfo.usage", "%label%", label);
-            return;
-        }
-        if (!sender.hasPermission("shjobs.admin.playerinfo")) {
-            plugin.getMessages().sendMessage(sender, "common.no_permission");
             return;
         }
 
@@ -451,10 +559,6 @@ public class AdminJobsCommand implements CommandExecutor {
             plugin.getMessages().sendMessage(sender, "admin.job_change.usage", "%label%", label);
             return;
         }
-        if (!sender.hasPermission("shjobs.admin.job.change")) {
-            plugin.getMessages().sendMessage(sender, "common.no_permission");
-            return;
-        }
 
         int slot;
         try {
@@ -485,10 +589,6 @@ public class AdminJobsCommand implements CommandExecutor {
     private void handleShopItemManagementCommand(CommandSender sender, String label, String[] args) {
         if (args.length < 3 || !args[1].equalsIgnoreCase("change")) {
             plugin.getMessages().sendMessage(sender, "admin.shopitem_change.usage", "%label%", label);
-            return;
-        }
-        if (!sender.hasPermission("shjobs.admin.shop.changeitem")) {
-            plugin.getMessages().sendMessage(sender, "common.no_permission");
             return;
         }
 

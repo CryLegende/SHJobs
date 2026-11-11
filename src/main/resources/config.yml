@@ -4,25 +4,35 @@
 # Les messages sont dans messages.yml, les menus dans menus.yml et les objets revendables dans custom_items.yml.
 #
 # Commandes :
-#   /jobs (alias /shjobs)       Ouvre le menu des métiers.
-#   /jobs shop                  Ouvre la boutique des métiers.
-#   /shjobsadmin (alias /sja)   Commandes d'administration, avec les sous-commandes :
-#     reload                                                Recharge la configuration.
+#   /jobs                         Ouvre le menu des métiers (le serveur y ajoute /job).
+#   /jobs shop                    Ouvre la boutique des métiers.
+#   /shjobs (alias /shjobsadmin, /sja)   Commandes d'administration. Sans aucun droit d'administration, /shjobs se
+#                                        comporte comme /jobs. Sous-commandes :
+#     reload                                                Recharge config.yml, messages.yml, menus.yml et custom_items.yml.
+#                                                           Une erreur de syntaxe annule le rechargement. La base n'est
+#                                                           rouverte que si database.* a changé ; le bloc reseau demande un
+#                                                           redémarrage ; la rotation du jour et les joueurs ne sont pas touchés.
+#     list [jobs|shop]                                      Rotation du jour et temps avant la suivante ; avec jobs ou shop,
+#                                                           tous les ids disponibles.
 #     exp <give|remove|set> <joueur> <métier> <montant>     Gère l'XP de métier d'un joueur.
 #     level set <joueur> <métier> <niveau>                  Définit le niveau de métier d'un joueur.
 #     points <give|remove|set> <joueur> <montant>           Gère les points de métier d'un joueur.
-#     playerinfo <joueur>                                   Affiche les informations de métier d'un joueur.
+#     playerinfo <joueur>                                   Affiche les informations de métier d'un joueur (alias info).
 #     job change <slot 1-6> [id_job]                        Change un job journalier.
 #     shopitem change <slot 1-6> [id_article]               Change un article de la boutique du jour.
 #     resetdaily                                            Force la rotation des jobs et de la boutique.
 #     import                                                Reprend les données de ce serveur dans la base partagée (mode réseau).
 #     customitem save <id>                                  Enregistre l'objet en main dans custom_items.yml.
+#     customitem list                                       Liste les objets enregistrés.
+#     customitem give <id> [joueur]                         Donne une copie d'un objet enregistré (joueur obligatoire en console).
+#   Tout marche en console sauf customitem save.
 #
 # Permissions :
-#   shjobs.player.menu             Ouvrir /jobs (accordée à tous par défaut).
-#   shjobs.player.shop             Ouvrir /jobs shop.
-#   shjobs.admin.base              Utiliser /shjobsadmin (op par défaut).
+#   shjobs.use                     Ouvrir /jobs (accordée à tous par défaut).
+#   shjobs.shop                    Ouvrir /jobs shop (op par défaut).
+#   shjobs.admin                   Toute l'administration (op par défaut), parent de toutes les permissions suivantes.
 #   shjobs.admin.reload            reload.
+#   shjobs.admin.list              list.
 #   shjobs.admin.exp.give          exp give.
 #   shjobs.admin.exp.remove        exp remove.
 #   shjobs.admin.exp.set           exp set.
@@ -35,8 +45,10 @@
 #   shjobs.admin.shop.changeitem   shopitem change.
 #   shjobs.admin.resetdaily        resetdaily.
 #   shjobs.admin.import            import.
-#   shjobs.admin.customitem        customitem.
+#   shjobs.admin.customitem        customitem (entrée de la sous-commande).
 #   shjobs.admin.customitem.save   customitem save.
+#   shjobs.admin.customitem.list   customitem list.
+#   shjobs.admin.customitem.give   customitem give.
 #
 # Placeholders PlaceholderAPI (identifiant shjobs) :
 #   %shjobs_time_until_reset%                                   Temps restant avant la rotation quotidienne (ex : 10h 30m 15s).
@@ -72,8 +84,8 @@ database:
 #     sauvegarder, écrits au départ ;
 #   - la rotation du jour : tirée une seule fois par le serveur meneur, appliquée par tous les autres ;
 #   - les limites quotidiennes de la boutique : changer de serveur ne les remet pas à zéro ;
-#   - /sja exp|level|points sur un joueur connecté ailleurs est exécuté sur son serveur.
-# /sja import reprend dans la base les joueurs de database/shjobs_data.db et les limites de daily_limits.yml.
+#   - /shjobs exp|level|points sur un joueur connecté ailleurs est exécuté sur son serveur.
+# /shjobs import reprend dans la base les joueurs de database/shjobs_data.db et les limites de daily_limits.yml.
 # Demande un redémarrage : tout le bloc.
 reseau:
   actif: true

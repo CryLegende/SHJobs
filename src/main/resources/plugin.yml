@@ -16,18 +16,92 @@ commands:
   jobs:
     description: Opens the main jobs menu.
     usage: /jobs
-    aliases: [shjobs]
-    permission: shjobs.player.menu
-  shjobsadmin:
-    description: Admin commands for SHJobs.
-    usage: /shjobsadmin <subcommand> [args...]
-    aliases: [sja]
-    permission: shjobs.admin.base # More specific permissions can be added per subcommand
+    permission: shjobs.use
+  shjobs:
+    description: Administration de SHJobs (sans droit d'administration, se comporte comme /jobs).
+    usage: /<command> <subcommand> [args...]
+    aliases: [shjobsadmin, sja]
 
 permissions:
-  shjobs.player.menu:
-    description: Allows opening the main jobs menu.
+  shjobs.use:
+    description: Ouvrir le menu des métiers (/jobs).
     default: true
-  shjobs.admin.base:
-    description: Base permission for admin commands.
+  shjobs.shop:
+    description: Ouvrir la boutique des métiers avec /jobs shop.
+    default: op
+  shjobs.admin:
+    description: Toute l'administration de SHJobs.
+    default: op
+    children:
+      shjobs.admin.reload: true
+      shjobs.admin.list: true
+      shjobs.admin.exp.give: true
+      shjobs.admin.exp.remove: true
+      shjobs.admin.exp.set: true
+      shjobs.admin.level.set: true
+      shjobs.admin.points.give: true
+      shjobs.admin.points.remove: true
+      shjobs.admin.points.set: true
+      shjobs.admin.playerinfo: true
+      shjobs.admin.job.change: true
+      shjobs.admin.shop.changeitem: true
+      shjobs.admin.resetdaily: true
+      shjobs.admin.import: true
+      shjobs.admin.customitem: true
+      shjobs.admin.customitem.save: true
+      shjobs.admin.customitem.list: true
+      shjobs.admin.customitem.give: true
+  shjobs.admin.reload:
+    description: Recharger la configuration (/shjobs reload).
+    default: op
+  shjobs.admin.list:
+    description: Afficher la rotation du jour et les ids disponibles (/shjobs list).
+    default: op
+  shjobs.admin.exp.give:
+    description: Donner de l'XP de métier (/shjobs exp give).
+    default: op
+  shjobs.admin.exp.remove:
+    description: Retirer de l'XP de métier (/shjobs exp remove).
+    default: op
+  shjobs.admin.exp.set:
+    description: Définir l'XP de métier (/shjobs exp set).
+    default: op
+  shjobs.admin.level.set:
+    description: Définir le niveau de métier (/shjobs level set).
+    default: op
+  shjobs.admin.points.give:
+    description: Donner des points de métier (/shjobs points give).
+    default: op
+  shjobs.admin.points.remove:
+    description: Retirer des points de métier (/shjobs points remove).
+    default: op
+  shjobs.admin.points.set:
+    description: Définir les points de métier (/shjobs points set).
+    default: op
+  shjobs.admin.playerinfo:
+    description: Afficher les informations de métier d'un joueur (/shjobs playerinfo).
+    default: op
+  shjobs.admin.job.change:
+    description: Changer un job journalier (/shjobs job change).
+    default: op
+  shjobs.admin.shop.changeitem:
+    description: Changer un article de la boutique du jour (/shjobs shopitem change).
+    default: op
+  shjobs.admin.resetdaily:
+    description: Forcer la rotation des jobs et de la boutique (/shjobs resetdaily).
+    default: op
+  shjobs.admin.import:
+    description: Reprendre les données de ce serveur dans la base partagée (/shjobs import).
+    default: op
+  shjobs.admin.customitem:
+    description: Entrée de /shjobs customitem (chaque action a sa permission).
+    default: op
+  shjobs.admin.customitem.save:
+    description: Enregistrer l'objet en main (/shjobs customitem save).
+    default: op
+  shjobs.admin.customitem.list:
+    description: Lister les objets enregistrés (/shjobs customitem list).
+    default: op
+  shjobs.admin.customitem.give:
+    description: Récupérer une copie d'un objet enregistré (/shjobs customitem give).
     default: op

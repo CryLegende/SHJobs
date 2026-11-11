@@ -11,7 +11,7 @@ common:
   invalid_job_type: "&7&l« &c&lSH &8&l» &7Type de métier invalide: &c%type%"
   invalid_amount: "&7&l« &c&lSH &8&l» &7Montant invalide: &c%amount%"
   invalid_level_format: "&7&l« &c&lSH &8&l» &7Niveau invalide: &c%level%&7. Doit être un nombre."
-  invalid_slot: "&7&l« &c&lSH &8&l» &7Slot invalide: &c%slot%&7. Doit être entre 1 et 3 pour les jobs."
+  invalid_slot: "&7&l« &c&lSH &8&l» &7Slot invalide: &c%slot%&7. Doit être entre 1 et 6 pour les jobs."
   invalid_slot_shop: "&7&l« &c&lSH &8&l» &7Slot invalide: &c%slot%&7. Doit être entre 1 et 6 pour la boutique."
   invalid_job_template_id: "&7&l« &c&lSH &8&l» &7ID de modèle de job invalide: &c%id%"
   invalid_shop_item_id: "&7&l« &c&lSH &8&l» &7ID d'article de boutique invalide: &c%id%"
@@ -21,23 +21,16 @@ common:
 
 # --- Messages d'Administration ---
 admin:
+  # %subs% : les sous-commandes que l'expéditeur peut utiliser
+  usage: "&7&l« &e&lSH &8&l» &7Utilisation : &e/shjobs &7<&e%subs%&7>."
   reloaded: "&7&l« &a&lSH &8&l» &7Configuration de SHJobs rechargée &aavec succès&7."
+  # %file% : fichier en erreur, %error% : première ligne de l'erreur
+  reload_failed: "&7&l« &c&lSH &8&l» &7Rechargement annulé, erreur dans &c%file% &7: &c%error%&7. L'ancienne configuration reste active."
+  reload_database_failed: "&7&l« &6&lSH &8&l» &7Les nouveaux réglages de &6database &7sont inutilisables : la connexion précédente est conservée."
+  reload_network_restart: "&7&l« &e&lSH &8&l» &7Le bloc &ereseau &7ne s'applique qu'au prochain redémarrage."
   daily_reset_forced: "&7&l« &a&lSH &8&l» &7Reset journalier des jobs et de la boutique &aforcé&7."
-  help:
-    header: "&e--- Aide Admin SHJobs (/sja %label%) ---"
-    reload: "&e/shjobsadmin reload &7- Recharge la configuration."
-    exp: "&e/shjobsadmin exp <give|remove|set> <joueur> <métier> <montant> &7- Gère l'XP de métier."
-    level: "&e/shjobsadmin level set <joueur> <métier> <niveau> &7- Définit le niveau de métier."
-    points: "&e/shjobsadmin points <give|remove|set> <joueur> <montant> &7- Gère les points de métier."
-    playerinfo: "&e/shjobsadmin playerinfo <joueur> &7- Affiche les infos d'un joueur."
-    job_change: "&e/shjobsadmin job change <slot 1-3> [template_id] &7- Change un job journalier."
-    shopitem_change: "&e/shjobsadmin shopitem change <slot 1-6> [item_id] &7- Change un item de boutique."
-    customitem: "&e/shjobsadmin customitem save <ID> &7- Ajout un item custom dans la boutique."
-    resetdaily: "&e/shjobsadmin resetdaily &7- Force un reset des jobs et de la boutique."
-    import: "&e/shjobsadmin import &7- Reprend les données de ce serveur dans la base partagée (SHNetwork)."
-    footer: "&e--------------------------------------"
   exp:
-    usage: "&7&l« &c&lSH &8&l» &7Usage: &c/shjobsadmin exp <give|remove|set> <joueur> <métier> <montant>"
+    usage: "&7&l« &c&lSH &8&l» &7Usage: &c/shjobs exp <give|remove|set> <joueur> <métier> <montant>"
     give:
       success: "&7&l« &a&lSH &8&l» &7Vous avez donné &a%amount% XP&7 de &a%job_type%&7 à &a%player%&7."
     remove:
@@ -45,12 +38,12 @@ admin:
     set:
       success: "&7&l« &a&lSH &8&l» &7L'XP de &a%job_type%&7 de &a%player%&7 a été définie à &a%amount%&7."
   level:
-    usage: "&7&l« &c&lSH &8&l» &7Usage: &c/shjobsadmin level set <joueur> <métier> <niveau>"
+    usage: "&7&l« &c&lSH &8&l» &7Usage: &c/shjobs level set <joueur> <métier> <niveau>"
     set:
       success: "&7&l« &a&lSH &8&l» &7Le niveau de &a%job_type%&7 de &a%player%&7 a été défini à &a%level%&7."
       too_high: "&7&l« &6&lSH &8&l» &7Le niveau &6%level%&7 est supérieur au maximum (&6%max_level%&7). Défini au maximum."
   points:
-    usage: "&7&l« &c&lSH &8&l» &7Usage: &c/shjobsadmin points <give|remove|set> <joueur> <montant>"
+    usage: "&7&l« &c&lSH &8&l» &7Usage: &c/shjobs points <give|remove|set> <joueur> <montant>"
     give:
       success: "&7&l« &a&lSH &8&l» &7Vous avez donné &a%amount% points de métier&7 à &a%player%&7."
     remove:
@@ -59,17 +52,17 @@ admin:
     set:
       success: "&7&l« &a&lSH &8&l» &7Les points de métier de &a%player%&7 ont été définis à &a%amount%&7."
   playerinfo:
-    usage: "&7&l« &c&lSH &8&l» &7Usage: &c/shjobsadmin playerinfo <joueur>"
+    usage: "&7&l« &c&lSH &8&l» &7Usage: &c/shjobs playerinfo <joueur>"
     header: "&7&l« &6&lSH &8&l» &fInformation métiers &8| &e%player%"
     points: "&7JobsCoins: &e%points%"
     job_entry: "&e%job_type%&7: Niv. &e%level% &7| XP Totale: &e%exp% &7| Prog.: (&e%exp_progress%&7)"
     footer: "&e------------------------------------------"
   job_change:
-    usage: "&7&l« &c&lSH &8&l» &7Usage: &c/shjobsadmin job change <slot 1-3> [template_id]"
+    usage: "&7&l« &c&lSH &8&l» &7Usage: &c/shjobs job change <slot 1-6> [template_id]"
     success: "&7&l« &a&lSH &8&l» &7Job journalier du slot &a%slot%&7 changé en '&a%template_id%&7'."
     failure: "&7&l« &c&lSH &8&l» &7Échec du changement du job journalier pour le slot &c%slot%&7."
   shopitem_change:
-    usage: "&7&l« &c&lSH &8&l» &7Usage: &c/shjobsadmin shopitem change <slot 1-6> [item_id]"
+    usage: "&7&l« &c&lSH &8&l» &7Usage: &c/shjobs shopitem change <slot 1-6> [item_id]"
     success: "&7&l« &a&lSH &8&l» &7Item de boutique du slot &a%slot%&7 changé en '&a%item_id%&7'."
     failure: "&7&l« &c&lSH &8&l» &7Échec du changement de l'item de boutique pour le slot &c%slot%&7."
   # Avec SHNetwork : joueur connecté sur un autre serveur, la commande y est envoyée
@@ -79,8 +72,25 @@ admin:
     started: "&7&l« &e&lSH &8&l» &7Reprise des données de ce serveur dans la base partagée..."
     done: "&7&l« &a&lSH &8&l» &7Reprise terminée : &a%players% joueurs &7repris, &a%present% &7déjà en base, &a%limits% &7compteurs de limites."
     failure: "&7&l« &c&lSH &8&l» &7Reprise impossible : &c%error%&7."
+  # /shjobs list : rotation du jour, ou tous les ids avec list jobs / list shop
+  list:
+    header: "&7&l« &e&lSH &8&l» &fRotation du jour &8| &7prochaine dans &e%time%"
+    job_line: "&7Job &e%slot%&7 : &a%id% &8(&7%name%&8)"
+    shop_line: "&7Boutique &e%slot%&7 : &a%id% &8(&7%name%&8)"
+    empty: "&8vide"
+    usage: "&7&l« &c&lSH &8&l» &7Usage: &c/shjobs list [jobs|shop]"
+    jobs_header: "&7&l« &e&lSH &8&l» &7Jobs disponibles (&e%count%&7) :"
+    shop_header: "&7&l« &e&lSH &8&l» &7Articles de la boutique (&e%count%&7) :"
+    ids_line: "&8• &7%ids%"
   customitem:
-    usage: "&7&l« &c&lSH &8&l» &7Usage: &c/shjobsadmin customitem save <ID>"
+    usage: "&7&l« &c&lSH &8&l» &7Usage: &c/shjobs customitem <save <ID>|list|give <ID> [joueur]>"
+    list:
+      header: "&7&l« &e&lSH &8&l» &7Objets enregistrés (&e%count%&7) :"
+    give:
+      success: "&7&l« &a&lSH &8&l» &7Objet '&a%id%&7' donné à &a%player%&7."
+      unknown: "&7&l« &c&lSH &8&l» &7Aucun objet enregistré avec l'ID '&c%id%&7'."
+      player_offline: "&7&l« &c&lSH &8&l» &c%player% &7n'est pas connecté."
+      player_required: "&7&l« &c&lSH &8&l» &7Depuis la console, indiquez le joueur : &c/shjobs customitem give <ID> <joueur>"
     no_item_in_hand: "&7&l« &c&lSH &8&l» &7Vous devez tenir un item dans votre main."
     save_success: "&7&l« &a&lSH &8&l» &7L'item a été sauvegardé avec succès."
     save_failure: "&7&l« &c&lSH &8&l» &7Erreur lors de la sauvegarde de l'item avec l'ID '&c%id%&7'."
