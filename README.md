@@ -25,6 +25,7 @@ Utilisé sur : **Opale**.
 - Obligatoires : `PlaceholderAPI`
 - Optionnelle : `SHLogs` (journal de la boutique et des niveaux, sinon écrits dans la console)
 - Optionnelle : `SHNetwork` (plusieurs serveurs de jeu, voir plus bas)
+- Optionnelle : `SHSkins` (têtes des joueurs avec leur skin, sinon têtes sans texture : Steve ou Alex)
 
 ## Plusieurs serveurs de jeu
 
@@ -103,6 +104,8 @@ mvn clean package
 ```
 
 Le jar est généré dans `target/`.
+
+SHSkins doit être installé dans le dépôt Maven local (`mvn install` dans `SHSkins-Velocity`).
 
 ---
 

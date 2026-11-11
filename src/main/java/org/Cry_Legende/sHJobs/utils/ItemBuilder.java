@@ -174,19 +174,18 @@ public class ItemBuilder {
         if (itemStack.getType() == Material.PLAYER_HEAD && ownerName != null) {
             SkullMeta skullMeta = (SkullMeta) itemStack.getItemMeta();
             if (skullMeta != null) {
-                skullMeta.setOwningPlayer(org.bukkit.Bukkit.getOfflinePlayer(ownerName)); // Peut causer un lag si le joueur n'est pas en cache
+                PlayerHeads.apply(skullMeta, null, ownerName); // Skin de SHSkins, sans recherche Mojang
                 itemStack.setItemMeta(skullMeta);
             }
         }
         return this;
     }
 
-    @SuppressWarnings("deprecation") // For setOwner
     public ItemBuilder setSkullOwner(UUID ownerUUID) {
         if (itemStack.getType() == Material.PLAYER_HEAD && ownerUUID != null) {
             SkullMeta skullMeta = (SkullMeta) itemStack.getItemMeta();
             if (skullMeta != null) {
-                skullMeta.setOwningPlayer(org.bukkit.Bukkit.getOfflinePlayer(ownerUUID));
+                PlayerHeads.apply(skullMeta, ownerUUID, null);
                 itemStack.setItemMeta(skullMeta);
             }
         }
