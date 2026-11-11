@@ -1553,35 +1553,36 @@ shop_items:
     sell_limit_per_day: 1
     sell_item_id: "cle_rare"
 
-  cle_box_legendaire:
-    display_name: "&6Clé Légendaire"
-    material: "TRIPWIRE_HOOK"
-    glowing: true
-    lore:
-      - "&7Ces clés sont obtenables"
-      - "&7sur la boutique de Skyhand !"
-      - "&7"
-      - "&8&l» &6store.skyhand.fr"
-      - "&7"
-      - "&7Clic droit sur la box &6Legendaire"
-      - "&f&m                                       &r"
-      - ""
-      - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
-      - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
-      - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
-      - ""
-      - "&7&l« &f&lRequis pour acheter &8&l» "
-      - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
-    cost: 4000
-    required_job_type: "CHASSEUR"
-    required_job_level: 50
-    commands_on_purchase:
-      - "shcrates givekey %player% legendaire 1 physical"
-    selection_weight: 1
-    sellable: true
-    sell_points: 500
-    sell_limit_per_day: 1
-    sell_item_id: "cle_legendaire"
+  # Clé Légendaire désactivée : décommenter le bloc pour la remettre en vente.
+#  cle_box_legendaire:
+#    display_name: "&6Clé Légendaire"
+#    material: "TRIPWIRE_HOOK"
+#    glowing: true
+#    lore:
+#      - "&7Ces clés sont obtenables"
+#      - "&7sur la boutique de Skyhand !"
+#      - "&7"
+#      - "&8&l» &6store.skyhand.fr"
+#      - "&7"
+#      - "&7Clic droit sur la box &6Legendaire"
+#      - "&f&m                                       &r"
+#      - ""
+#      - "&7Acheter pour &6%item_cost% points &7(&6Clic Gauche&7)"
+#      - "&7Vendre pour &a%sell_points% points &7(&aClic Droit&7)"
+#      - "&8🔎 Shift+Clic Droit pour tout vendre d'un coup... (&a%sell_points%&8/unité)"
+#      - ""
+#      - "&7&l« &f&lRequis pour acheter &8&l» "
+#      - "&7Métier %required_job_name% &8| &7Niv. %required_job_level%"
+#    cost: 4000
+#    required_job_type: "CHASSEUR"
+#    required_job_level: 50
+#    commands_on_purchase:
+#      - "shcrates givekey %player% legendaire 1 physical"
+#    selection_weight: 1
+#    sellable: true
+#    sell_points: 500
+#    sell_limit_per_day: 1
+#    sell_item_id: "cle_legendaire"
 
   coffre_collecteur_petit:
     display_name: "&bCoffre collecteur &f(&bpetit&f)"
