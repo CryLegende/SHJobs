@@ -61,7 +61,7 @@ public class ConfigManager {
         plugin.reloadConfig();
         this.config = plugin.getConfig();
         loadValues();
-        plugin.getLogger().info("config.yml reloaded.");
+        plugin.getLogger().fine("config.yml reloaded.");
     }
 
     private void loadValues() {

@@ -81,7 +81,7 @@ public class MySQLStorage implements StorageManager {
 
         try {
             dataSource = new HikariDataSource(hikariConfig);
-            plugin.getLogger().info("MySQL HikariCP connection pool established.");
+            plugin.getLogger().fine("MySQL HikariCP connection pool established.");
             createTables();
         } catch (Exception e) {
             plugin.getLogger().log(Level.SEVERE, "Failed to initialize MySQL HikariCP data source!", e);
@@ -122,7 +122,7 @@ public class MySQLStorage implements StorageManager {
                 stmt.execute(createPlayerJobsSQL);
                 stmt.execute(createPlayerDailyJobsSQL);
             }
-            plugin.getLogger().info("MySQL tables checked/created successfully.");
+            plugin.getLogger().fine("MySQL tables checked/created successfully.");
         }
     }
 
@@ -146,7 +146,7 @@ public class MySQLStorage implements StorageManager {
         }
         if (shared == null && dataSource instanceof HikariDataSource pool && !pool.isClosed()) {
             pool.close();
-            plugin.getLogger().info("MySQL HikariCP connection pool closed.");
+            plugin.getLogger().fine("MySQL HikariCP connection pool closed.");
         }
     }
 

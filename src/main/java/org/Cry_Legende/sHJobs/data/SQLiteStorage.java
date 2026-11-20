@@ -58,7 +58,7 @@ public class SQLiteStorage implements StorageManager {
         try {
             Class.forName("org.sqlite.JDBC");
             connection = DriverManager.getConnection("jdbc:sqlite:" + filePath);
-            plugin.getLogger().info("SQLite connection established to " + filePath);
+            plugin.getLogger().fine("SQLite connection established to " + filePath);
             createTables();
         } catch (ClassNotFoundException e) {
             plugin.getLogger().log(Level.SEVERE, "SQLite JDBC driver not found!", e);
@@ -93,7 +93,7 @@ public class SQLiteStorage implements StorageManager {
             stmt.execute(createPlayerDataSQL);
             stmt.execute(createPlayerJobsSQL);
             stmt.execute(createPlayerDailyJobsSQL);
-            plugin.getLogger().info("SQLite tables checked/created successfully.");
+            plugin.getLogger().fine("SQLite tables checked/created successfully.");
         }
     }
 
@@ -108,7 +108,7 @@ public class SQLiteStorage implements StorageManager {
         }
         if (connection != null && !connection.isClosed()) {
             connection.close();
-            plugin.getLogger().info("SQLite connection closed.");
+            plugin.getLogger().fine("SQLite connection closed.");
         }
     }
 

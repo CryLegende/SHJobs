@@ -85,7 +85,7 @@ public final class SHJobs extends JavaPlugin {
     public void onEnable() {
         serverThread = Thread.currentThread();
         instance = this;
-        this.getLogger().info("SHJobs is enabling...");
+        this.getLogger().fine("SHJobs is enabling...");
 
         setupServerStateFile();
 
@@ -129,17 +129,17 @@ public final class SHJobs extends JavaPlugin {
         getCommand("jobs").setTabCompleter(tabCompleter);
         getCommand("shjobs").setExecutor(new AdminJobsCommand(this, jobsCommand));
         getCommand("shjobs").setTabCompleter(tabCompleter);
-        this.getLogger().info("Commands registered.");
+        this.getLogger().fine("Commands registered.");
 
         getServer().getPluginManager().registerEvents(new PlayerConnectionListener(this), this);
         getServer().getPluginManager().registerEvents(new JobProgressListener(this), this);
         getServer().getPluginManager().registerEvents(new org.Cry_Legende.sHJobs.listeners.PlacedBlockListener(this), this);
         getServer().getPluginManager().registerEvents(new InventoryListener(this), this);
-        this.getLogger().info("Event listeners registered.");
+        this.getLogger().fine("Event listeners registered.");
 
         if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
             new SHJobsExpansion(this).register();
-            this.getLogger().info("PlaceholderAPI expansion registered.");
+            this.getLogger().fine("PlaceholderAPI expansion registered.");
         } else {
             this.getLogger().warning("PlaceholderAPI not found. Placeholders will not work.");
         }
@@ -151,12 +151,12 @@ public final class SHJobs extends JavaPlugin {
             network.start();
         }
 
-        this.getLogger().info("SHJobs has been enabled successfully!");
+        this.getLogger().fine("SHJobs has been enabled successfully!");
     }
 
     @Override
     public void onDisable() {
-        this.getLogger().info("SHJobs is disabling...");
+        this.getLogger().fine("SHJobs is disabling...");
 
         if (this.leaderboardManager != null) {
             this.leaderboardManager.stopUpdateTask();
@@ -179,7 +179,7 @@ public final class SHJobs extends JavaPlugin {
         if (this.storageManager != null) {
             try {
                 this.storageManager.close();
-                this.getLogger().info("Database connection closed.");
+                this.getLogger().fine("Database connection closed.");
             } catch (SQLException e) {
                 this.getLogger().log(Level.SEVERE, "Error closing database connection.", e);
             }
@@ -196,7 +196,7 @@ public final class SHJobs extends JavaPlugin {
             realTimeUpdateTaskScheduler.cancel();
         }
 
-        this.getLogger().info("SHJobs has been disabled.");
+        this.getLogger().fine("SHJobs has been disabled.");
     }
 
     /**
@@ -289,7 +289,7 @@ public final class SHJobs extends JavaPlugin {
         if (!serverStateFile.exists()) {
             try {
                 serverStateFile.createNewFile();
-                getLogger().info("Created shjobs_server_state.yml");
+                getLogger().fine("Created shjobs_server_state.yml");
             } catch (IOException e) {
                 getLogger().log(Level.SEVERE, "Could not create shjobs_server_state.yml!", e);
             }

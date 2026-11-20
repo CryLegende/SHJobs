@@ -41,7 +41,7 @@ public class MenuConfig {
         try {
             menuConfiguration.load(menuConfigFile);
             loaded = true;
-            plugin.getLogger().info("menus.yml loaded successfully.");
+            plugin.getLogger().fine("menus.yml loaded successfully.");
         } catch (IOException | InvalidConfigurationException e) {
             plugin.getLogger().log(Level.SEVERE, "Could not load menus.yml!", e);
             loaded = false;

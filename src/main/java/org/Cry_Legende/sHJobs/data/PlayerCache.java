@@ -51,9 +51,9 @@ public class PlayerCache {
         if (arriving != null && !arriving.isDone()) {
             return arriving.thenCompose(ignored -> loadPlayerData(playerUUID));
         }
-        plugin.getLogger().info("[PlayerCache] Request to load PlayerData for " + playerUUID);
+        plugin.getLogger().fine("[PlayerCache] Request to load PlayerData for " + playerUUID);
         if (playerDataCache.containsKey(playerUUID) && isPlayerDataFullyLoaded(playerUUID)) {
-            plugin.getLogger().info("[PlayerCache] PlayerData for " + playerUUID + " already in cache and marked as fully loaded.");
+            plugin.getLogger().fine("[PlayerCache] PlayerData for " + playerUUID + " already in cache and marked as fully loaded.");
             return CompletableFuture.completedFuture(playerDataCache.get(playerUUID));
         }
         // Marquer comme non chargé (ou en cours de chargement) si on relance le chargement
@@ -62,7 +62,7 @@ public class PlayerCache {
         return plugin.getStorageManager().loadPlayerData(playerUUID).thenApplyAsync(data -> {
                 boolean isNewData = false;
                 if (data == null) {
-                    plugin.getLogger().info("[PlayerCache] No existing data for " + playerUUID + ", creating new PlayerData.");
+                    plugin.getLogger().fine("[PlayerCache] No existing data for " + playerUUID + ", creating new PlayerData.");
                     data = new PlayerData(playerUUID);
                     isNewData = true;
                 }
@@ -94,7 +94,7 @@ public class PlayerCache {
                     }
 
                     if (jobsOutOfSync) {
-                        plugin.getLogger().info("[PlayerCache] Player " + playerUUID + " has jobs out of sync. Re-assigning and clearing purchases.");
+                        plugin.getLogger().fine("[PlayerCache] Player " + playerUUID + " has jobs out of sync. Re-assigning and clearing purchases.");
                         plugin.getJobManager().assignDailyJobsToPlayer(data);
                         data.clearDailyPurchases();
                     }
@@ -102,7 +102,7 @@ public class PlayerCache {
 
                 playerDataCache.put(playerUUID, data);
                 markPlayerDataAsFullyLoaded(playerUUID); // Marquer comme chargé APRÈS l'avoir mis en cache
-                plugin.getLogger().info("[PlayerCache] Player data for " + playerUUID + " processed. isNew: " + isNewData + ". Cache size: " + playerDataCache.size());
+                plugin.getLogger().fine("[PlayerCache] Player data for " + playerUUID + " processed. isNew: " + isNewData + ". Cache size: " + playerDataCache.size());
                 return data;
             }, mainThread) // Pour que la mise en cache soit sur le thread principal
             .exceptionallyAsync(ex -> {
@@ -161,11 +161,11 @@ public class PlayerCache {
         if (plugin.getLeaderboardManager() != null) {
             plugin.getLeaderboardManager().forgetPlayer(playerUUID); // Les rangs ne servent qu'aux joueurs chargés
         }
-        plugin.getLogger().info("[PlayerCache] Unloaded PlayerData for " + playerUUID + ". Cache size: " + playerDataCache.size());
+        plugin.getLogger().fine("[PlayerCache] Unloaded PlayerData for " + playerUUID + ". Cache size: " + playerDataCache.size());
     }
 
     public void assignNewDailyJobsToAll() {
-        plugin.getLogger().info("[PlayerCache] Assigning new daily jobs to all cached players...");
+        plugin.getLogger().fine("[PlayerCache] Assigning new daily jobs to all cached players...");
         for (PlayerData data : playerDataCache.values()) {
             plugin.getJobManager().assignDailyJobsToPlayer(data);
             data.clearDailyPurchases();
@@ -190,11 +190,11 @@ public class PlayerCache {
         for (PlayerData data : playerDataCache.values()) {
             data.clearDailyPurchases();
         }
-        plugin.getLogger().info("[PlayerCache] Cleared daily purchases for all cached players (e.g., new day detected at startup).");
+        plugin.getLogger().fine("[PlayerCache] Cleared daily purchases for all cached players (e.g., new day detected at startup).");
     }
 
     public void saveAllOnlinePlayersSync() {
-        plugin.getLogger().info("[PlayerCache] Saving data for all cached players (sync)...");
+        plugin.getLogger().fine("[PlayerCache] Saving data for all cached players (sync)...");
         // Créer une copie des clés pour itérer afin d'éviter ConcurrentModificationException
         // si un joueur se déconnecte pendant cette sauvegarde (bien que ce soit moins probable lors d'un disable)
         for (UUID uuid : new HashMap<>(playerDataCache).keySet()) {
@@ -208,13 +208,13 @@ public class PlayerCache {
                 }
             }
         }
-        plugin.getLogger().info("[PlayerCache] Finished sync saving cached player data.");
+        plugin.getLogger().fine("[PlayerCache] Finished sync saving cached player data.");
     }
 
     public void handlePlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
         UUID playerUUID = player.getUniqueId();
-        plugin.getLogger().info("[PlayerCache] Handling PlayerJoinEvent for " + player.getName() + " (" + playerUUID + ")");
+        plugin.getLogger().fine("[PlayerCache] Handling PlayerJoinEvent for " + player.getName() + " (" + playerUUID + ")");
 
         // Marquer que les données ne sont pas encore (ou plus) complètement chargées
         fullyLoadedData.put(playerUUID, false);
@@ -231,7 +231,7 @@ public class PlayerCache {
         }
         loading.thenAcceptAsync(playerData -> {
                 if (!player.isOnline()) { // Revérifier si le joueur est toujours en ligne
-                    plugin.getLogger().info("[PlayerCache] Player " + player.getName() + " disconnected during data load on join.");
+                    plugin.getLogger().fine("[PlayerCache] Player " + player.getName() + " disconnected during data load on join.");
                     unloadPlayerData(playerUUID); // S'assurer de nettoyer si le joueur part vite
                     return;
                 }
@@ -246,7 +246,7 @@ public class PlayerCache {
                 for (JobType jobType : JobType.values()) {
                     plugin.getLeaderboardManager().updatePlayerRank(playerUUID, jobType);
                 }
-                plugin.getLogger().info("[PlayerCache] Player data processed for " + player.getName() + " on join. isPlayerDataFullyLoaded: " + isPlayerDataFullyLoaded(playerUUID));
+                plugin.getLogger().fine("[PlayerCache] Player data processed for " + player.getName() + " on join. isPlayerDataFullyLoaded: " + isPlayerDataFullyLoaded(playerUUID));
             }, runnable -> Bukkit.getScheduler().runTask(plugin, runnable))
             .exceptionally(ex -> { // Intercepter les exceptions du CompletableFuture lui-même
                 plugin.getLogger().log(Level.SEVERE, "[PlayerCache] EXCEPTION in loadPlayerData callback chain for " + player.getName() + " on join", ex);
@@ -261,7 +261,7 @@ public class PlayerCache {
     public void handlePlayerQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
         UUID playerUUID = player.getUniqueId();
-        plugin.getLogger().info("[PlayerCache] Handling PlayerQuitEvent for " + player.getName() + " (" + playerUUID + ")");
+        plugin.getLogger().fine("[PlayerCache] Handling PlayerQuitEvent for " + player.getName() + " (" + playerUUID + ")");
 
         if (plugin.getNetwork() != null) {
             saveOnDeparture(playerUUID);
@@ -273,7 +273,7 @@ public class PlayerCache {
                 if (throwable != null) {
                     plugin.getLogger().log(Level.SEVERE, "[PlayerCache] EXCEPTION during save for " + player.getName() + " on quit.", throwable);
                 } else {
-                    plugin.getLogger().info("[PlayerCache] Player data save completed for " + player.getName() + " on quit.");
+                    plugin.getLogger().fine("[PlayerCache] Player data save completed for " + player.getName() + " on quit.");
                 }
                 // Décharger dans tous les cas (réussi ou échec de la sauvegarde), sauf si le joueur s'est reconnecté
                 // entre-temps : les données en cache sont alors celles de sa nouvelle session
@@ -298,7 +298,7 @@ public class PlayerCache {
             if (throwable != null) {
                 plugin.getLogger().log(Level.SEVERE, "[PlayerCache] EXCEPTION during save for " + playerUUID + " on departure.", throwable);
             } else {
-                plugin.getLogger().info("[PlayerCache] Player data save completed for " + playerUUID + " on departure.");
+                plugin.getLogger().fine("[PlayerCache] Player data save completed for " + playerUUID + " on departure.");
             }
             departures.remove(playerUUID);
             // Décharger dans tous les cas, sauf si le joueur s'est reconnecté entre-temps

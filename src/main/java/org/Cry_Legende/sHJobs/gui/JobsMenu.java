@@ -32,7 +32,7 @@ public class JobsMenu extends CustomMenuHolder {
     }
 
     public void populateItems(Player player, ConfigurationSection menuConfig) {
-        plugin.getLogger().info("[JobsMenu] Populating items for " + player.getName() + ". Menu config path: " + menuConfig.getCurrentPath());
+        plugin.getLogger().fine("[JobsMenu] Populating items for " + player.getName() + ". Menu config path: " + menuConfig.getCurrentPath());
         if (inventory == null) {
             plugin.getLogger().severe("[JobsMenu] Inventory is null in populateItems for " + player.getName() + ". Aborting.");
             return;
@@ -142,7 +142,7 @@ public class JobsMenu extends CustomMenuHolder {
                 }
             }
         }
-        plugin.getLogger().info("[JobsMenu] Finished populating items for " + player.getName());
+        plugin.getLogger().fine("[JobsMenu] Finished populating items for " + player.getName());
     }
 
     private ItemStack createPlaceholderItem(Player player, ConfigurationSection placeholderSpecificConfig, String defaultNameKey, Map<String, String> globalPlaceholders) {
@@ -354,18 +354,18 @@ public class JobsMenu extends CustomMenuHolder {
             player.closeInventory();
         } else if (action.startsWith("[command]")) {
             String cmd = action.substring("[command]".length()).trim();
-            plugin.getLogger().info("[JobsMenu] Player " + player.getName() + " executing command from menu: " + cmd);
+            plugin.getLogger().fine("[JobsMenu] Player " + player.getName() + " executing command from menu: " + cmd);
             player.performCommand(cmd);
         } else if (action.startsWith("[consolecommand]")) {
             String cmd = action.substring("[consolecommand]".length()).trim();
-            plugin.getLogger().info("[JobsMenu] Console executing command from menu (triggered by " + player.getName() + "): " + cmd);
+            plugin.getLogger().fine("[JobsMenu] Console executing command from menu (triggered by " + player.getName() + "): " + cmd);
             Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd);
         } else if (action.startsWith("[message]")) {
             String msg = action.substring("[message]".length()).trim();
             player.sendMessage(msg); // Déjà colorisé et processé par applyPlaceholders
         } else if (action.startsWith("[openmenu]")) {
             String menuToOpen = action.substring("[openmenu]".length()).trim();
-            plugin.getLogger().info("[JobsMenu] Player " + player.getName() + " opening menu from menu: " + menuToOpen);
+            plugin.getLogger().fine("[JobsMenu] Player " + player.getName() + " opening menu from menu: " + menuToOpen);
             if (menuToOpen.equalsIgnoreCase("shop_menu")) {
                 plugin.getMenuManager().openShopMenu(player);
             } else if (menuToOpen.equalsIgnoreCase("main_jobs_menu")) { // Pourrait être un bouton refresh/home

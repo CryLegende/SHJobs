@@ -56,24 +56,24 @@ public class JobsCommand implements CommandExecutor {
 
     private void openJobsMenuForPlayer(Player player) {
         PlayerData cachedData = plugin.getPlayerCache().getPlayerData(player.getUniqueId());
-        plugin.getLogger().info("[JobsCommand] openJobsMenuForPlayer for " + player.getName() + ". CachedData is " + (cachedData == null ? "null" : "not null") + ". FullyLoaded: " + plugin.getPlayerCache().isPlayerDataFullyLoaded(player.getUniqueId()));
+        plugin.getLogger().fine("[JobsCommand] openJobsMenuForPlayer for " + player.getName() + ". CachedData is " + (cachedData == null ? "null" : "not null") + ". FullyLoaded: " + plugin.getPlayerCache().isPlayerDataFullyLoaded(player.getUniqueId()));
 
         if (cachedData != null && plugin.getPlayerCache().isPlayerDataFullyLoaded(player.getUniqueId())) {
-            plugin.getLogger().info("[JobsCommand] Opening JobsMenu with cached and fully loaded data for " + player.getName());
+            plugin.getLogger().fine("[JobsCommand] Opening JobsMenu with cached and fully loaded data for " + player.getName());
             plugin.getMenuManager().openJobsMenu(player);
         } else {
-            plugin.getLogger().info("[JobsCommand] PlayerData not fully loaded for " + player.getName() + ". Initiating load or waiting.");
+            plugin.getLogger().fine("[JobsCommand] PlayerData not fully loaded for " + player.getName() + ". Initiating load or waiting.");
             player.sendMessage(plugin.getMessages().getMessage("menu.loading_data", false));
 
             plugin.getPlayerCache().loadPlayerData(player.getUniqueId()).thenAcceptAsync(playerData -> {
-                    plugin.getLogger().info("[JobsCommand] Callback for loadPlayerData (JobsMenu) executed for " + player.getName() + ". PlayerData is " + (playerData == null ? "null" : "not null"));
+                    plugin.getLogger().fine("[JobsCommand] Callback for loadPlayerData (JobsMenu) executed for " + player.getName() + ". PlayerData is " + (playerData == null ? "null" : "not null"));
                     if (!player.isOnline()) {
-                        plugin.getLogger().info("[JobsCommand] Player " + player.getName() + " logged off during data load (JobsMenu).");
+                        plugin.getLogger().fine("[JobsCommand] Player " + player.getName() + " logged off during data load (JobsMenu).");
                         return;
                     }
                     if (playerData != null) {
                         // markPlayerDataAsFullyLoaded est déjà appelé dans le callback de loadPlayerData
-                        plugin.getLogger().info("[JobsCommand] PlayerData loaded successfully for " + player.getName() + ", opening JobsMenu.");
+                        plugin.getLogger().fine("[JobsCommand] PlayerData loaded successfully for " + player.getName() + ", opening JobsMenu.");
                         plugin.getMenuManager().openJobsMenu(player);
                     } else {
                         plugin.getLogger().warning("[JobsCommand] PlayerData is NULL for " + player.getName() + " after load attempt (JobsMenu).");
@@ -92,22 +92,22 @@ public class JobsCommand implements CommandExecutor {
 
     private void openShopMenuForPlayer(Player player) {
         PlayerData cachedData = plugin.getPlayerCache().getPlayerData(player.getUniqueId());
-        plugin.getLogger().info("[JobsCommand] openShopMenuForPlayer for " + player.getName() + ". CachedData is " + (cachedData == null ? "null" : "not null") + ". FullyLoaded: " + plugin.getPlayerCache().isPlayerDataFullyLoaded(player.getUniqueId()));
+        plugin.getLogger().fine("[JobsCommand] openShopMenuForPlayer for " + player.getName() + ". CachedData is " + (cachedData == null ? "null" : "not null") + ". FullyLoaded: " + plugin.getPlayerCache().isPlayerDataFullyLoaded(player.getUniqueId()));
 
         if (cachedData != null && plugin.getPlayerCache().isPlayerDataFullyLoaded(player.getUniqueId())) {
-            plugin.getLogger().info("[JobsCommand] Opening ShopMenu with cached and fully loaded data for " + player.getName());
+            plugin.getLogger().fine("[JobsCommand] Opening ShopMenu with cached and fully loaded data for " + player.getName());
             plugin.getMenuManager().openShopMenu(player);
         } else {
-            plugin.getLogger().info("[JobsCommand] PlayerData not fully loaded for " + player.getName() + ". Initiating load or waiting (ShopMenu).");
+            plugin.getLogger().fine("[JobsCommand] PlayerData not fully loaded for " + player.getName() + ". Initiating load or waiting (ShopMenu).");
             player.sendMessage(plugin.getMessages().getMessage("menu.loading_data", false));
             plugin.getPlayerCache().loadPlayerData(player.getUniqueId()).thenAcceptAsync(playerData -> {
-                    plugin.getLogger().info("[JobsCommand] Callback for loadPlayerData (ShopMenu) executed for " + player.getName() + ". PlayerData is " + (playerData == null ? "null" : "not null"));
+                    plugin.getLogger().fine("[JobsCommand] Callback for loadPlayerData (ShopMenu) executed for " + player.getName() + ". PlayerData is " + (playerData == null ? "null" : "not null"));
                     if (!player.isOnline()) {
-                        plugin.getLogger().info("[JobsCommand] Player " + player.getName() + " logged off during data load (ShopMenu).");
+                        plugin.getLogger().fine("[JobsCommand] Player " + player.getName() + " logged off during data load (ShopMenu).");
                         return;
                     }
                     if (playerData != null) {
-                        plugin.getLogger().info("[JobsCommand] PlayerData loaded successfully for " + player.getName() + ", opening ShopMenu.");
+                        plugin.getLogger().fine("[JobsCommand] PlayerData loaded successfully for " + player.getName() + ", opening ShopMenu.");
                         plugin.getMenuManager().openShopMenu(player);
                     } else {
                         plugin.getLogger().warning("[JobsCommand] PlayerData is NULL for " + player.getName() + " after load attempt (ShopMenu).");

@@ -30,14 +30,14 @@ public class MenuManager {
 
     public void loadMenus() {
         if (menuConfig.isLoaded()) {
-            plugin.getLogger().info("[MenuManager] Menu configurations are loaded.");
+            plugin.getLogger().fine("[MenuManager] Menu configurations are loaded.");
         } else {
             plugin.getLogger().warning("[MenuManager] Menu configurations (menus.yml) NOT LOADED! GUIs might not work.");
         }
     }
 
     public void openJobsMenu(Player player) {
-        plugin.getLogger().info("[MenuManager] Attempting to open JobsMenu for " + player.getName());
+        plugin.getLogger().fine("[MenuManager] Attempting to open JobsMenu for " + player.getName());
         ConfigurationSection menuData = menuConfig.getMenuConfiguration("main_jobs_menu");
         if (menuData == null) {
             plugin.getLogger().severe("[MenuManager] Configuration for 'main_jobs_menu' NOT FOUND in menus.yml for " + player.getName());
@@ -55,11 +55,11 @@ public class MenuManager {
         JobsMenu jobsMenu = new JobsMenu(plugin, title, size);
         Inventory inv = Bukkit.createInventory(jobsMenu, size, title);
         jobsMenu.setInventory(inv);
-        plugin.getLogger().info("[MenuManager] JobsMenu inventory created for " + player.getName() + " with title: '" + title + "', size: " + size);
+        plugin.getLogger().fine("[MenuManager] JobsMenu inventory created for " + player.getName() + " with title: '" + title + "', size: " + size);
 
         try {
             jobsMenu.populateItems(player, menuData);
-            plugin.getLogger().info("[MenuManager] JobsMenu items populated for " + player.getName());
+            plugin.getLogger().fine("[MenuManager] JobsMenu items populated for " + player.getName());
         } catch (Exception e) {
             plugin.getLogger().log(Level.SEVERE, "[MenuManager] EXCEPTION during JobsMenu.populateItems for " + player.getName(), e);
             player.sendMessage(plugin.getMessages().getMessage("menu.population_error", true, "%menu%", "Jobs"));
@@ -68,11 +68,11 @@ public class MenuManager {
         }
 
         player.openInventory(inv);
-        plugin.getLogger().info("[MenuManager] JobsMenu opened for " + player.getName());
+        plugin.getLogger().fine("[MenuManager] JobsMenu opened for " + player.getName());
     }
 
     public void openShopMenu(Player player) {
-        plugin.getLogger().info("[MenuManager] Attempting to open ShopMenu for " + player.getName());
+        plugin.getLogger().fine("[MenuManager] Attempting to open ShopMenu for " + player.getName());
         ConfigurationSection menuData = menuConfig.getMenuConfiguration("shop_menu");
         if (menuData == null) {
             plugin.getLogger().severe("[MenuManager] Configuration for 'shop_menu' NOT FOUND in menus.yml for " + player.getName());
@@ -90,12 +90,12 @@ public class MenuManager {
         ShopMenu shopMenu = new ShopMenu(plugin, title, size);
         Inventory inv = Bukkit.createInventory(shopMenu, size, title);
         shopMenu.setInventory(inv);
-        plugin.getLogger().info("[MenuManager] ShopMenu inventory created for " + player.getName() + " with title: '" + title + "', size: " + size);
+        plugin.getLogger().fine("[MenuManager] ShopMenu inventory created for " + player.getName() + " with title: '" + title + "', size: " + size);
 
 
         try {
             shopMenu.populateItems(player, menuData);
-            plugin.getLogger().info("[MenuManager] ShopMenu items populated for " + player.getName());
+            plugin.getLogger().fine("[MenuManager] ShopMenu items populated for " + player.getName());
         } catch (Exception e) {
             plugin.getLogger().log(Level.SEVERE, "[MenuManager] EXCEPTION during ShopMenu.populateItems for " + player.getName(), e);
             player.sendMessage(plugin.getMessages().getMessage("menu.population_error", true, "%menu%", "Shop"));
@@ -104,7 +104,7 @@ public class MenuManager {
         }
 
         player.openInventory(inv);
-        plugin.getLogger().info("[MenuManager] ShopMenu opened for " + player.getName());
+        plugin.getLogger().fine("[MenuManager] ShopMenu opened for " + player.getName());
     }
 
     public ItemStack buildItemFromConfig(ConfigurationSection itemSection, @Nullable Player player, @Nullable Map<String, String> globalPlaceholders) {

@@ -88,7 +88,7 @@ public class Messages {
             messagesConfig.load(messagesFile);
             loaded = true;
             prefix = messagesConfig.getString("plugin_prefix", "&8[&6SHJobs&8] &r");
-            plugin.getLogger().info("messages.yml loaded successfully.");
+            plugin.getLogger().fine("messages.yml loaded successfully.");
         } catch (IOException | InvalidConfigurationException e) {
             plugin.getLogger().log(Level.SEVERE, "Could not load messages.yml!", e);
             loaded = false;

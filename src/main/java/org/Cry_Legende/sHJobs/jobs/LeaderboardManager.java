@@ -50,7 +50,7 @@ public class LeaderboardManager {
      * Cette méthode est conçue pour être exécutée de manière asynchrone.
      */
     public void updateAllLeaderboards() {
-        plugin.getLogger().info("Updating all job leaderboards...");
+        plugin.getLogger().fine("Updating all job leaderboards...");
         for (JobType jobType : JobType.values()) {
             try {
                 // Met à jour le Top 10 pour chaque métier
@@ -69,7 +69,7 @@ public class LeaderboardManager {
                 plugin.getLogger().log(Level.SEVERE, "An unhandled exception occurred during leaderboard update for " + jobType.name(), e);
             }
         }
-        plugin.getLogger().info("Leaderboard update process finished.");
+        plugin.getLogger().fine("Leaderboard update process finished.");
     }
 
     /**
