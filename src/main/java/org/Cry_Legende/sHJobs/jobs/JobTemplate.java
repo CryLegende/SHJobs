@@ -183,7 +183,7 @@ public class JobTemplate {
                         .collect(Collectors.toList());
                     if (!materials.isEmpty()) {
                         objBuilder.materials(materials);
-                    } else if (actionOpt.get() == JobAction.BREAK || actionOpt.get() == JobAction.PLACE || actionOpt.get() == JobAction.CRAFT || actionOpt.get() == JobAction.FISH || actionOpt.get() == JobAction.SMELT || actionOpt.get() == JobAction.STRIP) {
+                    } else if (actionOpt.get() == JobAction.BREAK || actionOpt.get() == JobAction.PLACE || actionOpt.get() == JobAction.CRAFT || actionOpt.get() == JobAction.FISH || actionOpt.get() == JobAction.SMELT || actionOpt.get() == JobAction.STRIP || actionOpt.get() == JobAction.HARVEST) {
                         plugin.getLogger().warning("Objective '" + objectiveId + "' of type " + actionOpt.get() + " in JobTemplate '" + id + "' requires valid materials but none were found or parsed. Skipping objective.");
                         continue;
                     }
@@ -211,6 +211,19 @@ public class JobTemplate {
 
                 if (objSection.contains("required_age")) {
                     objBuilder.requiredAge(objSection.getInt("required_age"));
+                }
+
+                if (objSection.getBoolean("projectile", false)) { // Pour KILL
+                    objBuilder.projectileOnly(true);
+                }
+
+                if (objSection.contains("smith")) { // Pour SMITH : TRIM, UPGRADE ou ANY
+                    String kind = objSection.getString("smith", "ANY").toUpperCase(java.util.Locale.ROOT);
+                    if (!kind.equals("TRIM") && !kind.equals("UPGRADE") && !kind.equals("ANY")) {
+                        plugin.getLogger().warning("Invalid smith '" + kind + "' in objective '" + objectiveId + "' for job '" + id + "' (TRIM, UPGRADE or ANY). Using ANY.");
+                        kind = "ANY";
+                    }
+                    objBuilder.smithKind(kind);
                 }
 
                 if (objSection.contains("display_name")) { // Nom d'affichage optionnel pour l'objectif

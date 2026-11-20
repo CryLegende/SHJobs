@@ -25,6 +25,8 @@ public class JobObjective {
     private final PotionType requiredPotionType; // Pour BREW : variante exacte (SWIFTNESS, LONG_SWIFTNESS ou STRONG_SWIFTNESS), null si elle n'existe pas
     private final int amount;
     private final int requiredAge;          // Pour BREAK (cultures)
+    private final boolean projectileOnly;   // Pour KILL : seulement les mobs tués par un projectile (arc, arbalète, trident)
+    private final String smithKind;         // Pour SMITH : TRIM, UPGRADE ou ANY
     private final String objectiveDisplayName; // Nom affichable pour cet objectif si différent de l'ID
 
     // Constructeur principal
@@ -39,13 +41,15 @@ public class JobObjective {
         this.requiredPotionType = variantOf(builder.potionType, builder.potionExtended, builder.potionUpgraded);
         this.amount = builder.amount;
         this.requiredAge = builder.requiredAge;
+        this.projectileOnly = builder.projectileOnly;
+        this.smithKind = builder.smithKind == null ? "ANY" : builder.smithKind.toUpperCase(Locale.ROOT);
         this.objectiveDisplayName = builder.objectiveDisplayName != null ? builder.objectiveDisplayName : this.id;
 
         // Validations
         if (amount <= 0) {
             throw new IllegalArgumentException("Objective amount must be positive: " + amount);
         }
-        if (action == JobAction.BREAK || action == JobAction.PLACE || action == JobAction.STRIP || action == JobAction.CRAFT || action == JobAction.FISH || action == JobAction.SMELT) {
+        if (action == JobAction.BREAK || action == JobAction.PLACE || action == JobAction.STRIP || action == JobAction.CRAFT || action == JobAction.FISH || action == JobAction.SMELT || action == JobAction.HARVEST) {
             if (this.materials.isEmpty()) {
                 throw new IllegalArgumentException("Materials list cannot be empty for action: " + action);
             }
@@ -158,6 +162,14 @@ public class JobObjective {
         return requiredAge;
     }
 
+    public boolean isProjectileOnly() {
+        return projectileOnly;
+    }
+
+    public String getSmithKind() {
+        return smithKind;
+    }
+
     public String getObjectiveDisplayName() {
         return objectiveDisplayName;
     }
@@ -186,9 +198,21 @@ public class JobObjective {
         return materials.contains(fishedItemMaterial);
     }
 
-    public boolean checkKillCondition(EntityType killedEntityType) {
+    public boolean checkKillCondition(EntityType killedEntityType, boolean byProjectile) {
         if (action != JobAction.KILL) return false;
+        if (projectileOnly && !byProjectile) return false;
         return this.entityType == killedEntityType;
+    }
+
+    /** @param kind TRIM ou UPGRADE, selon la recette de la table de forgeron */
+    public boolean checkSmithCondition(String kind) {
+        if (action != JobAction.SMITH) return false;
+        return "ANY".equals(smithKind) || smithKind.equals(kind);
+    }
+
+    public boolean checkHarvestCondition(Material harvested) {
+        if (action != JobAction.HARVEST) return false;
+        return materials.contains(harvested);
     }
 
     public boolean checkSmeltCondition(Material smeltedResultMaterial) { // Ou Material inputMaterial
@@ -244,6 +268,8 @@ public class JobObjective {
         private boolean potionUpgraded = false;
         private int amount = 1;
         private int requiredAge = -1; // -1 signifie non applicable
+        private boolean projectileOnly = false;
+        private String smithKind;
         private String objectiveDisplayName;
 
         public Builder(String id, JobAction action, int amount) {
@@ -281,6 +307,16 @@ public class JobObjective {
 
         public Builder requiredAge(int requiredAge) {
             this.requiredAge = requiredAge;
+            return this;
+        }
+
+        public Builder projectileOnly(boolean projectileOnly) {
+            this.projectileOnly = projectileOnly;
+            return this;
+        }
+
+        public Builder smithKind(String smithKind) {
+            this.smithKind = smithKind;
             return this;
         }
 

@@ -179,7 +179,9 @@ public class JobsMenu extends CustomMenuHolder {
         Map<String, String> placeholders = new HashMap<>(globalPlaceholders);
         placeholders.put("%job_name%", template.getDisplayName());
         placeholders.put("%job_type_name%", template.getJobType().getDisplayName());
-        placeholders.put("%job_exp_reward%", String.valueOf(template.getRewardJobExp()));
+        placeholders.put("%job_exp_reward%", String.valueOf(dailyJob.getRewardExp()));
+        placeholders.put("%tier_multiplier%", formatMultiplier(dailyJob.getScale()));
+        placeholders.put("%tier_level%", String.valueOf(plugin.getJobManager().tierLevel(dailyJob.getScale())));
         placeholders.put("%job_points_reward%", String.valueOf(template.getRewardJobPoints()));
 
         ItemBuilder itemBuilder = new ItemBuilder(plugin.getMenuManager().buildItemFromConfig(itemConfig, player, placeholders));
@@ -202,7 +204,7 @@ public class JobsMenu extends CustomMenuHolder {
 
         for (org.Cry_Legende.sHJobs.jobs.JobObjective obj : template.getObjectives()) {
             int progress = dailyJob.getProgress(obj.getId());
-            int total = obj.getAmount();
+            int total = dailyJob.getRequired(obj);
             String statusColor = progress >= total ? "&a" : "&e";
 
             String objectiveLineFormat = itemConfig.getString("objective_line_format", "&7- %obj_display_name% &f(%obj_progress%/%obj_total%)");
@@ -226,6 +228,15 @@ public class JobsMenu extends CustomMenuHolder {
             }
         }
 
+        // Palier (main_jobs_menu.daily_job_tier_lore), seulement quand la quête est multipliée
+        if (dailyJob.getScale() != 1.0) {
+            ConfigurationSection menuSection = plugin.getMenuConfig().getMenuConfiguration("main_jobs_menu");
+            List<String> tierLore = menuSection != null ? menuSection.getStringList("daily_job_tier_lore") : List.of();
+            for (String tierLine : tierLore) {
+                finalLore.add(plugin.getMenuManager().applyPlaceholders(tierLine, player, placeholders));
+            }
+        }
+
         itemBuilder.setLore(finalLore);
 
         if (dailyJob.isCompleted()) {
@@ -242,6 +253,14 @@ public class JobsMenu extends CustomMenuHolder {
         }
 
         return itemBuilder.build();
+    }
+
+    /** 1.5 -> « 1,5 », 2.0 -> « 2 ». */
+    private static String formatMultiplier(double multiplier) {
+        if (multiplier == Math.rint(multiplier)) {
+            return String.valueOf((long) multiplier);
+        }
+        return String.valueOf(multiplier).replace('.', ',');
     }
 
     private ItemStack createJobTypeItem(Player player, PlayerData playerData, JobType jobType, ConfigurationSection itemConfig, Map<String, String> globalPlaceholders) {

@@ -20,6 +20,13 @@ Les achats et reventes de la boutique sont écrits dans le fichier `boutique` de
 
 Utilisé sur : **Opale**.
 
+## Quêtes du jour
+
+- Chaque jour, une quête par métier (case 1 Bûcheron, 2 Mineur, 3 Agriculteur, 4 Chasseur, 5 Artisan, 6 Pêcheur), tirée selon `selection_weight` parmi les quêtes du métier (`general.one_job_per_type`).
+- Paliers (`general.level_tiers`) : à partir d'un niveau dans le métier, les objectifs et l'XP de la quête sont multipliés, les points ne changent pas. Le palier est fixé à l'attribution de la quête et affiché dans le menu (`daily_job_tier_lore` de `menus.yml`).
+- Un bloc posé par un joueur ne fait pas avancer un objectif de casse quand il le recasse (`general.placed_blocks_count: false`). La position est gardée dans les données du chunk, suit les pistons et survit aux redémarrages.
+- Types d'objectif : `BREAK`, `PLACE`, `STRIP`, `CRAFT`, `SMELT`, `FISH`, `KILL` (avec `projectile: true` pour les tirs à l'arc, à l'arbalète ou au trident), `BREW`, `SMITH` (garniture `TRIM` ou netherite `UPGRADE`), `HARVEST` (cueillette au clic droit), `WALK`. Le détail est en tête de `job_templates` dans `config.yml`.
+
 ## Dépendances
 
 - Obligatoires : `PlaceholderAPI`

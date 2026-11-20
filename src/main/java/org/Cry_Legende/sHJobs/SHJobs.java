@@ -133,6 +133,7 @@ public final class SHJobs extends JavaPlugin {
 
         getServer().getPluginManager().registerEvents(new PlayerConnectionListener(this), this);
         getServer().getPluginManager().registerEvents(new JobProgressListener(this), this);
+        getServer().getPluginManager().registerEvents(new org.Cry_Legende.sHJobs.listeners.PlacedBlockListener(this), this);
         getServer().getPluginManager().registerEvents(new InventoryListener(this), this);
         this.getLogger().info("Event listeners registered.");
 

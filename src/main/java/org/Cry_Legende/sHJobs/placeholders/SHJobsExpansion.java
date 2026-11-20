@@ -223,7 +223,7 @@ public class SHJobsExpansion extends PlaceholderExpansion {
                         if (dataType.equalsIgnoreCase("progress")) {
                             JobObjective firstObjective = template.getObjectives().get(0);
                             return dailyJob.isCompleted() ? "Terminé" :
-                                dailyJob.getProgress(firstObjective.getId()) + "/" + firstObjective.getAmount();
+                                dailyJob.getProgress(firstObjective.getId()) + "/" + dailyJob.getRequired(firstObjective);
                         }
                     } else {
                         return plugin.getMessages().getMessage("papi.job_not_loaded", false);

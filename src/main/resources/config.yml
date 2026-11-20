@@ -114,6 +114,21 @@ general:
   # Son joué au gain d'un niveau de métier, avec son message (messages.yml : rewards.level_up).
   # Format : SON[:volume[:hauteur]]
   level_up_sound: ENTITY_PLAYER_LEVELUP
+  # Une quête par métier chaque jour : case 1 Bûcheron, 2 Mineur, 3 Agriculteur, 4 Chasseur, 5 Artisan, 6 Pêcheur
+  # (tirage pondéré par selection_weight parmi les quêtes du métier). false = 6 quêtes au hasard, tous métiers mêlés.
+  one_job_per_type: true
+  # Paliers : à partir de ce niveau dans le métier de la quête, ses objectifs et son XP sont multipliés (les points
+  # ne changent pas). Le palier est fixé quand la quête du jour est attribuée. Liste vide = aucun palier.
+  # Menu : ligne main_jobs_menu.daily_job_tier_lore de menus.yml.
+  level_tiers:
+    - level: 20
+      multiplier: 1.5
+    - level: 40
+      multiplier: 2.0
+  # false : un bloc posé par un joueur ne compte pas quand il le recasse (bûche, pierre, pastèque…), seuls les blocs
+  # venus du jeu comptent (arbre, générateur, culture). Concerne les objectifs BREAK sans required_age. La position
+  # des blocs posés est gardée dans les données du chunk (elle suit les pistons, survit aux redémarrages).
+  placed_blocks_count: false
 
 # --- Logs ---
 # Lignes écrites dans SHLogs (plugins/SHLogs/SHJobs/), sans date : SHLogs l'ajoute.
@@ -188,6 +203,19 @@ job_types:
 # --- Job Templates ---
 # Define all possible jobs. 'selection_weight' determines chance of appearing.
 # Placeholders for rewards: %player%, %job_name%
+#
+# Types d'objectif (type) et leur cible :
+#   BREAK    material (liste possible), required_age pour une culture mûre (blé 7, betterave 3, verrue 3)
+#   PLACE    material
+#   STRIP    material : bûches écorcées (STRIPPED_*)
+#   CRAFT    item_type : objet fabriqué
+#   SMELT    material : objet récupéré dans un four, un haut fourneau ou un fumoir
+#   FISH     item_type : objet pêché (poisson, trésor, déchet)
+#   KILL     entity_type ; projectile: true = seulement les mobs tués à l'arc, à l'arbalète ou au trident
+#   BREW     potion_type (SWIFTNESS, STRENGTH…), potion_extended / potion_upgraded
+#   SMITH    smith : TRIM (garniture d'armure), UPGRADE (netherite) ou ANY, à la table de forgeron
+#   HARVEST  material : objets cueillis au clic droit (SWEET_BERRIES, GLOW_BERRIES)
+#   WALK     distance en blocs
 job_templates:
   # --- BUCHERON ---
   bucheron_coupe_chene:

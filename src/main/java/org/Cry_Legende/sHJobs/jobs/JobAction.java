@@ -12,7 +12,9 @@ public enum JobAction {
     KILL,     // Tuer une entité spécifique
     SMELT,    // Faire fondre un item dans un four
     BREW,     // Préparer une potion spécifique
-    STRIP;    // "Stripper" un tronc d'arbre avec une hache
+    STRIP,    // "Stripper" un tronc d'arbre avec une hache
+    SMITH,    // Table de forgeron : garniture d'armure (smith: TRIM), amélioration en netherite (UPGRADE) ou les deux
+    HARVEST;  // Cueillette au clic droit (baies sucrées, baies lumineuses) : compte les objets cueillis
 
     public static Optional<JobAction> fromString(String text) {
         if (text == null || text.isEmpty()) {

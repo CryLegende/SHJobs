@@ -17,11 +17,67 @@ public class JobManager {
     private List<String> currentDailyJobTemplateIds;
     // Vrai si un modèle contient un objectif WALK (évite de suivre chaque déplacement pour rien)
     private volatile boolean walkObjectives;
+    private final PlacedBlocks placedBlocks;
+    // general.one_job_per_type : une quête par métier, dans l'ordre des métiers
+    private volatile boolean oneJobPerType = true;
+    // general.level_tiers, triés par niveau croissant : {niveau, multiplicateur}
+    private volatile List<double[]> levelTiers = List.of();
 
     public JobManager(SHJobs plugin) {
         this.plugin = plugin;
         this.jobTemplates = new HashMap<>();
         this.currentDailyJobTemplateIds = new ArrayList<>(Collections.nCopies(6, null));
+        this.placedBlocks = new PlacedBlocks(plugin);
+    }
+
+    public PlacedBlocks getPlacedBlocks() {
+        return placedBlocks;
+    }
+
+    public boolean isOneJobPerType() {
+        return oneJobPerType;
+    }
+
+    /** Multiplicateur de palier pour un niveau de métier (1 sous le premier palier). */
+    public double tierMultiplier(int level) {
+        double multiplier = 1.0;
+        for (double[] tier : levelTiers) {
+            if (level >= tier[0]) {
+                multiplier = tier[1];
+            }
+        }
+        return multiplier;
+    }
+
+    /** Niveau à partir duquel s'applique un multiplicateur (pour le menu), 0 si aucun palier ne le donne. */
+    public int tierLevel(double multiplier) {
+        for (double[] tier : levelTiers) {
+            if (tier[1] == multiplier) {
+                return (int) tier[0];
+            }
+        }
+        return 0;
+    }
+
+    private void loadGeneralRules() {
+        ConfigurationSection general = plugin.getConfigManager().getRawConfig().getConfigurationSection("general");
+        oneJobPerType = general == null || general.getBoolean("one_job_per_type", true);
+        List<double[]> tiers = new ArrayList<>();
+        if (general != null) {
+            for (Map<?, ?> raw : general.getMapList("level_tiers")) {
+                Object level = raw.get("level");
+                Object multiplier = raw.get("multiplier");
+                if (level instanceof Number l && multiplier instanceof Number m && l.intValue() > 0 && m.doubleValue() > 0) {
+                    tiers.add(new double[]{l.intValue(), m.doubleValue()});
+                } else {
+                    plugin.getLogger().warning("Invalid entry in general.level_tiers (level and multiplier expected): " + raw);
+                }
+            }
+        }
+        tiers.sort(Comparator.comparingDouble(t -> t[0]));
+        levelTiers = List.copyOf(tiers);
+        boolean placedCount = general != null && general.getBoolean("placed_blocks_count", false);
+        placedBlocks.refresh(jobTemplates.values(), !placedCount);
     }
 
     /**
@@ -45,7 +101,9 @@ public class JobManager {
         }
         walkObjectives = jobTemplates.values().stream()
             .anyMatch(template -> template.getObjectives().stream().anyMatch(obj -> obj.getAction() == JobAction.WALK));
-        plugin.getLogger().info("Loaded " + jobTemplates.size() + " job templates.");
+        loadGeneralRules();
+        plugin.getLogger().info("Loaded " + jobTemplates.size() + " job templates (" + (oneJobPerType ? "one per job type" : "random")
+            + ", " + levelTiers.size() + " level tier(s), " + placedBlocks.trackedCount() + " block type(s) ignored when player-placed).");
     }
 
     public boolean hasWalkObjectives() {
@@ -90,6 +148,10 @@ public class JobManager {
             return newJobIds;
         }
 
+        if (oneJobPerType) {
+            return pickOnePerType();
+        }
+
         List<JobTemplate> availableTemplates = new ArrayList<>(jobTemplates.values());
         Set<String> selectedInThisBatch = new HashSet<>();
 
@@ -114,6 +176,37 @@ public class JobManager {
             }
         }
         return newJobIds;
+    }
+
+    /**
+     * Une quête par métier, case i = i-ème métier (ordre de JobType, celui du menu). Un métier sans quête prend une
+     * quête d'un autre métier, jamais deux fois la même.
+     */
+    private List<String> pickOnePerType() {
+        List<String> ids = new ArrayList<>(Collections.nCopies(6, null));
+        Set<String> used = new HashSet<>();
+        JobType[] types = JobType.values();
+        for (int i = 0; i < 6 && i < types.length; i++) {
+            JobType type = types[i];
+            JobTemplate selected = selectWeightedRandom(templatesOf(type, used));
+            if (selected == null) {
+                List<JobTemplate> rest = jobTemplates.values().stream().filter(t -> !used.contains(t.getId())).collect(Collectors.toList());
+                selected = selectWeightedRandom(rest);
+                plugin.getLogger().warning("No job template for " + type + ": slot " + (i + 1) + " takes " + (selected != null ? selected.getId() : "nothing") + ".");
+            }
+            if (selected != null) {
+                ids.set(i, selected.getId());
+                used.add(selected.getId());
+            }
+        }
+        return ids;
+    }
+
+    private List<JobTemplate> templatesOf(JobType type, Set<String> excluded) {
+        return jobTemplates.values().stream()
+            .filter(t -> t.getJobType() == type && !excluded.contains(t.getId()))
+            .sorted(Comparator.comparing(JobTemplate::getId))
+            .collect(Collectors.toList());
     }
 
     private JobTemplate selectWeightedRandom(List<JobTemplate> templates) {
@@ -163,7 +256,8 @@ public class JobManager {
         for (String templateId : currentDailyJobTemplateIds) {
             if (templateId == null) continue;
             getJobTemplate(templateId).ifPresent(template -> {
-                DailyJob dailyJob = new DailyJob(template);
+                double scale = tierMultiplier(playerData.getLevel(template.getJobType()));
+                DailyJob dailyJob = new DailyJob(template, scale);
                 playerData.addOrUpdateDailyJob(dailyJob);
             });
         }
@@ -188,6 +282,14 @@ public class JobManager {
                 return false;
             }
             this.currentDailyJobTemplateIds.set(slotIndex, newTemplateId);
+        } else if (oneJobPerType && this.currentDailyJobTemplateIds.get(slotIndex) != null
+            && jobTemplates.containsKey(this.currentDailyJobTemplateIds.get(slotIndex))) {
+            // Tirage dans le même métier que la quête remplacée
+            String current = this.currentDailyJobTemplateIds.get(slotIndex);
+            Set<String> excluded = new HashSet<>(this.currentDailyJobTemplateIds.stream().filter(Objects::nonNull).toList());
+            List<JobTemplate> sameType = templatesOf(jobTemplates.get(current).getJobType(), excluded);
+            JobTemplate selected = selectWeightedRandom(sameType);
+            this.currentDailyJobTemplateIds.set(slotIndex, selected != null ? selected.getId() : current);
         } else {
             List<JobTemplate> availableForSlot = new ArrayList<>(jobTemplates.values());
             for (int i = 0; i < 6; i++) {
@@ -230,14 +332,15 @@ public class JobManager {
         if (playerData == null) return;
 
         boolean leveledUp = false;
-        if (template.getRewardJobExp() > 0) {
+        long rewardExp = dailyJob.getRewardExp();
+        if (rewardExp > 0) {
             int levelBefore = playerData.getLevel(template.getJobType());
-            playerData.addExperience(template.getJobType(), template.getRewardJobExp());
+            playerData.addExperience(template.getJobType(), rewardExp);
             int levelAfter = playerData.getLevel(template.getJobType());
             logLevelUps(player, template.getJobType(), levelBefore, levelAfter);
             plugin.getMessages().sendPlayerMessage(player, "rewards.exp_gained",
                 "%job_type%", template.getJobType().getDisplayName(),
-                "%amount%", String.valueOf(template.getRewardJobExp()));
+                "%amount%", String.valueOf(rewardExp));
             leveledUp = levelAfter > levelBefore;
             if (leveledUp) {
                 plugin.getMessages().sendPlayerMessage(player, "rewards.level_up",

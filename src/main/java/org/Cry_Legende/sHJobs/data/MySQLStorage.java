@@ -208,7 +208,7 @@ public class MySQLStorage implements StorageManager {
                     try {
                         SQLiteStorage.TempDailyJobStorage tempStorage = gson.fromJson(dailyJobJson, SQLiteStorage.TempDailyJobStorage.class);
                         if (tempStorage != null) {
-                            DailyJob dj = new DailyJob(template, tempStorage.objectiveProgress, tempStorage.completed);
+                            DailyJob dj = new DailyJob(template, tempStorage.objectiveProgress, tempStorage.completed, tempStorage.scale);
                             activeDailyJobs.put(template.getId(), dj);
                         } else {
                             plugin.getLogger().warning("Failed to deserialize daily job JSON for player " + playerUUID + ", template " + templateId + " (MySQL). JSON: " + dailyJobJson);
@@ -270,6 +270,7 @@ public class MySQLStorage implements StorageManager {
                                 SQLiteStorage.TempDailyJobStorage tempStorage = new SQLiteStorage.TempDailyJobStorage();
                                 tempStorage.objectiveProgress = dailyJob.getObjectiveProgress();
                                 tempStorage.completed = dailyJob.isCompleted();
+                                tempStorage.scale = dailyJob.getScale() == 1.0 ? null : dailyJob.getScale();
                                 String dailyJobJson = gson.toJson(tempStorage);
                                 pstmt.setString(3, dailyJobJson);
                                 pstmt.addBatch();

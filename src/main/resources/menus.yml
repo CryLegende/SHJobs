@@ -5,6 +5,10 @@ menus:
   main_jobs_menu:
     title: "&8&lMétiers &8| Menu principal" # Titre du GUI, pas un item
     size: 54
+    # Ligne ajoutée sous les récompenses d'une quête du jour multipliée par un palier (config.yml : general.level_tiers).
+    # Variables : %tier_multiplier% (ex. 1,5) et %tier_level% (niveau où le palier commence).
+    daily_job_tier_lore:
+      - "&8• &7Palier &e×%tier_multiplier% &7dès le niveau &e%tier_level%"
     items:
       filler_black_glass:
         type: "FILLER"

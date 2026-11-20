@@ -6,6 +6,10 @@ import org.Cry_Legende.sHJobs.jobs.DailyJob;
 import org.Cry_Legende.sHJobs.jobs.JobAction;
 import org.Cry_Legende.sHJobs.jobs.JobObjective;
 import org.Cry_Legende.sHJobs.jobs.JobType; // Pour les récompenses
+import org.Cry_Legende.sHJobs.jobs.PlacedBlocks;
+import org.bukkit.entity.Projectile;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.player.PlayerHarvestBlockEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -79,7 +83,18 @@ public class JobProgressListener implements Listener {
                             break;
                         case KILL:
                             if (primaryTarget instanceof org.bukkit.entity.EntityType) {
-                                conditionMet = objective.checkKillCondition((org.bukkit.entity.EntityType) primaryTarget);
+                                boolean byProjectile = Boolean.TRUE.equals(secondaryTarget);
+                                conditionMet = objective.checkKillCondition((org.bukkit.entity.EntityType) primaryTarget, byProjectile);
+                            }
+                            break;
+                        case SMITH: // primaryTarget : TRIM ou UPGRADE
+                            if (primaryTarget instanceof String kind) {
+                                conditionMet = objective.checkSmithCondition(kind);
+                            }
+                            break;
+                        case HARVEST: // primaryTarget : objet cueilli
+                            if (primaryTarget instanceof Material harvested) {
+                                conditionMet = objective.checkHarvestCondition(harvested);
                             }
                             break;
                         case SMELT: // primaryTarget est l'ItemStack résultat
@@ -139,7 +154,7 @@ public class JobProgressListener implements Listener {
     }
 
     private static boolean objectiveDone(DailyJob dailyJob, JobObjective objective) {
-        return dailyJob.getProgress(objective.getId()) >= objective.getAmount();
+        return dailyJob.getProgress(objective.getId()) >= dailyJob.getRequired(objective);
     }
 
     private static int ageOf(Block block) {
@@ -151,6 +166,11 @@ public class JobProgressListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent event) {
         Block block = event.getBlock();
+        // Bloc posé par un joueur (general.placed_blocks_count: false) : la marque part avec lui, la casse ne compte pas
+        PlacedBlocks placed = plugin.getJobManager().getPlacedBlocks();
+        if (placed.isTracked(block.getType()) && placed.consume(block)) {
+            return;
+        }
         handleObjectiveProgress(event.getPlayer(), JobAction.BREAK, block.getType(), block, 1);
     }
 
@@ -246,7 +266,36 @@ public class JobProgressListener implements Listener {
         if (event.getEntity().getKiller() != null) {
             Player killer = event.getEntity().getKiller();
             org.bukkit.entity.EntityType entityType = event.getEntityType();
-            handleObjectiveProgress(killer, JobAction.KILL, entityType, null, 1);
+            boolean byProjectile = event.getEntity().getLastDamageCause() instanceof EntityDamageByEntityEvent damage
+                && damage.getDamager() instanceof Projectile;
+            handleObjectiveProgress(killer, JobAction.KILL, entityType, byProjectile, 1);
+        }
+    }
+
+    /** Table de forgeron : une garniture (TRIM) ou une amélioration en netherite (UPGRADE) récupérée. */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onSmith(SmithItemEvent event) {
+        if (!(event.getWhoClicked() instanceof Player player) || event.getAction() == InventoryAction.NOTHING) {
+            return;
+        }
+        ItemStack result = event.getCurrentItem();
+        if (result == null || result.getType() == Material.AIR) {
+            return;
+        }
+        Recipe recipe = event.getInventory().getRecipe();
+        String kind = recipe instanceof SmithingTrimRecipe ? "TRIM" : recipe instanceof SmithingTransformRecipe ? "UPGRADE" : null;
+        if (kind != null) {
+            handleObjectiveProgress(player, JobAction.SMITH, kind, null, 1);
+        }
+    }
+
+    /** Cueillette au clic droit (baies sucrées, baies lumineuses) : chaque objet cueilli compte. */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onHarvest(PlayerHarvestBlockEvent event) {
+        for (ItemStack harvested : event.getItemsHarvested()) {
+            if (harvested != null && harvested.getType() != Material.AIR && harvested.getAmount() > 0) {
+                handleObjectiveProgress(event.getPlayer(), JobAction.HARVEST, harvested.getType(), null, harvested.getAmount());
+            }
         }
     }
 

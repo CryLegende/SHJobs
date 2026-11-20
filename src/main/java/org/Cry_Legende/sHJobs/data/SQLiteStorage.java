@@ -33,6 +33,8 @@ public class SQLiteStorage implements StorageManager {
     static class TempDailyJobStorage {
         Map<String, Integer> objectiveProgress;
         boolean completed;
+        // Multiplicateur de palier (absent des lignes écrites avant la 1.3 : null = 1)
+        Double scale;
     }
 
     public SQLiteStorage(SHJobs plugin, String filePath) {
@@ -165,7 +167,7 @@ public class SQLiteStorage implements StorageManager {
                     try {
                         TempDailyJobStorage tempStorage = gson.fromJson(dailyJobJson, TempDailyJobStorage.class);
                         if (tempStorage != null) {
-                            DailyJob dj = new DailyJob(template, tempStorage.objectiveProgress, tempStorage.completed);
+                            DailyJob dj = new DailyJob(template, tempStorage.objectiveProgress, tempStorage.completed, tempStorage.scale);
                             activeDailyJobs.put(template.getId(), dj);
                         } else {
                             plugin.getLogger().warning("Failed to deserialize daily job JSON for player " + playerUUID + ", template " + templateId + ". JSON: " + dailyJobJson);
@@ -229,6 +231,7 @@ public class SQLiteStorage implements StorageManager {
                                 TempDailyJobStorage tempStorage = new TempDailyJobStorage();
                                 tempStorage.objectiveProgress = dailyJob.getObjectiveProgress();
                                 tempStorage.completed = dailyJob.isCompleted();
+                                tempStorage.scale = dailyJob.getScale() == 1.0 ? null : dailyJob.getScale();
                                 String dailyJobJson = gson.toJson(tempStorage);
                                 pstmt.setString(3, dailyJobJson);
                                 pstmt.addBatch();
