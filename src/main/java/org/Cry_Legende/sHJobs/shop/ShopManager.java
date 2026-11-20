@@ -183,6 +183,7 @@ public class ShopManager {
 
         String playerName = player.getName();
         for (int i = 0; i < quantityToBuy; i++) {
+            giveItems(player, item.getItemsOnPurchase());
             for (String command : item.getCommandsOnPurchase()) {
                 String processedCommand = command.replace("%player%", playerName)
                     .replace("%item_name%", item.getDisplayName())
@@ -214,6 +215,20 @@ public class ShopManager {
         // Rafraîchir le menu pour mettre à jour l'affichage
         if (player.getOpenInventory().getTopInventory().getHolder() instanceof ShopMenu) {
             plugin.getMenuManager().openShopMenu(player);
+        }
+    }
+
+    /**
+     * Remet les objets achetés dans l'inventaire du joueur ; ce qui ne rentre pas tombe à ses pieds.
+     * <p>
+     * Pas de commande /give vanilla pour cela : elle fait apparaître un objet fantôme dans le chunk, qu'un collecteur
+     * de chunk AdvancedChests range pour de vrai dans son coffre, en plus de l'exemplaire de l'inventaire.
+     */
+    private void giveItems(Player player, List<ItemStack> items) {
+        for (ItemStack stack : items) {
+            for (ItemStack left : player.getInventory().addItem(stack).values()) {
+                player.getWorld().dropItem(player.getLocation(), left);
+            }
         }
     }
 

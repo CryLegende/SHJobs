@@ -52,6 +52,20 @@ public final class SharedLimits {
         }
     }
 
+    /** Remet à zéro les compteurs du jour d'un joueur : un seul article si {@code itemId} est donné, sinon tous. Rend le nombre d'articles remis à zéro. */
+    public int reset(String day, UUID player, String itemId) throws SQLException {
+        String sql = "DELETE FROM shjobs_daily_limits WHERE reset_day = ? AND uuid = ?" + (itemId == null ? "" : " AND item_id = ?");
+        try (Connection c = db.connection();
+             PreparedStatement ps = c.prepareStatement(sql)) {
+            ps.setString(1, day);
+            ps.setString(2, player.toString());
+            if (itemId != null) {
+                ps.setString(3, itemId);
+            }
+            return ps.executeUpdate();
+        }
+    }
+
     /** Supprime les compteurs des jours passés. */
     public int purgeBefore(String day) throws SQLException {
         try (Connection c = db.connection();

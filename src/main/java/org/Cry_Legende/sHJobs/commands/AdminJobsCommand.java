@@ -1,6 +1,7 @@
 package org.Cry_Legende.sHJobs.commands;
 
 import org.Cry_Legende.sHJobs.SHJobs;
+import org.Cry_Legende.sHJobs.gui.ShopMenu;
 import org.Cry_Legende.sHJobs.jobs.JobTemplate;
 import org.Cry_Legende.sHJobs.jobs.JobType;
 import org.Cry_Legende.sHJobs.shop.ShopItem;
@@ -31,7 +32,7 @@ public class AdminJobsCommand implements CommandExecutor {
 
     /** Sous-commandes d'administration dans l'ordre d'affichage de la ligne d'usage, avec les permissions qui les ouvrent. */
     private static final List<String> SUBCOMMANDS = List.of("reload", "list", "exp", "level", "points", "playerinfo",
-        "job", "shopitem", "resetdaily", "customitem", "import");
+        "job", "shopitem", "resetdaily", "resetlimits", "customitem", "import");
 
     private final SHJobs plugin;
     private final JobsCommand jobsCommand;
@@ -53,6 +54,7 @@ public class AdminJobsCommand implements CommandExecutor {
             case "job" -> List.of(PERM + "job.change");
             case "shopitem" -> List.of(PERM + "shop.changeitem");
             case "resetdaily" -> List.of(PERM + "resetdaily");
+            case "resetlimits" -> List.of(PERM + "resetlimits");
             case "customitem" -> List.of(PERM + "customitem");
             case "import" -> List.of(PERM + "import");
             default -> List.of();
@@ -134,6 +136,10 @@ public class AdminJobsCommand implements CommandExecutor {
                 plugin.getMessages().sendMessage(sender, "admin.daily_reset_forced");
                 break;
 
+            case "resetlimits":
+                handleResetLimitsCommand(sender, label, args);
+                break;
+
             case "import":
                 if (plugin.getNetwork() == null) {
                     plugin.getMessages().sendMessage(sender, "admin.import.not_network");
@@ -185,6 +191,51 @@ public class AdminJobsCommand implements CommandExecutor {
 
     private static boolean isGiveRemoveSet(String action) {
         return action.equals("give") || action.equals("remove") || action.equals("set");
+    }
+
+    // --- RESETLIMITS Sub-command ---
+    /**
+     * /shjobs resetlimits <joueur> [id_article] : remet à zéro les limites du jour de la boutique (achats et reventes)
+     * d'un joueur, pour tous les articles ou pour un seul.
+     */
+    private void handleResetLimitsCommand(CommandSender sender, String label, String[] args) {
+        if (args.length < 2 || args.length > 3) {
+            plugin.getMessages().sendMessage(sender, "admin.resetlimits.usage", "%label%", label);
+            return;
+        }
+        String itemId = args.length > 2 ? args[2] : null;
+        if (itemId != null && plugin.getShopManager().getShopItemTemplate(itemId).isEmpty()) {
+            plugin.getMessages().sendMessage(sender, "common.invalid_shop_item_id", "%id%", itemId);
+            return;
+        }
+        if (sendToPlayerServer(sender, args[1], PERM + "resetlimits", args)) {
+            return;
+        }
+        OfflinePlayer target = Bukkit.getOfflinePlayer(args[1]);
+        String targetName = target.getName() != null ? target.getName() : args[1];
+        plugin.getDailyLimits().reset(target.getUniqueId(), itemId).whenCompleteAsync((cleared, error) -> {
+            if (error != null) {
+                plugin.getLogger().log(java.util.logging.Level.SEVERE, "Remise à zéro des limites impossible pour " + targetName, error);
+                plugin.getMessages().sendMessage(sender, "admin.resetlimits.failure", "%player%", targetName);
+                return;
+            }
+            if (cleared == 0) {
+                plugin.getMessages().sendMessage(sender, "admin.resetlimits.nothing", "%player%", targetName);
+                return;
+            }
+            if (itemId == null) {
+                plugin.getMessages().sendMessage(sender, "admin.resetlimits.success_all",
+                    "%player%", targetName, "%count%", String.valueOf(cleared));
+            } else {
+                plugin.getMessages().sendMessage(sender, "admin.resetlimits.success_item",
+                    "%player%", targetName, "%item_id%", itemId);
+            }
+            // Boutique ouverte : les compteurs affichés sont ceux d'avant
+            Player online = target.getPlayer();
+            if (online != null && online.getOpenInventory().getTopInventory().getHolder() instanceof ShopMenu) {
+                plugin.getMenuManager().openShopMenu(online);
+            }
+        }, runnable -> Bukkit.getScheduler().runTask(plugin, runnable));
     }
 
     // --- LIST Sub-command ---

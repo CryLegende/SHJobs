@@ -140,6 +140,16 @@ public class JobsTabCompleter implements TabCompleter {
                         StringUtil.copyPartialMatches(args[3], templateIds, completions);
                     }
                     break;
+                case "resetlimits":
+                    if (!allowed.contains("resetlimits")) {
+                        break;
+                    }
+                    if (args.length == 2) return null; // Noms de joueurs
+                    else if (args.length == 3) {
+                        List<String> shopItemIds = plugin.getShopManager().getAllShopItemTemplates().stream().map(ShopItem::getId).collect(Collectors.toList());
+                        StringUtil.copyPartialMatches(args[2], shopItemIds, completions);
+                    }
+                    break;
                 case "shopitem":
                     if (!allowed.contains("shopitem")) {
                         break;

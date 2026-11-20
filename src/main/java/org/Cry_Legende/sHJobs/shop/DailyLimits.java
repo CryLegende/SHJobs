@@ -136,6 +136,50 @@ public final class DailyLimits {
         scheduleSave();
     }
 
+    /**
+     * Remet à zéro les compteurs d'achat et de revente du jour d'un joueur, pour un article ({@code itemId}) ou pour
+     * tous ({@code itemId} nul). Le futur rend le nombre d'articles remis à zéro ; en mode réseau il se termine une
+     * fois la base à jour, après les écritures déjà en cours du joueur.
+     */
+    public CompletableFuture<Integer> reset(UUID player, String itemId) {
+        roll();
+        int cleared = 0;
+        Map<String, int[]> perItem = counts.get(player);
+        if (perItem != null) {
+            if (itemId == null) {
+                cleared = perItem.size();
+                counts.remove(player);
+            } else if (perItem.remove(itemId) != null) {
+                cleared = 1;
+                if (perItem.isEmpty()) {
+                    counts.remove(player);
+                }
+            }
+        }
+        if (shared == null) {
+            if (cleared > 0) {
+                scheduleSave();
+            }
+            return CompletableFuture.completedFuture(cleared);
+        }
+        String resetDay = day;
+        CompletableFuture<Integer> deleted = new CompletableFuture<>();
+        CompletableFuture<Void> next = writes.compute(player, (id, previous) -> {
+            CompletableFuture<Void> start = previous == null ? CompletableFuture.completedFuture(null) : previous.handle((r, t) -> null);
+            CompletableFuture<Integer> rows = start.thenCompose(ignored -> sharedDb.async(() -> shared.reset(resetDay, player, itemId)));
+            rows.whenComplete((n, t) -> {
+                if (t != null) {
+                    deleted.completeExceptionally(t);
+                } else {
+                    deleted.complete(n);
+                }
+            });
+            return rows.handle((r, t) -> (Void) null);
+        });
+        next.whenComplete((r, t) -> writes.remove(player, next));
+        return deleted;
+    }
+
     /** Mode réseau : incrément en base, les écritures d'un même joueur partent l'une après l'autre. */
     private void write(UUID player, String itemId, Kind kind, int amount) {
         String writeDay = day;

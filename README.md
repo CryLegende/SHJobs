@@ -70,6 +70,7 @@ Sous-commandes de `/shjobs`, utilisables aussi en console sauf `customitem save`
 | `job change <slot 1-6> [id_job]` | Change un job journalier. | `shjobs.admin.job.change` |
 | `shopitem change <slot 1-6> [id_article]` | Change un article de la boutique du jour. | `shjobs.admin.shop.changeitem` |
 | `resetdaily` | Force la rotation des jobs et de la boutique. | `shjobs.admin.resetdaily` |
+| `resetlimits <joueur> [id_article]` | Remet à zéro les limites d'achat et de revente du jour d'un joueur, pour tous les articles ou pour un seul. | `shjobs.admin.resetlimits` |
 | `import` | Reprend les données de ce serveur dans la base partagée (mode réseau). | `shjobs.admin.import` |
 | `customitem save <id>` | Enregistre l'objet en main dans `custom_items.yml`. | `shjobs.admin.customitem` et `.customitem.save` |
 | `customitem list` | Liste les objets enregistrés. | `shjobs.admin.customitem` et `.customitem.list` |
@@ -82,7 +83,7 @@ Sous-commandes de `/shjobs`, utilisables aussi en console sauf `customitem save`
 | `shjobs.use` | Ouvrir le menu des métiers (`/jobs`). | `true` |
 | `shjobs.shop` | Ouvrir la boutique avec `/jobs shop`. | `op` |
 | `shjobs.admin` | Toute l'administration (parent de toutes les permissions `shjobs.admin.*`). | `op` |
-| `shjobs.admin.reload`, `.list`, `.playerinfo`, `.resetdaily`, `.import` | Les sous-commandes du même nom. | `op` |
+| `shjobs.admin.reload`, `.list`, `.playerinfo`, `.resetdaily`, `.resetlimits`, `.import` | Les sous-commandes du même nom. | `op` |
 | `shjobs.admin.exp.give`, `.exp.remove`, `.exp.set` | `exp give`, `remove`, `set`. | `op` |
 | `shjobs.admin.level.set` | `level set`. | `op` |
 | `shjobs.admin.points.give`, `.points.remove`, `.points.set` | `points give`, `remove`, `set`. | `op` |

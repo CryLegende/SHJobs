@@ -2,8 +2,10 @@ package org.Cry_Legende.sHJobs.shop;
 
 import org.Cry_Legende.sHJobs.SHJobs;
 import org.Cry_Legende.sHJobs.jobs.JobType;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +25,7 @@ public class ShopItem {
     private final JobType requiredJobType;
     private final int requiredJobLevel;
     private final List<String> commandsOnPurchase;
+    private final List<ItemStack> itemsOnPurchase;
     private final int selectionWeight;
 
     // Champs de revente
@@ -52,6 +55,7 @@ public class ShopItem {
         this.requiredJobType = builder.requiredJobType;
         this.requiredJobLevel = builder.requiredJobLevel;
         this.commandsOnPurchase = List.copyOf(builder.commandsOnPurchase);
+        this.itemsOnPurchase = List.copyOf(builder.itemsOnPurchase);
         this.selectionWeight = builder.selectionWeight;
 
         // Initialisation des champs de revente
@@ -97,6 +101,15 @@ public class ShopItem {
 
     public List<String> getCommandsOnPurchase() {
         return new ArrayList<>(commandsOnPurchase);
+    }
+
+    /** Objets remis à l'acheteur par le plugin lui-même (copies, à donner un exemplaire par achat). */
+    public List<ItemStack> getItemsOnPurchase() {
+        List<ItemStack> copies = new ArrayList<>(itemsOnPurchase.size());
+        for (ItemStack stack : itemsOnPurchase) {
+            copies.add(stack.clone());
+        }
+        return copies;
     }
 
     public int getSelectionWeight() {
@@ -154,6 +167,16 @@ public class ShopItem {
                 }
             }
             List<String> commands = section.getStringList("commands_on_purchase");
+            List<ItemStack> items = new ArrayList<>();
+            for (String spec : section.getStringList("items_on_purchase")) {
+                try {
+                    items.add(parseItem(spec));
+                } catch (IllegalArgumentException e) {
+                    // Un achat qui prendrait les points sans rien remettre : l'article n'est pas proposé
+                    plugin.getLogger().warning("ShopItem '" + id + "' has invalid 'items_on_purchase' entry \"" + spec + "\": " + e.getMessage() + ". Skipping.");
+                    return Optional.empty();
+                }
+            }
             int selectionWeight = section.getInt("selection_weight", 1);
             if (selectionWeight <= 0) {
                 plugin.getLogger().warning("ShopItem '" + id + "' has non-positive selection_weight. Setting to 1.");
@@ -175,6 +198,7 @@ public class ShopItem {
                 .cost(cost)
                 .requiredJob(requiredJobType, requiredJobLevel)
                 .commandsOnPurchase(commands)
+                .itemsOnPurchase(items)
                 .selectionWeight(selectionWeight)
                 .sellInfo(sellable, sellPoints, sellItemId)
                 .dailyLimits(
@@ -191,6 +215,44 @@ public class ShopItem {
         }
     }
 
+    /**
+     * Lit une entrée de {@code items_on_purchase} : un objet au format de la commande vanilla /give, composants
+     * compris (minecraft:diamond_sword[custom_name='x']), suivi d'une quantité facultative (1 par défaut).
+     */
+    static ItemStack parseItem(String spec) {
+        String text = spec == null ? "" : spec.trim();
+        int amount = 1;
+        int space = text.lastIndexOf(' ');
+        if (space > 0) {
+            String last = text.substring(space + 1);
+            if (last.chars().allMatch(Character::isDigit) && !last.isEmpty()) {
+                try {
+                    amount = Integer.parseInt(last);
+                } catch (NumberFormatException e) {
+                    throw new IllegalArgumentException("invalid amount");
+                }
+                text = text.substring(0, space).trim();
+            }
+        }
+        if (text.isEmpty()) {
+            throw new IllegalArgumentException("empty item");
+        }
+        ItemStack stack;
+        try {
+            stack = Bukkit.getItemFactory().createItemStack(text);
+        } catch (RuntimeException e) {
+            throw new IllegalArgumentException("unknown item or components");
+        }
+        if (stack.getType().isAir()) {
+            throw new IllegalArgumentException("air is not an item");
+        }
+        if (amount < 1 || amount > stack.getMaxStackSize()) {
+            throw new IllegalArgumentException("amount must be between 1 and " + stack.getMaxStackSize());
+        }
+        stack.setAmount(amount);
+        return stack;
+    }
+
     // --- Builder mis à jour ---
     public static class Builder {
         // Achat
@@ -203,6 +265,7 @@ public class ShopItem {
         private JobType requiredJobType = null;
         private int requiredJobLevel = 1;
         private List<String> commandsOnPurchase = new ArrayList<>();
+        private List<ItemStack> itemsOnPurchase = new ArrayList<>();
         private int selectionWeight = 1;
         // Revente
         private boolean sellable = false;
@@ -240,6 +303,11 @@ public class ShopItem {
 
         public Builder commandsOnPurchase(List<String> commands) {
             this.commandsOnPurchase = commands != null ? new ArrayList<>(commands) : new ArrayList<>();
+            return this;
+        }
+
+        public Builder itemsOnPurchase(List<ItemStack> items) {
+            this.itemsOnPurchase = items != null ? new ArrayList<>(items) : new ArrayList<>();
             return this;
         }
 

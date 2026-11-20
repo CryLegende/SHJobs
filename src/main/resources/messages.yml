@@ -29,6 +29,12 @@ admin:
   reload_database_failed: "&7&l« &6&lSH &8&l» &7Les nouveaux réglages de &6database &7sont inutilisables : la connexion précédente est conservée."
   reload_network_restart: "&7&l« &e&lSH &8&l» &7Le bloc &ereseau &7ne s'applique qu'au prochain redémarrage."
   daily_reset_forced: "&7&l« &a&lSH &8&l» &7Reset journalier des jobs et de la boutique &aforcé&7."
+  resetlimits:
+    usage: "&7&l« &c&lSH &8&l» &7Usage: &c/shjobs resetlimits <joueur> [id_article]"
+    success_all: "&7&l« &a&lSH &8&l» &7Limites du jour de &a%player% &7remises à zéro (&a%count% article(s)&7)."
+    success_item: "&7&l« &a&lSH &8&l» &7Limites du jour de &a%player% &7remises à zéro pour &a%item_id%&7."
+    nothing: "&7&l« &e&lSH &8&l» &a%player% &7n'a entamé aucune limite aujourd'hui."
+    failure: "&7&l« &c&lSH &8&l» &7Remise à zéro impossible pour &c%player% &7(voir la console)."
   exp:
     usage: "&7&l« &c&lSH &8&l» &7Usage: &c/shjobs exp <give|remove|set> <joueur> <métier> <montant>"
     give:

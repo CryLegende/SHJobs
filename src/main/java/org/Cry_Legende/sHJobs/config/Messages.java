@@ -56,6 +56,11 @@ public class Messages {
         Map.entry("admin.customitem.give.player_offline", "&7&l« &c&lSH &8&l» &c%player% &7n'est pas connecté."),
         Map.entry("admin.customitem.give.player_required", "&7&l« &c&lSH &8&l» &7Depuis la console, indiquez le joueur : &c/shjobs customitem give <ID> <joueur>"),
         Map.entry("admin.customitem.usage", "&7&l« &c&lSH &8&l» &7Usage: &c/shjobs customitem <save <ID>|list|give <ID> [joueur]>"),
+        Map.entry("admin.resetlimits.usage", "&7&l« &c&lSH &8&l» &7Usage: &c/shjobs resetlimits <joueur> [id_article]"),
+        Map.entry("admin.resetlimits.success_all", "&7&l« &a&lSH &8&l» &7Limites du jour de &a%player% &7remises à zéro (&a%count% article(s)&7)."),
+        Map.entry("admin.resetlimits.success_item", "&7&l« &a&lSH &8&l» &7Limites du jour de &a%player% &7remises à zéro pour &a%item_id%&7."),
+        Map.entry("admin.resetlimits.nothing", "&7&l« &e&lSH &8&l» &a%player% &7n'a entamé aucune limite aujourd'hui."),
+        Map.entry("admin.resetlimits.failure", "&7&l« &c&lSH &8&l» &7Remise à zéro impossible pour &c%player% &7(voir la console)."),
         Map.entry("admin.import.failure", "&7&l« &c&lSH &8&l» &7Reprise impossible : &c%error%&7.")
     );
 

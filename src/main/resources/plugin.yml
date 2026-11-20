@@ -49,6 +49,7 @@ permissions:
       shjobs.admin.job.change: true
       shjobs.admin.shop.changeitem: true
       shjobs.admin.resetdaily: true
+      shjobs.admin.resetlimits: true
       shjobs.admin.import: true
       shjobs.admin.customitem: true
       shjobs.admin.customitem.save: true
@@ -92,6 +93,9 @@ permissions:
     default: op
   shjobs.admin.resetdaily:
     description: Forcer la rotation des jobs et de la boutique (/shjobs resetdaily).
+    default: op
+  shjobs.admin.resetlimits:
+    description: Remettre à zéro les limites d'achat et de revente du jour d'un joueur (/shjobs resetlimits).
     default: op
   shjobs.admin.import:
     description: Reprendre les données de ce serveur dans la base partagée (/shjobs import).

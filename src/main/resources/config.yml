@@ -21,6 +21,8 @@
 #     job change <slot 1-6> [id_job]                        Change un job journalier.
 #     shopitem change <slot 1-6> [id_article]               Change un article de la boutique du jour.
 #     resetdaily                                            Force la rotation des jobs et de la boutique.
+#     resetlimits <joueur> [id_article]                     Remet à zéro les limites d'achat et de revente du jour d'un joueur
+#                                                           (tous les articles, ou un seul).
 #     import                                                Reprend les données de ce serveur dans la base partagée (mode réseau).
 #     customitem save <id>                                  Enregistre l'objet en main dans custom_items.yml.
 #     customitem list                                       Liste les objets enregistrés.
@@ -44,6 +46,7 @@
 #   shjobs.admin.job.change        job change.
 #   shjobs.admin.shop.changeitem   shopitem change.
 #   shjobs.admin.resetdaily        resetdaily.
+#   shjobs.admin.resetlimits       resetlimits.
 #   shjobs.admin.import            import.
 #   shjobs.admin.customitem        customitem (entrée de la sous-commande).
 #   shjobs.admin.customitem.save   customitem save.
@@ -392,6 +395,10 @@ job_templates:
 # Define all possible items for the daily shop.
 # Placeholders for lore: %item_cost%, %required_job_level%, %required_job_name%
 # Placeholders for commands: %player%
+# items_on_purchase : objets remis par le plugin à chaque achat, au format de /give vanilla
+#   (minecraft:diamond_sword[custom_name='x']) suivi d'une quantité facultative. Ce qui ne rentre pas dans
+#   l'inventaire tombe aux pieds du joueur. Un objet inconnu écarte l'article de la boutique (avertissement
+#   dans la console).
 shop_items:
   entonnoir:
     display_name: "&fEntonnoir"
