@@ -11,9 +11,11 @@ import org.bukkit.entity.Projectile;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerHarvestBlockEvent;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.Ageable; // Pour les cultures
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -33,6 +35,8 @@ import org.bukkit.potion.PotionType;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 
 public class JobProgressListener implements Listener {
@@ -300,77 +304,88 @@ public class JobProgressListener implements Listener {
     }
 
 
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onInventoryClick(InventoryClickEvent event) {
-        if (!(event.getWhoClicked() instanceof Player)) {
-            return;
-        }
-        if (event.getSlotType() != InventoryType.SlotType.RESULT) {
-            return;
-        }
-        ItemStack currentItem = event.getCurrentItem();
-        if (currentItem == null || currentItem.getType() == Material.AIR) {
-            return;
-        }
+    // --- BREW : les potions comptent à la fin de l'infusion, pour le dernier joueur à avoir cliqué dans l'alambic ---
 
-        Player player = (Player) event.getWhoClicked();
-        InventoryType invType = event.getInventory().getType();
-
-        JobAction actionType;
-        Object targetObject;
-
-        // Déterminer le type d'action et l'objet cible en fonction de l'inventaire
-        switch (invType) {
-            case FURNACE:
-            case BLAST_FURNACE:
-            case SMOKER:
-                // La fonte est comptée par InventoryListener (quantité réellement récupérée)
-                return;
-            case BREWING:
-                actionType = JobAction.BREW;
-                if (currentItem.getItemMeta() instanceof PotionMeta potionMeta && potionMeta.getBasePotionType() != null) {
-                    targetObject = potionMeta.getBasePotionType();
-                } else {
-                    return; // Ce n'est pas une potion standard
-                }
-                break;
-            default:
-                return; // Inventaire non pertinent
-        }
-
-        if (event.getClick() == ClickType.SHIFT_LEFT || event.getClick() == ClickType.SHIFT_RIGHT) {
-            // Pour les shift-clics, le calcul de la quantité est complexe.
-            // La méthode la plus fiable est de vérifier la différence dans l'inventaire du joueur juste après l'action.
-            handleShiftClick(player, currentItem, actionType, targetObject);
-        } else {
-            // Pour un clic normal, la quantité est simplement celle de l'itemstack dans le slot de résultat.
-            int amount = currentItem.getAmount();
-            handleObjectiveProgress(player, actionType, targetObject, null, amount);
+    /** Position d'un alambic, sans référence au monde. */
+    private record StandPos(UUID world, int x, int y, int z) {
+        static StandPos of(Location location) {
+            return new StandPos(location.getWorld().getUID(), location.getBlockX(), location.getBlockY(), location.getBlockZ());
         }
     }
 
-    private void handleShiftClick(Player player, ItemStack resultItem, JobAction action, Object target) {
-        int amountBefore = countItemsInInventory(player.getInventory(), resultItem);
+    // Seuls les joueurs qui ont un objectif BREW en cours sont retenus. Lu et écrit par les fils des mondes.
+    private final Map<StandPos, UUID> brewers = new ConcurrentHashMap<>();
 
-        // On exécute la tâche au prochain tick pour laisser le temps au serveur de déplacer les items.
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onInventoryClick(InventoryClickEvent event) {
+        rememberBrewer(event.getWhoClicked(), event.getView().getTopInventory());
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onInventoryDrag(InventoryDragEvent event) {
+        rememberBrewer(event.getWhoClicked(), event.getView().getTopInventory());
+    }
+
+    private void rememberBrewer(HumanEntity clicker, Inventory top) {
+        if (!(top instanceof BrewerInventory) || !(clicker instanceof Player player) || !hasPendingObjective(player, JobAction.BREW)) {
+            return;
+        }
+        Location location = top.getLocation();
+        if (location != null && location.getWorld() != null) {
+            brewers.put(StandPos.of(location), player.getUniqueId());
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onBrew(BrewEvent event) {
+        if (brewers.isEmpty()) {
+            return;
+        }
+        UUID brewer = brewers.get(StandPos.of(event.getBlock().getLocation()));
+        if (brewer == null) {
+            return;
+        }
+        // Au moment de l'événement, l'alambic contient encore les potions de départ
+        BrewerInventory before = event.getContents();
+        List<ItemStack> results = event.getResults();
+        Map<PotionType, Integer> brewed = new HashMap<>();
+        for (int slot = 0; slot < 3 && slot < results.size(); slot++) {
+            PotionType type = potionTypeOf(results.get(slot));
+            // Même type avant et après : la bouteille n'a pas réagi, ou elle est seulement devenue jetable ou persistante
+            if (type != null && type != potionTypeOf(before.getItem(slot))) {
+                brewed.merge(type, results.get(slot).getAmount(), Integer::sum);
+            }
+        }
+        if (brewed.isEmpty()) {
+            return;
+        }
+        // L'infusion se termine sur le fil du monde de l'alambic, le joueur peut être ailleurs : fil principal
         plugin.getServer().getScheduler().runTask(plugin, () -> {
-            int amountAfter = countItemsInInventory(player.getInventory(), resultItem);
-            int amountMoved = amountAfter - amountBefore;
-
-            if (amountMoved > 0) {
-                handleObjectiveProgress(player, action, target, null, amountMoved);
+            Player player = plugin.getServer().getPlayer(brewer);
+            if (player != null) {
+                brewed.forEach((type, amount) -> handleObjectiveProgress(player, JobAction.BREW, type, null, amount));
             }
         });
     }
 
-    private int countItemsInInventory(PlayerInventory inventory, ItemStack itemToMatch) {
-        int count = 0;
-        for (ItemStack item : inventory.getStorageContents()) {
-            if (item != null && item.isSimilar(itemToMatch)) {
-                count += item.getAmount();
+    private static PotionType potionTypeOf(ItemStack item) {
+        return item != null && item.getItemMeta() instanceof PotionMeta meta ? meta.getBasePotionType() : null;
+    }
+
+    private boolean hasPendingObjective(Player player, JobAction action) {
+        PlayerData playerData = plugin.getPlayerCache().getPlayerData(player.getUniqueId());
+        if (playerData == null) {
+            return false;
+        }
+        for (DailyJob dailyJob : playerData.getActiveDailyJobs().values()) {
+            if (dailyJob.isCompleted()) continue;
+            for (JobObjective objective : dailyJob.getTemplate().getObjectives()) {
+                if (objective.getAction() == action && !objectiveDone(dailyJob, objective)) {
+                    return true;
+                }
             }
         }
-        return count;
+        return false;
     }
 
 

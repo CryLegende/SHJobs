@@ -10,6 +10,7 @@ import org.Cry_Legende.sHJobs.data.PlayerCache;
 import org.Cry_Legende.sHJobs.data.StorageManager;
 import org.Cry_Legende.sHJobs.data.MySQLStorage;
 import org.Cry_Legende.sHJobs.data.SQLiteStorage;
+import org.Cry_Legende.sHJobs.gui.CustomMenuHolder;
 import org.Cry_Legende.sHJobs.gui.InventoryListener;
 import org.Cry_Legende.sHJobs.gui.MenuManager;
 import org.Cry_Legende.sHJobs.items.CustomItemManager;
@@ -27,6 +28,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -151,12 +153,24 @@ public final class SHJobs extends JavaPlugin {
             network.start();
         }
 
+        // Chargement à chaud : les joueurs déjà connectés n'auront pas d'événement de connexion
+        for (Player online : getServer().getOnlinePlayers()) {
+            this.playerCache.loadOnJoin(online);
+        }
+
         this.getLogger().fine("SHJobs has been enabled successfully!");
     }
 
     @Override
     public void onDisable() {
         this.getLogger().fine("SHJobs is disabling...");
+
+        // Un menu resté ouvert sans le plugin laisserait prendre ses objets
+        for (Player online : getServer().getOnlinePlayers()) {
+            if (online.getOpenInventory().getTopInventory().getHolder(false) instanceof CustomMenuHolder) {
+                online.closeInventory();
+            }
+        }
 
         if (this.leaderboardManager != null) {
             this.leaderboardManager.stopUpdateTask();

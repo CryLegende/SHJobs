@@ -215,7 +215,8 @@ job_types:
 #   SMELT    material : objet récupéré dans un four, un haut fourneau ou un fumoir
 #   FISH     item_type : objet pêché (poisson, trésor, déchet)
 #   KILL     entity_type ; projectile: true = seulement les mobs tués à l'arc, à l'arbalète ou au trident
-#   BREW     potion_type (SWIFTNESS, STRENGTH…), potion_extended / potion_upgraded
+#   BREW     potion_type (SWIFTNESS, STRENGTH…), potion_extended / potion_upgraded ; compté à la fin de l'infusion,
+#            pour le dernier joueur à avoir cliqué dans l'alambic
 #   SMITH    smith : TRIM (garniture d'armure), UPGRADE (netherite) ou ANY, à la table de forgeron
 #   HARVEST  material : objets cueillis au clic droit (SWEET_BERRIES, GLOW_BERRIES)
 #   WALK     distance en blocs

@@ -212,7 +212,11 @@ public class PlayerCache {
     }
 
     public void handlePlayerJoin(PlayerJoinEvent event) {
-        Player player = event.getPlayer();
+        loadOnJoin(event.getPlayer());
+    }
+
+    /** Charge un joueur qui se connecte, ou déjà connecté quand le plugin est chargé à chaud. */
+    public void loadOnJoin(Player player) {
         UUID playerUUID = player.getUniqueId();
         plugin.getLogger().fine("[PlayerCache] Handling PlayerJoinEvent for " + player.getName() + " (" + playerUUID + ")");
 
