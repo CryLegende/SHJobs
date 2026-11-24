@@ -29,6 +29,7 @@ import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -155,6 +156,7 @@ public final class SHJobs extends JavaPlugin {
 
         // Chargement à chaud : les joueurs déjà connectés n'auront pas d'événement de connexion
         for (Player online : getServer().getOnlinePlayers()) {
+            closeOwnMenu(online);
             this.playerCache.loadOnJoin(online);
         }
 
@@ -165,11 +167,8 @@ public final class SHJobs extends JavaPlugin {
     public void onDisable() {
         this.getLogger().fine("SHJobs is disabling...");
 
-        // Un menu resté ouvert sans le plugin laisserait prendre ses objets
         for (Player online : getServer().getOnlinePlayers()) {
-            if (online.getOpenInventory().getTopInventory().getHolder(false) instanceof CustomMenuHolder) {
-                online.closeInventory();
-            }
+            closeOwnMenu(online);
         }
 
         if (this.leaderboardManager != null) {
@@ -211,6 +210,17 @@ public final class SHJobs extends JavaPlugin {
         }
 
         this.getLogger().fine("SHJobs has been disabled.");
+    }
+
+    /**
+     * Ferme le menu du plugin ouvert par ce joueur : sans le plugin, il laisserait prendre ses objets. Comparé par
+     * paquet : après un chargement à chaud, le menu vient des classes de la version déchargée.
+     */
+    private static void closeOwnMenu(Player player) {
+        InventoryHolder holder = player.getOpenInventory().getTopInventory().getHolder(false);
+        if (holder != null && holder.getClass().getPackageName().equals(CustomMenuHolder.class.getPackageName())) {
+            player.closeInventory();
+        }
     }
 
     /**
