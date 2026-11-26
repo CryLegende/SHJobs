@@ -65,7 +65,7 @@ Sous-commandes de `/shjobs`, utilisables aussi en console sauf `customitem save`
 | `list [jobs\|shop]` | Rotation du jour et temps avant la suivante ; avec `jobs` ou `shop`, tous les ids. | `shjobs.admin.list` |
 | `exp <give\|remove\|set> <joueur> <métier> <montant>` | Gère l'XP de métier. | `shjobs.admin.exp.give`, `.remove`, `.set` |
 | `level set <joueur> <métier> <niveau>` | Définit le niveau de métier. | `shjobs.admin.level.set` |
-| `points <give\|remove\|set> <joueur> <montant>` | Gère les points de métier. | `shjobs.admin.points.give`, `.remove`, `.set` |
+| `points <give\|remove\|set> <joueur> <montant>` | Gère les points de métier ; `give` annonce le gain au joueur connecté (`admin.points.give.received`). | `shjobs.admin.points.give`, `.remove`, `.set` |
 | `playerinfo <joueur>` (`info`) | Affiche les informations de métier d'un joueur. | `shjobs.admin.playerinfo` |
 | `job change <slot 1-6> [id_job]` | Change un job journalier. | `shjobs.admin.job.change` |
 | `shopitem change <slot 1-6> [id_article]` | Change un article de la boutique du jour. | `shjobs.admin.shop.changeitem` |

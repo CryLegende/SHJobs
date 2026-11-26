@@ -536,6 +536,12 @@ public class AdminJobsCommand implements CommandExecutor {
                     playerData.addJobPoints(amount);
                     plugin.getMessages().sendMessage(sender, "admin.points.give.success",
                         "%player%", target.getName(), "%amount%", String.valueOf(amount));
+                    // Le joueur voit son gain, comme pour un gain de quête (récompenses de box, quêtes, parkours...)
+                    Player receiver = target.getPlayer();
+                    if (receiver != null && amount > 0 && receiver != sender) {
+                        plugin.getMessages().sendPlayerMessage(receiver, "admin.points.give.received",
+                            "%amount%", String.valueOf(amount));
+                    }
                     break;
                 case "remove":
                     if (!playerData.removeJobPoints(amount)) {

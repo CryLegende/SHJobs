@@ -52,6 +52,8 @@ admin:
     usage: "&7&l« &c&lSH &8&l» &7Usage: &c/shjobs points <give|remove|set> <joueur> <montant>"
     give:
       success: "&7&l« &a&lSH &8&l» &7Vous avez donné &a%amount% points de métier&7 à &a%player%&7."
+      # Envoyé au joueur connecté qui reçoit les points (box, quêtes, parkours...). Vide = rien.
+      received: "&6+%amount% JobsPoints &7(/jobs)"
     remove:
       success: "&7&l« &a&lSH &8&l» &7Vous avez retiré &a%amount% points de métier&7 à &a%player%&7."
       not_enough: "&7&l« &c&lSH &8&l» &c%player%&7 n'a pas assez de points de métier."
@@ -139,11 +141,11 @@ jobs:
 # --- Messages des Récompenses ---
 rewards:
   exp_gained: "&7&l« &a&lSH &8&l» &7Vous avez gagné &a%amount% XP &7pour le métier &a%job_type% &7!"
-  points_gained: "&7&l« &a&lSH &8&l» &7Vous avez gagné &a%amount% points de métier &7!"
+  points_gained: "&6+%amount% JobsPoints &7(/jobs)"
   # Gain d'un niveau de métier (le dernier niveau atteint si plusieurs tombent d'un coup)
   level_up: "&7&l« &a&lSH &8&l» &7Métier &a%job_type% &7: vous passez au &aniveau %level% &7!"
   # Bonus quand les %count% quêtes du jour sont terminées (montant : general.all_daily_jobs_bonus_points)
-  all_daily_completed: "&7&l« &6&lSH &8&l» &7Les &6%count% quêtes &7du jour sont terminées : &6+%amount% points de métier &7en bonus !"
+  all_daily_completed: "&7&l« &6&lSH &8&l» &7Les &6%count% quêtes &7du jour sont terminées &8• &6+%amount% JobsPoints &7(/jobs)"
 
 # --- Messages de la Boutique ---
 shop:

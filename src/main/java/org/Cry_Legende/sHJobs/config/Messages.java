@@ -51,6 +51,7 @@ public class Messages {
         Map.entry("admin.list.shop_header", "&7&l« &e&lSH &8&l» &7Articles de la boutique (&e%count%&7) :"),
         Map.entry("admin.list.ids_line", "&8• &7%ids%"),
         Map.entry("admin.customitem.list.header", "&7&l« &e&lSH &8&l» &7Objets enregistrés (&e%count%&7) :"),
+        Map.entry("admin.points.give.received", "&6+%amount% JobsPoints &7(/jobs)"),
         Map.entry("admin.customitem.give.success", "&7&l« &a&lSH &8&l» &7Objet '&a%id%&7' donné à &a%player%&7."),
         Map.entry("admin.customitem.give.unknown", "&7&l« &c&lSH &8&l» &7Aucun objet enregistré avec l'ID '&c%id%&7'."),
         Map.entry("admin.customitem.give.player_offline", "&7&l« &c&lSH &8&l» &c%player% &7n'est pas connecté."),
