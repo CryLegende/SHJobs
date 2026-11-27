@@ -22,6 +22,8 @@ public class JobManager {
     private volatile boolean oneJobPerType = true;
     // general.level_tiers, triés par niveau croissant : {niveau, multiplicateur}
     private volatile List<double[]> levelTiers = List.of();
+    // general.level_tiers_ignored_jobs : métiers dont les quêtes ne suivent jamais les paliers
+    private volatile Set<JobType> tierIgnoredJobs = Set.of();
 
     public JobManager(SHJobs plugin) {
         this.plugin = plugin;
@@ -38,8 +40,11 @@ public class JobManager {
         return oneJobPerType;
     }
 
-    /** Multiplicateur de palier pour un niveau de métier (1 sous le premier palier). */
-    public double tierMultiplier(int level) {
+    /** Multiplicateur de palier d'une quête du métier pour ce niveau (1 sous le premier palier ou pour un métier ignoré). */
+    public double tierMultiplier(JobType jobType, int level) {
+        if (tierIgnoredJobs.contains(jobType)) {
+            return 1.0;
+        }
         double multiplier = 1.0;
         for (double[] tier : levelTiers) {
             if (level >= tier[0]) {
@@ -76,6 +81,17 @@ public class JobManager {
         }
         tiers.sort(Comparator.comparingDouble(t -> t[0]));
         levelTiers = List.copyOf(tiers);
+        Set<JobType> ignored = EnumSet.noneOf(JobType.class);
+        if (general != null) {
+            for (String name : general.getStringList("level_tiers_ignored_jobs")) {
+                try {
+                    ignored.add(JobType.valueOf(name.trim().toUpperCase(Locale.ROOT)));
+                } catch (IllegalArgumentException e) {
+                    plugin.getLogger().warning("Unknown job in general.level_tiers_ignored_jobs: " + name);
+                }
+            }
+        }
+        tierIgnoredJobs = Set.copyOf(ignored);
         boolean placedCount = general != null && general.getBoolean("placed_blocks_count", false);
         placedBlocks.refresh(jobTemplates.values(), !placedCount);
     }
@@ -103,7 +119,8 @@ public class JobManager {
             .anyMatch(template -> template.getObjectives().stream().anyMatch(obj -> obj.getAction() == JobAction.WALK));
         loadGeneralRules();
         plugin.getLogger().info("Loaded " + jobTemplates.size() + " job templates (" + (oneJobPerType ? "one per job type" : "random")
-            + ", " + levelTiers.size() + " level tier(s), " + placedBlocks.trackedCount() + " block type(s) ignored when player-placed).");
+            + ", " + levelTiers.size() + " level tier(s)" + (tierIgnoredJobs.isEmpty() ? "" : " except " + tierIgnoredJobs)
+            + ", " + placedBlocks.trackedCount() + " block type(s) ignored when player-placed).");
     }
 
     public boolean hasWalkObjectives() {
@@ -256,10 +273,43 @@ public class JobManager {
         for (String templateId : currentDailyJobTemplateIds) {
             if (templateId == null) continue;
             getJobTemplate(templateId).ifPresent(template -> {
-                double scale = tierMultiplier(playerData.getLevel(template.getJobType()));
+                double scale = tierMultiplier(template.getJobType(), playerData.getLevel(template.getJobType()));
                 DailyJob dailyJob = new DailyJob(template, scale);
                 playerData.addOrUpdateDailyJob(dailyJob);
             });
+        }
+    }
+
+    /**
+     * Les quêtes du jour d'un joueur passent sur les modèles chargés (totaux modifiés dans config.yml puis rechargés),
+     * avec leur progression et leur état. Une quête d'un métier sorti des paliers (general.level_tiers_ignored_jobs)
+     * revient à x1 tout de suite, sans attendre la rotation suivante.
+     */
+    public void rebindDailyJobs(PlayerData playerData) {
+        for (DailyJob job : List.copyOf(playerData.getActiveDailyJobs().values())) {
+            JobTemplate fresh = jobTemplates.getOrDefault(job.getTemplate().getId(), job.getTemplate());
+            double scale = tierIgnoredJobs.contains(fresh.getJobType()) ? 1.0 : job.getScale();
+            if (fresh != job.getTemplate() || scale != job.getScale()) {
+                playerData.addOrUpdateDailyJob(new DailyJob(fresh, job.getObjectiveProgress(), job.isCompleted(), scale));
+            }
+        }
+    }
+
+    /**
+     * Termine et paie les quêtes dont chaque objectif a déjà atteint son total : un total baissé dans config.yml ne
+     * laisse pas une quête bloquée au-dessus de son nouveau total (les objectifs atteints ne comptent plus d'action).
+     * Thread principal, joueur connecté.
+     */
+    public void settleReachedGoals(Player player, PlayerData playerData) {
+        for (DailyJob job : List.copyOf(playerData.getActiveDailyJobs().values())) {
+            if (job.isCompleted()) {
+                continue;
+            }
+            job.checkOverallCompletion();
+            if (job.isCompleted()) {
+                plugin.getMessages().sendPlayerMessage(player, "jobs.job_completed", "%job_name%", job.getTemplate().getDisplayName());
+                giveJobCompletionRewards(player, job);
+            }
         }
     }
 

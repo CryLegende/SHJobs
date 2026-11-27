@@ -29,6 +29,7 @@ import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.Cry_Legende.sHJobs.data.PlayerData;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
@@ -343,7 +344,8 @@ public final class SHJobs extends JavaPlugin {
             this.lastResetDate = LocalDate.now().minusDays(1);
         }
 
-        boolean isNewDay = !LocalDate.now().equals(this.lastResetDate);
+        LocalDate resetDay = currentResetDay();
+        boolean isNewDay = resetDay.isAfter(this.lastResetDate);
         boolean forceRegenerate = configManager.getRawConfig().getBoolean("general.regenerate_daily_jobs_on_reload", false) && !Bukkit.getPluginManager().isPluginEnabled(this);
 
         // --- GESTION DES JOBS ---
@@ -377,7 +379,7 @@ public final class SHJobs extends JavaPlugin {
 
         // Mise à jour de la date si nécessaire
         if (isNewDay) {
-            this.lastResetDate = LocalDate.now();
+            this.lastResetDate = resetDay;
         }
 
         // On sauvegarde immédiatement pour assurer la persistance de ce qu'on vient de charger/générer
@@ -427,6 +429,15 @@ public final class SHJobs extends JavaPlugin {
         this.lastResetDate = date;
     }
 
+    /**
+     * Jour de rotation en cours : la date du jour, ou celle de la veille tant que l'heure de rotation
+     * (general.daily_reset_time) n'est pas passée.
+     */
+    public LocalDate currentResetDay() {
+        LocalTime resetTime = configManager.getDailyResetTime();
+        return LocalDateTime.now().minusSeconds(resetTime.toSecondOfDay()).toLocalDate();
+    }
+
     /** Retire la tâche de rotation quotidienne (avec SHNetwork : ce serveur n'est plus le meneur). */
     public void cancelDailyResetTask() {
         if (dailyResetTaskScheduler != null && !dailyResetTaskScheduler.isCancelled()) {
@@ -438,6 +449,14 @@ public final class SHJobs extends JavaPlugin {
         cancelDailyResetTask();
         if (network != null && !network.isLeader()) {
             return; // avec SHNetwork, seul le serveur meneur lance la rotation
+        }
+
+        if (network == null) {
+            // Serveur seul : DailyResetTask compare toutes les 10 s le jour de rotation à celui du dernier tirage
+            dailyResetTaskScheduler = new DailyResetTask(this).runTaskTimer(this, 200L, 200L);
+            LocalDateTime next = currentResetDay().plusDays(1).atStartOfDay().plusSeconds(configManager.getDailyResetTime().toSecondOfDay());
+            getLogger().info("Daily reset task scheduled. Next reset at: " + next);
+            return;
         }
 
         LocalDateTime now = LocalDateTime.now();
@@ -535,6 +554,15 @@ public final class SHJobs extends JavaPlugin {
         this.jobManager.loadJobTemplates();
         this.shopManager.loadShopItems();
         this.menuManager.loadMenus();
+
+        // Joueurs connectés : leurs quêtes du jour prennent les totaux relus, une quête déjà au-dessus se termine
+        for (Player online : Bukkit.getOnlinePlayers()) {
+            PlayerData data = playerCache.getPlayerData(online.getUniqueId());
+            if (data != null && playerCache.isPlayerDataFullyLoaded(online.getUniqueId())) {
+                jobManager.rebindDailyJobs(data);
+                jobManager.settleReachedGoals(online, data);
+            }
+        }
 
         scheduleDailyResetTask();
         this.realTimeUpdateTaskScheduler = new RealTimeUpdateTask(this).runTaskTimer(this, 20L, 20L);

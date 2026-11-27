@@ -128,6 +128,11 @@ general:
       multiplier: 1.5
     - level: 40
       multiplier: 2.0
+  # Métiers dont les quêtes ne suivent jamais les paliers : une activité qu'on ne fait pas plus vite avec un plus
+  # haut niveau (la pêche) garde les mêmes totaux et la même XP pour tous. Noms : BUCHERON, MINEUR, AGRICULTEUR,
+  # CHASSEUR, ARTISAN, PECHEUR. Liste vide = tous les métiers suivent les paliers.
+  level_tiers_ignored_jobs:
+    - PECHEUR
   # false : un bloc posé par un joueur ne compte pas quand il le recasse (bûche, pierre, pastèque…), seuls les blocs
   # venus du jeu comptent (arbre, générateur, culture). Concerne les objectifs BREAK sans required_age. La position
   # des blocs posés est gardée dans les données du chunk (elle suit les pistons, survit aux redémarrages).

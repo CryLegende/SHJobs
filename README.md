@@ -24,6 +24,9 @@ Utilisé sur : **Opale**.
 
 - Chaque jour, une quête par métier (case 1 Bûcheron, 2 Mineur, 3 Agriculteur, 4 Chasseur, 5 Artisan, 6 Pêcheur), tirée selon `selection_weight` parmi les quêtes du métier (`general.one_job_per_type`).
 - Paliers (`general.level_tiers`) : à partir d'un niveau dans le métier, les objectifs et l'XP de la quête sont multipliés, les points ne changent pas. Le palier est fixé à l'attribution de la quête et affiché dans le menu (`daily_job_tier_lore` de `menus.yml`).
+- `general.level_tiers_ignored_jobs` : métiers dont les quêtes ne suivent jamais les paliers (par défaut la pêche, qu'on ne fait pas plus vite à un plus haut niveau). Une quête déjà attribuée de ces métiers revient à x1 au chargement du joueur ou au `/shjobs reload`.
+- Totaux modifiés dans `config.yml` : `/shjobs reload` les applique aux quêtes en cours des joueurs connectés, les autres les prennent à leur connexion. Une quête dont chaque objectif a déjà atteint son nouveau total se termine et paie tout de suite.
+- Rotation sans SHNetwork : le jour de rotation est vérifié toutes les 10 s, la rotation part à l'heure de `general.daily_reset_time` et jamais deux fois le même jour, redémarrage compris.
 - Un bloc posé par un joueur ne fait pas avancer un objectif de casse quand il le recasse (`general.placed_blocks_count: false`). La position est gardée dans les données du chunk, suit les pistons et survit aux redémarrages.
 - Types d'objectif : `BREAK`, `PLACE`, `STRIP`, `CRAFT`, `SMELT`, `FISH`, `KILL` (avec `projectile: true` pour les tirs à l'arc, à l'arbalète ou au trident), `BREW` (potion comptée à la fin de l'infusion, pour le dernier joueur à avoir cliqué dans l'alambic), `SMITH` (garniture `TRIM` ou netherite `UPGRADE`), `HARVEST` (cueillette au clic droit), `WALK`. Le détail est en tête de `job_templates` dans `config.yml`.
 

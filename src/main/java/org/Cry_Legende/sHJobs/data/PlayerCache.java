@@ -250,6 +250,11 @@ public class PlayerCache {
                 for (JobType jobType : JobType.values()) {
                     plugin.getLeaderboardManager().updatePlayerRank(playerUUID, jobType);
                 }
+                // Total baissé depuis sa dernière visite : la quête déjà au-dessus du nouveau total se termine ici
+                if (isPlayerDataFullyLoaded(playerUUID)) {
+                    plugin.getJobManager().rebindDailyJobs(playerData);
+                    plugin.getJobManager().settleReachedGoals(player, playerData);
+                }
                 plugin.getLogger().fine("[PlayerCache] Player data processed for " + player.getName() + " on join. isPlayerDataFullyLoaded: " + isPlayerDataFullyLoaded(playerUUID));
             }, runnable -> Bukkit.getScheduler().runTask(plugin, runnable))
             .exceptionally(ex -> { // Intercepter les exceptions du CompletableFuture lui-même

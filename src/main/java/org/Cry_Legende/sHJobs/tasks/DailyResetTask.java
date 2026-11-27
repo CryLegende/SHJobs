@@ -21,6 +21,13 @@ public class DailyResetTask extends BukkitRunnable {
             plugin.getNetwork().rollScheduled();
             return;
         }
+        // Serveur seul : la tâche passe toutes les 10 s et ne tire que quand le jour de rotation change. Un minuteur
+        // de 24 h en ticks partait une seconde trop tôt (23:59:59), notait la veille comme date du tirage, et le
+        // démarrage de 06:00 retirait alors une deuxième série de quêtes dans la même journée.
+        LocalDate day = plugin.currentResetDay();
+        if (!day.isAfter(plugin.getLastResetDate())) {
+            return;
+        }
         plugin.getLogger().info("Performing daily reset for SHJobs...");
         try {
             // 1. Sélectionner de nouveaux jobs journaliers
@@ -32,7 +39,7 @@ public class DailyResetTask extends BukkitRunnable {
             plugin.getLogger().info("Daily shop items have been reset.");
 
             // 3. Mettre à jour la date du dernier reset et sauvegarder l'état du serveur
-            plugin.setLastResetDate(LocalDate.now()); // Important pour la persistance du "jour"
+            plugin.setLastResetDate(day); // Important pour la persistance du "jour"
             plugin.saveServerState();
 
             plugin.getLogger().info("Daily reset completed successfully.");
