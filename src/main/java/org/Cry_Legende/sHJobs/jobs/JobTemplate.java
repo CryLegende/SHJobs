@@ -287,9 +287,10 @@ public class JobTemplate {
                 }
             }
 
+            // 0 = jamais tirée, seulement donnée comme quête de remplacement (requirement.fallback d'une autre quête)
             int selectionWeight = section.getInt("selection_weight", 1);
-            if (selectionWeight <= 0) {
-                plugin.getLogger().warning("JobTemplate '" + id + "' has non-positive selection_weight. Setting to 1.");
+            if (selectionWeight < 0) {
+                plugin.getLogger().warning("JobTemplate '" + id + "' has a negative selection_weight. Setting to 1.");
                 selectionWeight = 1;
             }
 
@@ -397,7 +398,7 @@ public class JobTemplate {
         }
 
         public Builder selectionWeight(int selectionWeight) {
-            this.selectionWeight = Math.max(1, selectionWeight); // Assurer un poids positif
+            this.selectionWeight = Math.max(0, selectionWeight); // 0 = quête de remplacement seulement
             return this;
         }
 

@@ -560,8 +560,8 @@ public final class SHJobs extends JavaPlugin {
             PlayerData data = playerCache.getPlayerData(online.getUniqueId());
             if (data != null && playerCache.isPlayerDataFullyLoaded(online.getUniqueId())) {
                 jobManager.rebindDailyJobs(data);
-                jobManager.reviewRequirements(data);
                 jobManager.catchUpLevels(data);
+                jobManager.reviewRequirements(data);
                 jobManager.settleReachedGoals(online, data);
             }
         }

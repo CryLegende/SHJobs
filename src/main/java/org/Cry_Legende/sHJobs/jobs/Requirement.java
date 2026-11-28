@@ -1,6 +1,7 @@
 package org.Cry_Legende.sHJobs.jobs;
 
 import me.clip.placeholderapi.PlaceholderAPI;
+import org.Cry_Legende.sHJobs.data.PlayerData;
 import org.bukkit.OfflinePlayer;
 
 import java.util.Optional;
@@ -16,6 +17,7 @@ public final class Requirement {
 
     private static final Pattern CONDITION = Pattern.compile("^\\s*(.+?)\\s*(>=|<=|==|!=|>|<)\\s*(.+?)\\s*$");
     private static final Pattern THOUSANDS = Pattern.compile("^-?\\d{1,3}(,\\d{3})+$");
+    private static final Pattern OWN_LEVEL = Pattern.compile("%shjobs_player_level_([a-zA-Z]+)%");
 
     private final String condition;
     private final String left;
@@ -55,9 +57,9 @@ public final class Requirement {
      * Thread principal. Une valeur qui ne se lit pas comme un nombre (pas d'île, placeholder inconnu) compte comme
      * condition non remplie : le joueur reçoit la quête de remplacement, qu'il peut toujours faire.
      */
-    public boolean isMetBy(OfflinePlayer player) {
-        double a = number(PlaceholderAPI.setPlaceholders(player, left));
-        double b = number(PlaceholderAPI.setPlaceholders(player, right));
+    public boolean isMetBy(OfflinePlayer player, PlayerData data) {
+        double a = number(PlaceholderAPI.setPlaceholders(player, ownLevels(left, data)));
+        double b = number(PlaceholderAPI.setPlaceholders(player, ownLevels(right, data)));
         if (Double.isNaN(a) || Double.isNaN(b)) {
             return false;
         }
@@ -70,6 +72,24 @@ public final class Requirement {
             case "!=" -> a != b;
             default -> false;
         };
+    }
+
+    /**
+     * %shjobs_player_level_<métier>% pris dans les données du joueur : à la connexion, ses données ne sont pas encore
+     * dans le cache que lit le placeholder.
+     */
+    private static String ownLevels(String value, PlayerData data) {
+        if (data == null || !value.contains("%shjobs_player_level_")) {
+            return value;
+        }
+        Matcher m = OWN_LEVEL.matcher(value);
+        StringBuilder out = new StringBuilder();
+        while (m.find()) {
+            String replacement = JobType.fromString(m.group(1)).map(type -> String.valueOf(data.getLevel(type))).orElse(m.group());
+            m.appendReplacement(out, Matcher.quoteReplacement(replacement));
+        }
+        m.appendTail(out);
+        return out.toString();
     }
 
     /** « 1 500 », « 1,500 », « 1500.0 » ou « 12,5 » ; NaN si ce n'est pas un nombre. */

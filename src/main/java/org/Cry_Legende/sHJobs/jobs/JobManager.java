@@ -143,8 +143,10 @@ public class JobManager {
             }
             count++;
         }
-        if (count > 0) {
-            plugin.getLogger().info(count + " job template(s) with a requirement (players who don't meet it get the fallback job).");
+        long fallbackOnly = jobTemplates.values().stream().filter(t -> t.getSelectionWeight() == 0).count();
+        if (count > 0 || fallbackOnly > 0) {
+            plugin.getLogger().info(count + " job template(s) with a requirement (players who don't meet it get the fallback job), "
+                + fallbackOnly + " fallback-only (selection_weight 0).");
         }
     }
 
@@ -194,13 +196,13 @@ public class JobManager {
             return pickOnePerType();
         }
 
-        List<JobTemplate> availableTemplates = new ArrayList<>(jobTemplates.values());
+        List<JobTemplate> availableTemplates = drawable();
         Set<String> selectedInThisBatch = new HashSet<>();
 
         for (int i = 0; i < 6; i++) {
             if (availableTemplates.isEmpty()) {
                 if (jobTemplates.isEmpty()) break;
-                availableTemplates = new ArrayList<>(jobTemplates.values());
+                availableTemplates = drawable();
             }
 
             JobTemplate selected = selectWeightedRandom(availableTemplates);
@@ -232,7 +234,7 @@ public class JobManager {
             JobType type = types[i];
             JobTemplate selected = selectWeightedRandom(templatesOf(type, used));
             if (selected == null) {
-                List<JobTemplate> rest = jobTemplates.values().stream().filter(t -> !used.contains(t.getId())).collect(Collectors.toList());
+                List<JobTemplate> rest = drawable().stream().filter(t -> !used.contains(t.getId())).collect(Collectors.toList());
                 selected = selectWeightedRandom(rest);
                 plugin.getLogger().warning("No job template for " + type + ": slot " + (i + 1) + " takes " + (selected != null ? selected.getId() : "nothing") + ".");
             }
@@ -244,8 +246,14 @@ public class JobManager {
         return ids;
     }
 
+    /** Quêtes qui peuvent sortir au tirage : selection_weight 0 = quête de remplacement seulement (version débutant…). */
+    private List<JobTemplate> drawable() {
+        return jobTemplates.values().stream().filter(t -> t.getSelectionWeight() > 0).collect(Collectors.toList());
+    }
+
     private List<JobTemplate> templatesOf(JobType type, Set<String> excluded) {
         return jobTemplates.values().stream()
+            .filter(t -> t.getSelectionWeight() > 0)
             .filter(t -> t.getJobType() == type && !excluded.contains(t.getId()))
             .sorted(Comparator.comparing(JobTemplate::getId))
             .collect(Collectors.toList());
@@ -309,35 +317,56 @@ public class JobManager {
         return new DailyJob(template, scale);
     }
 
+    /** Au plus autant de quêtes dans une chaîne de remplacement (quête, remplacement, remplacement du remplacement…). */
+    private static final int MAX_CHAIN = 5;
+
     /**
-     * La quête que reçoit ce joueur pour une quête de la rotation : elle-même, ou sa quête de remplacement
-     * (requirement.fallback) s'il ne remplit pas sa condition. Pas de remplacement si la quête de remplacement
-     * n'existe pas ou fait déjà partie de la rotation du jour (le joueur l'a déjà dans une autre case).
+     * La quête que reçoit ce joueur pour une quête de la rotation : la première de sa chaîne (elle, puis ses
+     * remplacements requirement.fallback successifs) dont il remplit la condition, sinon la dernière de la chaîne.
+     * Ex. Roches Variées (île 1 500) → Excavation Pierre (métier niveau 5) → Excavation Pierre débutant.
      */
     public JobTemplate templateFor(PlayerData playerData, JobTemplate rotationTemplate) {
-        Optional<JobTemplate> fallback = fallbackOf(rotationTemplate);
-        if (fallback.isEmpty()) {
+        List<JobTemplate> chain = chainOf(rotationTemplate);
+        if (chain.size() <= 1) {
             return rotationTemplate;
         }
         OfflinePlayer player = Bukkit.getOfflinePlayer(playerData.getPlayerUUID());
-        return rotationTemplate.getRequirement().get().isMetBy(player) ? rotationTemplate : fallback.get();
-    }
-
-    /** Quête de remplacement utilisable aujourd'hui pour une quête de la rotation, vide s'il n'y en a pas. */
-    private Optional<JobTemplate> fallbackOf(JobTemplate rotationTemplate) {
-        if (rotationTemplate == null || rotationTemplate.getRequirement().isEmpty()) {
-            return Optional.empty();
+        for (int i = 0; i < chain.size() - 1; i++) {
+            if (chain.get(i).getRequirement().get().isMetBy(player, playerData)) {
+                return chain.get(i);
+            }
         }
-        String fallbackId = rotationTemplate.getRequirement().get().getFallbackId();
-        if (currentDailyJobTemplateIds.contains(fallbackId)) {
-            return Optional.empty();
-        }
-        return Optional.ofNullable(jobTemplates.get(fallbackId));
+        return chain.get(chain.size() - 1);
     }
 
     /**
-     * Quête du jour du joueur dans une case (0-5) : la quête de la rotation, ou sa quête de remplacement s'il l'a
-     * reçue à sa place. C'est par là que passent le menu, les placeholders et le bonus des 6 quêtes.
+     * La quête de la rotation suivie de ses remplacements successifs. La chaîne s'arrête sur un remplacement
+     * introuvable, déjà vu (boucle) ou faisant partie de la rotation du jour (le joueur l'a dans une autre case).
+     */
+    private List<JobTemplate> chainOf(JobTemplate rotationTemplate) {
+        if (rotationTemplate == null) {
+            return List.of();
+        }
+        List<JobTemplate> chain = new ArrayList<>(2);
+        chain.add(rotationTemplate);
+        Set<String> seen = new HashSet<>();
+        seen.add(rotationTemplate.getId());
+        JobTemplate current = rotationTemplate;
+        while (chain.size() < MAX_CHAIN && current.getRequirement().isPresent()) {
+            String fallbackId = current.getRequirement().get().getFallbackId();
+            JobTemplate fallback = jobTemplates.get(fallbackId);
+            if (fallback == null || !seen.add(fallbackId) || currentDailyJobTemplateIds.contains(fallbackId)) {
+                break;
+            }
+            chain.add(fallback);
+            current = fallback;
+        }
+        return chain;
+    }
+
+    /**
+     * Quête du jour du joueur dans une case (0-5) : la quête de la rotation, ou celle de sa chaîne de remplacement
+     * qu'il a reçue à sa place. C'est par là que passent le menu, les placeholders et le bonus des 6 quêtes.
      */
     public Optional<DailyJob> dailyJobForSlot(PlayerData playerData, int slotIndex) {
         if (slotIndex < 0 || slotIndex >= currentDailyJobTemplateIds.size()) {
@@ -351,12 +380,18 @@ public class JobManager {
         if (job != null) {
             return Optional.of(job);
         }
-        return fallbackOf(jobTemplates.get(templateId)).map(fallback -> playerData.getActiveDailyJobs().get(fallback.getId()));
+        for (JobTemplate template : chainOf(jobTemplates.get(templateId))) {
+            job = playerData.getActiveDailyJobs().get(template.getId());
+            if (job != null) {
+                return Optional.of(job);
+            }
+        }
+        return Optional.empty();
     }
 
     /**
-     * Le joueur a bien une quête par case de la rotation du jour (la quête ou sa quête de remplacement), et rien
-     * d'autre. Sinon ses quêtes datent d'une autre rotation et sont à refaire.
+     * Le joueur a bien une quête par case de la rotation du jour (la quête ou une de sa chaîne de remplacement), et
+     * rien d'autre. Sinon ses quêtes datent d'une autre rotation et sont à refaire.
      */
     public boolean isInSyncWithRotation(PlayerData playerData) {
         Map<String, DailyJob> held = playerData.getActiveDailyJobs();
@@ -370,21 +405,21 @@ public class JobManager {
             if (dailyJobForSlot(playerData, i).isEmpty()) {
                 return false;
             }
-            fallbackOf(jobTemplates.get(templateId)).ifPresent(fallback -> accepted.add(fallback.getId()));
+            chainOf(jobTemplates.get(templateId)).forEach(template -> accepted.add(template.getId()));
         }
         return held.size() == slots && accepted.containsAll(held.keySet());
     }
 
     /**
-     * Une quête encore jamais commencée suit la condition du moment : le joueur qui ne la remplit plus passe sur la
-     * quête de remplacement, celui qui la remplit désormais reprend la quête de la rotation (île agrandie, lecture
-     * ratée à la connexion). Une quête commencée ou finie ne change plus de la journée. Thread principal.
+     * Une quête encore jamais commencée suit les conditions du moment : le joueur reçoit la quête de sa chaîne qui
+     * lui correspond maintenant (île agrandie, niveau de métier monté, lecture ratée à la connexion). Une quête
+     * commencée ou finie ne change plus de la journée. Thread principal.
      */
     public void reviewRequirements(PlayerData playerData) {
         for (int i = 0; i < currentDailyJobTemplateIds.size(); i++) {
             String templateId = currentDailyJobTemplateIds.get(i);
             JobTemplate rotation = templateId != null ? jobTemplates.get(templateId) : null;
-            if (fallbackOf(rotation).isEmpty()) continue;
+            if (chainOf(rotation).size() <= 1) continue;
             Optional<DailyJob> current = dailyJobForSlot(playerData, i);
             if (current.isEmpty() || !isUntouched(current.get())) continue;
             JobTemplate wanted = templateFor(playerData, rotation);
@@ -392,7 +427,7 @@ public class JobManager {
                 playerData.removeDailyJob(current.get().getTemplate().getId());
                 playerData.addOrUpdateDailyJob(newDailyJob(playerData, wanted));
                 plugin.getLogger().info("Daily job slot " + (i + 1) + " of " + playerData.getPlayerUUID() + ": "
-                    + current.get().getTemplate().getId() + " -> " + wanted.getId() + " (" + rotation.getRequirement().get().getCondition() + ").");
+                    + current.get().getTemplate().getId() + " -> " + wanted.getId() + ".");
             }
         }
     }
@@ -477,7 +512,7 @@ public class JobManager {
             JobTemplate selected = selectWeightedRandom(sameType);
             this.currentDailyJobTemplateIds.set(slotIndex, selected != null ? selected.getId() : current);
         } else {
-            List<JobTemplate> availableForSlot = new ArrayList<>(jobTemplates.values());
+            List<JobTemplate> availableForSlot = drawable();
             for (int i = 0; i < 6; i++) {
                 if (i == slotIndex) continue;
                 String existingId = this.currentDailyJobTemplateIds.get(i);
@@ -486,7 +521,7 @@ public class JobManager {
                 }
             }
             if (availableForSlot.isEmpty() && !jobTemplates.isEmpty()) {
-                availableForSlot = new ArrayList<>(jobTemplates.values());
+                availableForSlot = drawable();
             }
             JobTemplate selectedRandom = selectWeightedRandom(availableForSlot);
             this.currentDailyJobTemplateIds.set(slotIndex, selectedRandom != null ? selectedRandom.getId() : null);

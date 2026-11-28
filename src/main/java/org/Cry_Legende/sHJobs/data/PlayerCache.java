@@ -70,6 +70,8 @@ public class PlayerCache {
                 if (isNewData) {
                     plugin.getJobManager().assignDailyJobsToPlayer(data);
                 } else {
+                    // Niveaux d'abord : les conditions des quêtes peuvent dépendre du niveau de métier
+                    plugin.getJobManager().catchUpLevels(data);
                     // Une quête par case de la rotation (ou sa quête de remplacement), sinon quêtes d'une autre rotation
                     boolean jobsOutOfSync = !plugin.getJobManager().isInSyncWithRotation(data);
 
@@ -80,7 +82,6 @@ public class PlayerCache {
                     } else {
                         plugin.getJobManager().reviewRequirements(data);
                     }
-                    plugin.getJobManager().catchUpLevels(data);
                 }
 
                 playerDataCache.put(playerUUID, data);

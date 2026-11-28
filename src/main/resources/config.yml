@@ -241,6 +241,10 @@ job_types:
 #     fallback: mineur_excavation_pierre                 # id d'une autre quête
 # Une valeur illisible (pas d'île) compte comme non remplie. Tant que la quête n'est pas commencée, elle suit la
 # condition à chaque connexion et à chaque /shjobs reload ; commencée ou finie, elle ne change plus de la journée.
+# La quête de remplacement peut avoir sa propre condition (chaîne, 5 quêtes au plus) : Roches Variées (île 1 500)
+# → Excavation Pierre (métier niveau 5) → Excavation Pierre débutant. %shjobs_player_level_<métier>% est lu dans les
+# données du joueur, même à sa connexion.
+# selection_weight: 0 = quête jamais tirée, seulement donnée comme remplacement (versions débutant…).
 job_templates:
   # --- BUCHERON ---
   bucheron_coupe_chene:
