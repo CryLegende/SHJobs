@@ -3,6 +3,8 @@ package org.Cry_Legende.sHJobs.jobs;
 import org.Cry_Legende.sHJobs.SHJobs;
 import org.Cry_Legende.sHJobs.data.PlayerData;
 import org.Cry_Legende.sHJobs.utils.SoundUtil;
+import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 
@@ -117,10 +119,33 @@ public class JobManager {
         }
         walkObjectives = jobTemplates.values().stream()
             .anyMatch(template -> template.getObjectives().stream().anyMatch(obj -> obj.getAction() == JobAction.WALK));
+        checkRequirements();
         loadGeneralRules();
         plugin.getLogger().info("Loaded " + jobTemplates.size() + " job templates (" + (oneJobPerType ? "one per job type" : "random")
             + ", " + levelTiers.size() + " level tier(s)" + (tierIgnoredJobs.isEmpty() ? "" : " except " + tierIgnoredJobs)
             + ", " + placedBlocks.trackedCount() + " block type(s) ignored when player-placed).");
+    }
+
+    /** Quêtes à condition : leur quête de remplacement doit exister, sinon la condition est ignorée (quête donnée à tous). */
+    private void checkRequirements() {
+        int count = 0;
+        for (JobTemplate template : jobTemplates.values()) {
+            if (template.getRequirement().isEmpty()) continue;
+            String fallbackId = template.getRequirement().get().getFallbackId();
+            JobTemplate fallback = jobTemplates.get(fallbackId);
+            if (fallback == null) {
+                plugin.getLogger().warning("JobTemplate '" + template.getId() + "': fallback '" + fallbackId + "' not found, the job is given to everyone.");
+                continue;
+            }
+            if (fallback.getJobType() != template.getJobType()) {
+                plugin.getLogger().warning("JobTemplate '" + template.getId() + "': fallback '" + fallbackId + "' is a " + fallback.getJobType()
+                    + " job, not " + template.getJobType() + ".");
+            }
+            count++;
+        }
+        if (count > 0) {
+            plugin.getLogger().info(count + " job template(s) with a requirement (players who don't meet it get the fallback job).");
+        }
     }
 
     public boolean hasWalkObjectives() {
@@ -273,11 +298,122 @@ public class JobManager {
         for (String templateId : currentDailyJobTemplateIds) {
             if (templateId == null) continue;
             getJobTemplate(templateId).ifPresent(template -> {
-                double scale = tierMultiplier(template.getJobType(), playerData.getLevel(template.getJobType()));
-                DailyJob dailyJob = new DailyJob(template, scale);
-                playerData.addOrUpdateDailyJob(dailyJob);
+                JobTemplate given = templateFor(playerData, template);
+                playerData.addOrUpdateDailyJob(newDailyJob(playerData, given));
             });
         }
+    }
+
+    private DailyJob newDailyJob(PlayerData playerData, JobTemplate template) {
+        double scale = tierMultiplier(template.getJobType(), playerData.getLevel(template.getJobType()));
+        return new DailyJob(template, scale);
+    }
+
+    /**
+     * La quête que reçoit ce joueur pour une quête de la rotation : elle-même, ou sa quête de remplacement
+     * (requirement.fallback) s'il ne remplit pas sa condition. Pas de remplacement si la quête de remplacement
+     * n'existe pas ou fait déjà partie de la rotation du jour (le joueur l'a déjà dans une autre case).
+     */
+    public JobTemplate templateFor(PlayerData playerData, JobTemplate rotationTemplate) {
+        Optional<JobTemplate> fallback = fallbackOf(rotationTemplate);
+        if (fallback.isEmpty()) {
+            return rotationTemplate;
+        }
+        OfflinePlayer player = Bukkit.getOfflinePlayer(playerData.getPlayerUUID());
+        return rotationTemplate.getRequirement().get().isMetBy(player) ? rotationTemplate : fallback.get();
+    }
+
+    /** Quête de remplacement utilisable aujourd'hui pour une quête de la rotation, vide s'il n'y en a pas. */
+    private Optional<JobTemplate> fallbackOf(JobTemplate rotationTemplate) {
+        if (rotationTemplate == null || rotationTemplate.getRequirement().isEmpty()) {
+            return Optional.empty();
+        }
+        String fallbackId = rotationTemplate.getRequirement().get().getFallbackId();
+        if (currentDailyJobTemplateIds.contains(fallbackId)) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(jobTemplates.get(fallbackId));
+    }
+
+    /**
+     * Quête du jour du joueur dans une case (0-5) : la quête de la rotation, ou sa quête de remplacement s'il l'a
+     * reçue à sa place. C'est par là que passent le menu, les placeholders et le bonus des 6 quêtes.
+     */
+    public Optional<DailyJob> dailyJobForSlot(PlayerData playerData, int slotIndex) {
+        if (slotIndex < 0 || slotIndex >= currentDailyJobTemplateIds.size()) {
+            return Optional.empty();
+        }
+        String templateId = currentDailyJobTemplateIds.get(slotIndex);
+        if (templateId == null) {
+            return Optional.empty();
+        }
+        DailyJob job = playerData.getActiveDailyJobs().get(templateId);
+        if (job != null) {
+            return Optional.of(job);
+        }
+        return fallbackOf(jobTemplates.get(templateId)).map(fallback -> playerData.getActiveDailyJobs().get(fallback.getId()));
+    }
+
+    /**
+     * Le joueur a bien une quête par case de la rotation du jour (la quête ou sa quête de remplacement), et rien
+     * d'autre. Sinon ses quêtes datent d'une autre rotation et sont à refaire.
+     */
+    public boolean isInSyncWithRotation(PlayerData playerData) {
+        Map<String, DailyJob> held = playerData.getActiveDailyJobs();
+        Set<String> accepted = new HashSet<>();
+        int slots = 0;
+        for (int i = 0; i < currentDailyJobTemplateIds.size(); i++) {
+            String templateId = currentDailyJobTemplateIds.get(i);
+            if (templateId == null) continue;
+            slots++;
+            accepted.add(templateId);
+            if (dailyJobForSlot(playerData, i).isEmpty()) {
+                return false;
+            }
+            fallbackOf(jobTemplates.get(templateId)).ifPresent(fallback -> accepted.add(fallback.getId()));
+        }
+        return held.size() == slots && accepted.containsAll(held.keySet());
+    }
+
+    /**
+     * Une quête encore jamais commencée suit la condition du moment : le joueur qui ne la remplit plus passe sur la
+     * quête de remplacement, celui qui la remplit désormais reprend la quête de la rotation (île agrandie, lecture
+     * ratée à la connexion). Une quête commencée ou finie ne change plus de la journée. Thread principal.
+     */
+    public void reviewRequirements(PlayerData playerData) {
+        for (int i = 0; i < currentDailyJobTemplateIds.size(); i++) {
+            String templateId = currentDailyJobTemplateIds.get(i);
+            JobTemplate rotation = templateId != null ? jobTemplates.get(templateId) : null;
+            if (fallbackOf(rotation).isEmpty()) continue;
+            Optional<DailyJob> current = dailyJobForSlot(playerData, i);
+            if (current.isEmpty() || !isUntouched(current.get())) continue;
+            JobTemplate wanted = templateFor(playerData, rotation);
+            if (!wanted.getId().equals(current.get().getTemplate().getId())) {
+                playerData.removeDailyJob(current.get().getTemplate().getId());
+                playerData.addOrUpdateDailyJob(newDailyJob(playerData, wanted));
+                plugin.getLogger().info("Daily job slot " + (i + 1) + " of " + playerData.getPlayerUUID() + ": "
+                    + current.get().getTemplate().getId() + " -> " + wanted.getId() + " (" + rotation.getRequirement().get().getCondition() + ").");
+            }
+        }
+    }
+
+    /**
+     * Niveaux rattrapés sur l'XP déjà gagnée quand un palier a baissé dans config.yml (experience.*) : le joueur prend
+     * tout de suite les niveaux que son XP lui donne déjà, sans attendre sa prochaine quête. Ne baisse jamais un niveau.
+     */
+    public void catchUpLevels(PlayerData playerData) {
+        for (JobType type : JobType.values()) {
+            int before = playerData.getLevel(type);
+            playerData.checkLevelUp(type);
+            int after = playerData.getLevel(type);
+            if (after > before) {
+                plugin.getLogger().info("Job level of " + playerData.getPlayerUUID() + " caught up on its XP: " + type + " " + before + " -> " + after + ".");
+            }
+        }
+    }
+
+    private static boolean isUntouched(DailyJob job) {
+        return !job.isCompleted() && job.getObjectiveProgress().values().stream().allMatch(progress -> progress == null || progress <= 0);
     }
 
     /**
@@ -459,9 +595,10 @@ public class JobManager {
         if (today.isEmpty()) {
             return;
         }
-        for (String templateId : today) {
-            DailyJob job = playerData.getActiveDailyJobs().get(templateId);
-            if (job == null || !job.isCompleted()) {
+        for (int i = 0; i < currentDailyJobTemplateIds.size(); i++) {
+            if (currentDailyJobTemplateIds.get(i) == null) continue;
+            Optional<DailyJob> job = dailyJobForSlot(playerData, i);
+            if (job.isEmpty() || !job.get().isCompleted()) {
                 return;
             }
         }

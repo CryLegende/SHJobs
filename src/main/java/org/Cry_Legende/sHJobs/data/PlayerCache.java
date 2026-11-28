@@ -70,34 +70,17 @@ public class PlayerCache {
                 if (isNewData) {
                     plugin.getJobManager().assignDailyJobsToPlayer(data);
                 } else {
-                    boolean jobsOutOfSync = false;
-                    if (data.getActiveDailyJobs().size() != plugin.getJobManager().getCurrentDailyJobTemplateIds().size()) {
-                        jobsOutOfSync = true;
-                    } else {
-                        for (String serverJobId : plugin.getJobManager().getCurrentDailyJobTemplateIds()) {
-                            if (serverJobId == null) continue;
-                            if (data.getActiveDailyJobs().values().stream()
-                                .noneMatch(dj -> dj != null && dj.getTemplate() != null && dj.getTemplate().getId().equals(serverJobId))) {
-                                jobsOutOfSync = true;
-                                break;
-                            }
-                        }
-                        if (!jobsOutOfSync) {
-                            for (DailyJob playerDailyJob : data.getActiveDailyJobs().values()) {
-                                if (playerDailyJob != null && playerDailyJob.getTemplate() != null &&
-                                    !plugin.getJobManager().getCurrentDailyJobTemplateIds().contains(playerDailyJob.getTemplate().getId())) {
-                                    jobsOutOfSync = true;
-                                    break;
-                                }
-                            }
-                        }
-                    }
+                    // Une quête par case de la rotation (ou sa quête de remplacement), sinon quêtes d'une autre rotation
+                    boolean jobsOutOfSync = !plugin.getJobManager().isInSyncWithRotation(data);
 
                     if (jobsOutOfSync) {
                         plugin.getLogger().fine("[PlayerCache] Player " + playerUUID + " has jobs out of sync. Re-assigning and clearing purchases.");
                         plugin.getJobManager().assignDailyJobsToPlayer(data);
                         data.clearDailyPurchases();
+                    } else {
+                        plugin.getJobManager().reviewRequirements(data);
                     }
+                    plugin.getJobManager().catchUpLevels(data);
                 }
 
                 playerDataCache.put(playerUUID, data);

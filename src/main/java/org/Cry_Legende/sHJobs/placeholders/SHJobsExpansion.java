@@ -208,9 +208,10 @@ public class SHJobsExpansion extends PlaceholderExpansion {
                         return plugin.getMessages().getMessage("papi.job_not_available", false);
                     }
 
-                    String templateId = dailyJobIds.get(slot - 1);
-                    Optional<JobTemplate> templateOpt = plugin.getJobManager().getJobTemplate(templateId);
-                    Optional<DailyJob> dailyJobOpt = playerData.getDailyJobByTemplateId(templateId);
+                    // La quête du joueur dans cette case : celle de la rotation ou sa quête de remplacement
+                    Optional<DailyJob> dailyJobOpt = plugin.getJobManager().dailyJobForSlot(playerData, slot - 1);
+                    Optional<JobTemplate> templateOpt = dailyJobOpt
+                        .flatMap(job -> plugin.getJobManager().getJobTemplate(job.getTemplate().getId()));
 
                     if (templateOpt.isPresent() && dailyJobOpt.isPresent()) {
                         JobTemplate template = templateOpt.get();

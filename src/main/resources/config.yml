@@ -166,6 +166,13 @@ experience:
   # default_xp_formula: "1000 + (%level% - 1) * 500" # XP needed to reach %level%
   default_xp_formula: "100" # XP needed to reach %level%
   default_max_level: 100
+  # XP d'une étape précise pour tous les métiers (niveau visé: XP de l'étape), avant la formule. Un exp_per_level
+  # d'un métier (plus bas) passe avant. Baisser une étape donne tout de suite aux joueurs les niveaux que leur XP
+  # permet déjà (à la connexion ou au /shjobs reload), jamais un niveau en moins.
+  # Exemple : une quête (50 XP) pour le niveau 2, trois pour le niveau 3, puis comme avant dès le niveau 4.
+  # default_exp_per_level:
+  #   2: 50
+  #   4: 150
 
   jobs:
     bucheron: # Must match a JobType enum key (case-insensitive)
@@ -225,6 +232,15 @@ job_types:
 #   SMITH    smith : TRIM (garniture d'armure), UPGRADE (netherite) ou ANY, à la table de forgeron
 #   HARVEST  material : objets cueillis au clic droit (SWEET_BERRIES, GLOW_BERRIES)
 #   WALK     distance en blocs
+#
+# Condition facultative (requirement) : un joueur qui ne la remplit pas reçoit la quête « fallback » à la place quand
+# celle-ci tombe dans la rotation (même métier conseillé, quête faisable par tous). Sert aux quêtes qui demandent un
+# niveau de générateur ou d'île que les nouveaux joueurs n'ont pas encore.
+#   requirement:
+#     condition: "%superior_island_level_int% >= 1500"   # valeur opérateur valeur (>= > <= < == !=), placeholders acceptés
+#     fallback: mineur_excavation_pierre                 # id d'une autre quête
+# Une valeur illisible (pas d'île) compte comme non remplie. Tant que la quête n'est pas commencée, elle suit la
+# condition à chaque connexion et à chaque /shjobs reload ; commencée ou finie, elle ne change plus de la journée.
 job_templates:
   # --- BUCHERON ---
   bucheron_coupe_chene:

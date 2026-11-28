@@ -98,9 +98,10 @@ public class JobsMenu extends CustomMenuHolder {
                             int jobIndex = Integer.parseInt(itemType.substring(itemType.length() - 1)) - 1;
                             List<String> dailyJobIds = plugin.getJobManager().getCurrentDailyJobTemplateIds();
                             if (jobIndex < dailyJobIds.size() && dailyJobIds.get(jobIndex) != null) {
-                                String templateId = dailyJobIds.get(jobIndex);
-                                Optional<JobTemplate> templateOpt = plugin.getJobManager().getJobTemplate(templateId);
-                                Optional<DailyJob> dailyJobOpt = playerData.getDailyJobByTemplateId(templateId);
+                                // La quête du joueur dans cette case : celle de la rotation ou sa quête de remplacement
+                                Optional<DailyJob> dailyJobOpt = plugin.getJobManager().dailyJobForSlot(playerData, jobIndex);
+                                Optional<JobTemplate> templateOpt = dailyJobOpt
+                                    .flatMap(job -> plugin.getJobManager().getJobTemplate(job.getTemplate().getId()));
 
                                 if (templateOpt.isPresent() && dailyJobOpt.isPresent()) {
                                     inventory.setItem(slot, createDailyJobItem(player, templateOpt.get(), dailyJobOpt.get(), itemCfg, globalPlaceholders));

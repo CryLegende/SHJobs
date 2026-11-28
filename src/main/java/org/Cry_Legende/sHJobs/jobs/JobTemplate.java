@@ -30,6 +30,7 @@ public class JobTemplate {
 
 
     private final int selectionWeight; // Pour la sélection aléatoire
+    private final Requirement requirement; // null = quête donnée à tous
 
     // Constructeur privé pour le Builder
     private JobTemplate(Builder builder) {
@@ -46,6 +47,7 @@ public class JobTemplate {
         this.rewardSoundVolume = builder.rewardSoundVolume;
         this.rewardSoundPitch = builder.rewardSoundPitch;
         this.selectionWeight = builder.selectionWeight;
+        this.requirement = builder.requirement;
     }
 
     // Getters
@@ -105,6 +107,11 @@ public class JobTemplate {
 
     public int getSelectionWeight() {
         return selectionWeight;
+    }
+
+    /** Condition et quête de remplacement (bloc requirement), vide pour une quête donnée à tous. */
+    public Optional<Requirement> getRequirement() {
+        return Optional.ofNullable(requirement);
     }
 
     // Méthode statique pour charger un JobTemplate depuis une ConfigurationSection
@@ -286,6 +293,22 @@ public class JobTemplate {
                 selectionWeight = 1;
             }
 
+            Requirement requirement = null;
+            ConfigurationSection requirementSection = section.getConfigurationSection("requirement");
+            if (requirementSection != null) {
+                String condition = requirementSection.getString("condition");
+                String fallback = requirementSection.getString("fallback");
+                requirement = Requirement.parse(condition, fallback).orElse(null);
+                if (requirement == null) {
+                    plugin.getLogger().warning("JobTemplate '" + id + "': requirement ignored, it needs 'condition' (value operator value, "
+                        + "operators >= > <= < == !=) and 'fallback' (id of another job). Read: condition='" + condition
+                        + "', fallback='" + fallback + "'.");
+                } else if (requirement.getFallbackId().equals(id)) {
+                    plugin.getLogger().warning("JobTemplate '" + id + "': requirement ignored, its fallback is the job itself.");
+                    requirement = null;
+                }
+            }
+
             JobTemplate template = new JobTemplate.Builder(id, displayName, jobTypeOpt.get())
                 .descriptionLore(description)
                 .objectives(objectives)
@@ -295,6 +318,7 @@ public class JobTemplate {
                 .rewardMessageOnComplete(rewardMsg)
                 .rewardSound(rewardSnd, rewardVol, rewardPitch)
                 .selectionWeight(selectionWeight)
+                .requirement(requirement)
                 .build();
             return Optional.of(template);
 
@@ -320,6 +344,7 @@ public class JobTemplate {
         private float rewardSoundVolume = 1.0f;
         private float rewardSoundPitch = 1.0f;
         private int selectionWeight = 1;
+        private Requirement requirement;
 
         public Builder(String id, String displayName, JobType jobType) {
             this.id = id;
@@ -373,6 +398,11 @@ public class JobTemplate {
 
         public Builder selectionWeight(int selectionWeight) {
             this.selectionWeight = Math.max(1, selectionWeight); // Assurer un poids positif
+            return this;
+        }
+
+        public Builder requirement(Requirement requirement) {
+            this.requirement = requirement;
             return this;
         }
 

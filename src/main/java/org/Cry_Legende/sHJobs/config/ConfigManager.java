@@ -42,6 +42,7 @@ public class ConfigManager {
     private Map<JobType, String> jobSpecificXpFormulas;
     private Map<JobType, Integer> jobSpecificMaxLevels;
     private Map<JobType, Map<Integer, Long>> jobSpecificFixedExp;
+    private Map<Integer, Long> defaultFixedExp = Map.of(); // experience.default_exp_per_level, pour tous les métiers
     // XP par niveau déjà calculée (la formule passe par des regex, et PlayerData additionne tous les niveaux jusqu'au sien)
     private final Map<Long, Long> expForLevelCache = new ConcurrentHashMap<>();
 
@@ -89,6 +90,7 @@ public class ConfigManager {
         jobSpecificXpFormulas = new HashMap<>();
         jobSpecificMaxLevels = new HashMap<>();
         jobSpecificFixedExp = new HashMap<>();
+        defaultFixedExp = readFixedExp(config.getConfigurationSection("experience.default_exp_per_level"), "experience.default_exp_per_level");
 
         ConfigurationSection jobsExpSection = config.getConfigurationSection("experience.jobs");
         if (jobsExpSection != null) {
@@ -103,24 +105,28 @@ public class ConfigManager {
                 jobSpecificXpFormulas.put(jobType, jobsExpSection.getString(jobKey + ".xp_formula", defaultXpFormula));
                 jobSpecificMaxLevels.put(jobType, jobsExpSection.getInt(jobKey + ".max_level", defaultMaxLevel));
 
-                ConfigurationSection fixedExpSection = jobsExpSection.getConfigurationSection(jobKey + ".exp_per_level");
-                if (fixedExpSection != null) {
-                    Map<Integer, Long> fixedMap = new HashMap<>();
-                    for (String levelStr : fixedExpSection.getKeys(false)) {
-                        try {
-                            int level = Integer.parseInt(levelStr);
-                            long exp = fixedExpSection.getLong(levelStr);
-                            fixedMap.put(level, exp);
-                        } catch (NumberFormatException e) {
-                            plugin.getLogger().warning("Invalid level format in " + jobKey + ".exp_per_level: " + levelStr);
-                        }
-                    }
-                    if (!fixedMap.isEmpty()) {
-                        jobSpecificFixedExp.put(jobType, fixedMap);
-                    }
+                Map<Integer, Long> fixedMap = readFixedExp(jobsExpSection.getConfigurationSection(jobKey + ".exp_per_level"), jobKey + ".exp_per_level");
+                if (!fixedMap.isEmpty()) {
+                    jobSpecificFixedExp.put(jobType, fixedMap);
                 }
             }
         }
+    }
+
+    /** Niveau visé → XP de cette étape, lu depuis une section « 2: 50 ». Vide si la section manque. */
+    private Map<Integer, Long> readFixedExp(ConfigurationSection section, String path) {
+        if (section == null) {
+            return Map.of();
+        }
+        Map<Integer, Long> fixedMap = new HashMap<>();
+        for (String levelStr : section.getKeys(false)) {
+            try {
+                fixedMap.put(Integer.parseInt(levelStr), Math.max(0, section.getLong(levelStr)));
+            } catch (NumberFormatException e) {
+                plugin.getLogger().warning("Invalid level format in " + path + ": " + levelStr);
+            }
+        }
+        return fixedMap;
     }
 
     public long getExpForLevel(JobType jobType, int targetLevel) {
@@ -132,6 +138,9 @@ public class ConfigManager {
 
         if (jobSpecificFixedExp.containsKey(jobType) && jobSpecificFixedExp.get(jobType).containsKey(targetLevel)) {
             return jobSpecificFixedExp.get(jobType).get(targetLevel);
+        }
+        if (defaultFixedExp.containsKey(targetLevel)) {
+            return defaultFixedExp.get(targetLevel);
         }
 
         String formula = jobSpecificXpFormulas.getOrDefault(jobType, defaultXpFormula);
